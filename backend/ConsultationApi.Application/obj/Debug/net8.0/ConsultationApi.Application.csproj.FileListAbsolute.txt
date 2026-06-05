@@ -1,0 +1,15 @@
+C:\Users\KayalvizhiNeelanaray\Online Doctor Consultation & Chat System\backend\ConsultationApi.Application\bin\Debug\net8.0\ConsultationApi.Application.deps.json
+C:\Users\KayalvizhiNeelanaray\Online Doctor Consultation & Chat System\backend\ConsultationApi.Application\bin\Debug\net8.0\ConsultationApi.Application.dll
+C:\Users\KayalvizhiNeelanaray\Online Doctor Consultation & Chat System\backend\ConsultationApi.Application\bin\Debug\net8.0\ConsultationApi.Application.pdb
+C:\Users\KayalvizhiNeelanaray\Online Doctor Consultation & Chat System\backend\ConsultationApi.Application\bin\Debug\net8.0\ConsultationApi.Domain.dll
+C:\Users\KayalvizhiNeelanaray\Online Doctor Consultation & Chat System\backend\ConsultationApi.Application\bin\Debug\net8.0\ConsultationApi.Domain.pdb
+C:\Users\KayalvizhiNeelanaray\Online Doctor Consultation & Chat System\backend\ConsultationApi.Application\obj\Debug\net8.0\ConsultationApi.Application.csproj.AssemblyReference.cache
+C:\Users\KayalvizhiNeelanaray\Online Doctor Consultation & Chat System\backend\ConsultationApi.Application\obj\Debug\net8.0\ConsultationApi.Application.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\KayalvizhiNeelanaray\Online Doctor Consultation & Chat System\backend\ConsultationApi.Application\obj\Debug\net8.0\ConsultationApi.Application.AssemblyInfoInputs.cache
+C:\Users\KayalvizhiNeelanaray\Online Doctor Consultation & Chat System\backend\ConsultationApi.Application\obj\Debug\net8.0\ConsultationApi.Application.AssemblyInfo.cs
+C:\Users\KayalvizhiNeelanaray\Online Doctor Consultation & Chat System\backend\ConsultationApi.Application\obj\Debug\net8.0\ConsultationApi.Application.csproj.CoreCompileInputs.cache
+C:\Users\KayalvizhiNeelanaray\Online Doctor Consultation & Chat System\backend\ConsultationApi.Application\obj\Debug\net8.0\Consulta.C9881F8D.Up2Date
+C:\Users\KayalvizhiNeelanaray\Online Doctor Consultation & Chat System\backend\ConsultationApi.Application\obj\Debug\net8.0\ConsultationApi.Application.dll
+C:\Users\KayalvizhiNeelanaray\Online Doctor Consultation & Chat System\backend\ConsultationApi.Application\obj\Debug\net8.0\refint\ConsultationApi.Application.dll
+C:\Users\KayalvizhiNeelanaray\Online Doctor Consultation & Chat System\backend\ConsultationApi.Application\obj\Debug\net8.0\ConsultationApi.Application.pdb
+C:\Users\KayalvizhiNeelanaray\Online Doctor Consultation & Chat System\backend\ConsultationApi.Application\obj\Debug\net8.0\ref\ConsultationApi.Application.dll
