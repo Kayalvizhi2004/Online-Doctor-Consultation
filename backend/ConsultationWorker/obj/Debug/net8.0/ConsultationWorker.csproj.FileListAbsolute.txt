@@ -1,3 +1,10 @@
+C:\Users\KayalvizhiNeelanaray\Online Doctor Consultation & Chat System\backend\ConsultationWorker\bin\Debug\net8.0\appsettings.Development.json
+C:\Users\KayalvizhiNeelanaray\Online Doctor Consultation & Chat System\backend\ConsultationWorker\bin\Debug\net8.0\appsettings.json
+C:\Users\KayalvizhiNeelanaray\Online Doctor Consultation & Chat System\backend\ConsultationWorker\bin\Debug\net8.0\ConsultationWorker.exe
+C:\Users\KayalvizhiNeelanaray\Online Doctor Consultation & Chat System\backend\ConsultationWorker\bin\Debug\net8.0\ConsultationWorker.deps.json
+C:\Users\KayalvizhiNeelanaray\Online Doctor Consultation & Chat System\backend\ConsultationWorker\bin\Debug\net8.0\ConsultationWorker.runtimeconfig.json
+C:\Users\KayalvizhiNeelanaray\Online Doctor Consultation & Chat System\backend\ConsultationWorker\bin\Debug\net8.0\ConsultationWorker.dll
+C:\Users\KayalvizhiNeelanaray\Online Doctor Consultation & Chat System\backend\ConsultationWorker\bin\Debug\net8.0\ConsultationWorker.pdb
 C:\Users\KayalvizhiNeelanaray\Online Doctor Consultation & Chat System\backend\ConsultationWorker\bin\Debug\net8.0\AutoMapper.dll
 C:\Users\KayalvizhiNeelanaray\Online Doctor Consultation & Chat System\backend\ConsultationWorker\bin\Debug\net8.0\AutoMapper.Extensions.Microsoft.DependencyInjection.dll
 C:\Users\KayalvizhiNeelanaray\Online Doctor Consultation & Chat System\backend\ConsultationWorker\bin\Debug\net8.0\BCrypt.Net-Next.dll
@@ -118,6 +125,10 @@ C:\Users\KayalvizhiNeelanaray\Online Doctor Consultation & Chat System\backend\C
 C:\Users\KayalvizhiNeelanaray\Online Doctor Consultation & Chat System\backend\ConsultationWorker\obj\Debug\net8.0\ConsultationWorker.AssemblyInfoInputs.cache
 C:\Users\KayalvizhiNeelanaray\Online Doctor Consultation & Chat System\backend\ConsultationWorker\obj\Debug\net8.0\ConsultationWorker.AssemblyInfo.cs
 C:\Users\KayalvizhiNeelanaray\Online Doctor Consultation & Chat System\backend\ConsultationWorker\obj\Debug\net8.0\ConsultationWorker.csproj.CoreCompileInputs.cache
+C:\Users\KayalvizhiNeelanaray\Online Doctor Consultation & Chat System\backend\ConsultationWorker\obj\Debug\net8.0\ConsultationWorker.sourcelink.json
+C:\Users\KayalvizhiNeelanaray\Online Doctor Consultation & Chat System\backend\ConsultationWorker\obj\Debug\net8.0\Consulta.6F6629DA.Up2Date
 C:\Users\KayalvizhiNeelanaray\Online Doctor Consultation & Chat System\backend\ConsultationWorker\obj\Debug\net8.0\ConsultationWorker.dll
 C:\Users\KayalvizhiNeelanaray\Online Doctor Consultation & Chat System\backend\ConsultationWorker\obj\Debug\net8.0\refint\ConsultationWorker.dll
 C:\Users\KayalvizhiNeelanaray\Online Doctor Consultation & Chat System\backend\ConsultationWorker\obj\Debug\net8.0\ConsultationWorker.pdb
+C:\Users\KayalvizhiNeelanaray\Online Doctor Consultation & Chat System\backend\ConsultationWorker\obj\Debug\net8.0\ConsultationWorker.genruntimeconfig.cache
+C:\Users\KayalvizhiNeelanaray\Online Doctor Consultation & Chat System\backend\ConsultationWorker\obj\Debug\net8.0\ref\ConsultationWorker.dll

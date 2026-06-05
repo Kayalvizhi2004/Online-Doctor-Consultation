@@ -1,12 +1,37 @@
+using RabbitMQ.Client;
+
 namespace ConsultationWorker.RabbitMQ;
 
+/// <summary>
+/// Configures the Dead Letter Exchange (DLX) for failed messages.
+/// Messages that fail processing are sent to the DLQ.
+/// </summary>
 public static class DeadLetterSetup
 {
-    public static void Configure(dynamic channel)
+    /// <summary>
+    /// Declares the DLX exchange and DLQ queue (idempotent operations).
+    /// </summary>
+    /// <param name="channel">RabbitMQ channel</param>
+    public static void Configure(IModel channel)
     {
-        // Sync methods for RabbitMQ.Client 6.8.1
-        channel.ExchangeDeclare("appointment.dlx", "direct", true, false, null);
-        channel.QueueDeclare("appointment.dlq", true, false, false, null);
-        channel.QueueBind("appointment.dlq", "appointment.dlx", "deadletter", null);
+        // Declare DLX (Direct Exchange for dead letters)
+        channel.ExchangeDeclare(
+            exchange: "appointment.dlx",
+            type: ExchangeType.Direct,
+            durable: true,
+            autoDelete: false);
+
+        // Declare DLQ (Dead Letter Queue)
+        channel.QueueDeclare(
+            queue: "appointment.dlq",
+            durable: true,
+            exclusive: false,
+            autoDelete: false);
+
+        // Bind DLQ to DLX
+        channel.QueueBind(
+            queue: "appointment.dlq",
+            exchange: "appointment.dlx",
+            routingKey: "deadletter");
     }
 }

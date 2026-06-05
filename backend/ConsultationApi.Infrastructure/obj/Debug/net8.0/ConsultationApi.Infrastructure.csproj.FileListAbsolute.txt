@@ -11,6 +11,7 @@ C:\Users\KayalvizhiNeelanaray\Online Doctor Consultation & Chat System\backend\C
 C:\Users\KayalvizhiNeelanaray\Online Doctor Consultation & Chat System\backend\ConsultationApi.Infrastructure\obj\Debug\net8.0\ConsultationApi.Infrastructure.AssemblyInfoInputs.cache
 C:\Users\KayalvizhiNeelanaray\Online Doctor Consultation & Chat System\backend\ConsultationApi.Infrastructure\obj\Debug\net8.0\ConsultationApi.Infrastructure.AssemblyInfo.cs
 C:\Users\KayalvizhiNeelanaray\Online Doctor Consultation & Chat System\backend\ConsultationApi.Infrastructure\obj\Debug\net8.0\ConsultationApi.Infrastructure.csproj.CoreCompileInputs.cache
+C:\Users\KayalvizhiNeelanaray\Online Doctor Consultation & Chat System\backend\ConsultationApi.Infrastructure\obj\Debug\net8.0\ConsultationApi.Infrastructure.sourcelink.json
 C:\Users\KayalvizhiNeelanaray\Online Doctor Consultation & Chat System\backend\ConsultationApi.Infrastructure\obj\Debug\net8.0\Consulta.FA6E278C.Up2Date
 C:\Users\KayalvizhiNeelanaray\Online Doctor Consultation & Chat System\backend\ConsultationApi.Infrastructure\obj\Debug\net8.0\ConsultationApi.Infrastructure.dll
 C:\Users\KayalvizhiNeelanaray\Online Doctor Consultation & Chat System\backend\ConsultationApi.Infrastructure\obj\Debug\net8.0\refint\ConsultationApi.Infrastructure.dll

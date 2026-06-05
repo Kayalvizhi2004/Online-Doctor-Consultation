@@ -5,6 +5,7 @@ C:\Users\KayalvizhiNeelanaray\Online Doctor Consultation & Chat System\backend\C
 C:\Users\KayalvizhiNeelanaray\Online Doctor Consultation & Chat System\backend\ConsultationApi.Domain\obj\Debug\net8.0\ConsultationApi.Domain.AssemblyInfoInputs.cache
 C:\Users\KayalvizhiNeelanaray\Online Doctor Consultation & Chat System\backend\ConsultationApi.Domain\obj\Debug\net8.0\ConsultationApi.Domain.AssemblyInfo.cs
 C:\Users\KayalvizhiNeelanaray\Online Doctor Consultation & Chat System\backend\ConsultationApi.Domain\obj\Debug\net8.0\ConsultationApi.Domain.csproj.CoreCompileInputs.cache
+C:\Users\KayalvizhiNeelanaray\Online Doctor Consultation & Chat System\backend\ConsultationApi.Domain\obj\Debug\net8.0\ConsultationApi.Domain.sourcelink.json
 C:\Users\KayalvizhiNeelanaray\Online Doctor Consultation & Chat System\backend\ConsultationApi.Domain\obj\Debug\net8.0\ConsultationApi.Domain.dll
 C:\Users\KayalvizhiNeelanaray\Online Doctor Consultation & Chat System\backend\ConsultationApi.Domain\obj\Debug\net8.0\refint\ConsultationApi.Domain.dll
 C:\Users\KayalvizhiNeelanaray\Online Doctor Consultation & Chat System\backend\ConsultationApi.Domain\obj\Debug\net8.0\ConsultationApi.Domain.pdb

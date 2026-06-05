@@ -74,6 +74,8 @@ public class NotificationService : INotificationService
             .MarkAllReadAsync(
                 userId);
 
+        await _notifications.SaveChangesAsync();
+
         return new ApiResponse<string>
         {
             Success = true,
@@ -119,6 +121,7 @@ public class NotificationService : INotificationService
     public async Task<ApiResponse<bool>> MarkAllAsReadAsync()
     {
         await _notifications.MarkAllReadAsync(Guid.Empty);
+        await _notifications.SaveChangesAsync();
         return new ApiResponse<bool> { Success = true, Data = true };
     }
 }

@@ -27,10 +27,11 @@ public class NotificationProcessor
     {
         var payload = System.Text.Encoding.UTF8.GetString(body);
 
-        _logger.LogInformation("Processing event {RoutingKey}: {Payload}", routingKey, payload);
+        _logger.LogInformation("[NotificationProcessor] Processing event {RoutingKey}: {Payload}", routingKey, payload);
 
         try
         {
+            // Create a new scope for each message to ensure fresh DbContext
             using var scope = _provider.CreateScope();
             var notifications = scope.ServiceProvider.GetRequiredService<INotificationRepository>();
 
@@ -39,6 +40,9 @@ public class NotificationProcessor
 
             Guid? patientId = null;
             Guid? doctorId = null;
+            string? patientName = null;
+            string? cancellationReason = null;
+            string? cancelledBy = null;
 
             if (root.TryGetProperty("patientId", out var p) && p.ValueKind == JsonValueKind.String)
                 patientId = Guid.Parse(p.GetString()!);
@@ -46,45 +50,143 @@ public class NotificationProcessor
             if (root.TryGetProperty("doctorId", out var d) && d.ValueKind == JsonValueKind.String)
                 doctorId = Guid.Parse(d.GetString()!);
 
-            var title = routingKey;
-            var message = payload;
+            if (root.TryGetProperty("patientName", out var pn) && pn.ValueKind == JsonValueKind.String)
+                patientName = pn.GetString();
 
-            if (patientId.HasValue)
+            if (root.TryGetProperty("cancellationReason", out var cr) && cr.ValueKind == JsonValueKind.String)
+                cancellationReason = cr.GetString();
+
+            if (root.TryGetProperty("cancelledBy", out var cb) && cb.ValueKind == JsonValueKind.String)
+                cancelledBy = cb.GetString();
+
+            string title;
+            string message;
+            var notificationType = ConsultationApi.Domain.Enums.NotificationType.Appointment;
+
+            switch (routingKey)
             {
-                var n = new Notification
-                {
-                    UserId = patientId.Value,
-                    Title = title,
-                    Message = message,
-                    Type = ConsultationApi.Domain.Enums.NotificationType.Appointment,
-                    IsRead = false
-                };
+                case "appointment.booked":
+                    // Doctor gets: "New appointment request from [Patient]"
+                    title = "New Appointment Request";
+                    message = $"New appointment request from {patientName ?? "a patient"}";
+                    
+                    if (doctorId.HasValue)
+                    {
+                        var doctorNotif = new Notification
+                        {
+                            UserId = doctorId.Value,
+                            Title = title,
+                            Message = message,
+                            Type = notificationType,
+                            IsRead = false
+                        };
+                        await notifications.AddAsync(doctorNotif);
+                        _logger.LogInformation("[NotificationProcessor] Added notification for doctor {DoctorId}", doctorId);
+                    }
+                    break;
 
-                await notifications.AddAsync(n);
+                case "appointment.confirmed":
+                    // Patient gets: "Your appointment is confirmed"
+                    title = "Appointment Confirmed";
+                    message = "Your appointment has been confirmed by the doctor";
+                    
+                    if (patientId.HasValue)
+                    {
+                        var patientNotif = new Notification
+                        {
+                            UserId = patientId.Value,
+                            Title = title,
+                            Message = message,
+                            Type = notificationType,
+                            IsRead = false
+                        };
+                        await notifications.AddAsync(patientNotif);
+                        _logger.LogInformation("[NotificationProcessor] Added notification for patient {PatientId}", patientId);
+                    }
+                    break;
+
+                case "appointment.cancelled":
+                    // Both get notification with cancellation details
+                    title = "Appointment Cancelled";
+                    var canceller = cancelledBy ?? "Unknown";
+                    var reason = cancellationReason ?? "No reason provided";
+                    message = $"Appointment has been cancelled by {canceller}. Reason: {reason}";
+                    
+                    if (patientId.HasValue)
+                    {
+                        var patientNotif = new Notification
+                        {
+                            UserId = patientId.Value,
+                            Title = title,
+                            Message = message,
+                            Type = notificationType,
+                            IsRead = false
+                        };
+                        await notifications.AddAsync(patientNotif);
+                        _logger.LogInformation("[NotificationProcessor] Added cancellation notification for patient {PatientId}", patientId);
+                    }
+
+                    if (doctorId.HasValue)
+                    {
+                        var doctorNotif = new Notification
+                        {
+                            UserId = doctorId.Value,
+                            Title = title,
+                            Message = message,
+                            Type = notificationType,
+                            IsRead = false
+                        };
+                        await notifications.AddAsync(doctorNotif);
+                        _logger.LogInformation("[NotificationProcessor] Added cancellation notification for doctor {DoctorId}", doctorId);
+                    }
+                    break;
+
+                case "consultation.completed":
+                    // Patient gets: Prompt to leave a review
+                    title = "Session Completed";
+                    message = "Your consultation session has been completed. Please leave a review for the doctor";
+                    notificationType = ConsultationApi.Domain.Enums.NotificationType.Review;
+                    
+                    if (patientId.HasValue)
+                    {
+                        var patientNotif = new Notification
+                        {
+                            UserId = patientId.Value,
+                            Title = title,
+                            Message = message,
+                            Type = notificationType,
+                            IsRead = false
+                        };
+                        await notifications.AddAsync(patientNotif);
+                        _logger.LogInformation("[NotificationProcessor] Added review notification for patient {PatientId}", patientId);
+                    }
+                    break;
+
+                default:
+                    _logger.LogWarning("[NotificationProcessor] Unknown routing key: {RoutingKey}", routingKey);
+                    return;
             }
 
-            if (doctorId.HasValue)
-            {
-                var n2 = new Notification
-                {
-                    UserId = doctorId.Value,
-                    Title = title,
-                    Message = message,
-                    Type = ConsultationApi.Domain.Enums.NotificationType.Appointment,
-                    IsRead = false
-                };
-
-                await notifications.AddAsync(n2);
-            }
-
+            // Persist to database
             await notifications.SaveChangesAsync();
+            _logger.LogInformation("[NotificationProcessor] Notifications persisted to database for routing key {RoutingKey}", routingKey);
 
-            await _emails.SendEmailAsync("admin@local", title, message);
+            // Send email notification
+            try
+            {
+                await _emails.SendEmailAsync("admin@local", title, message);
+                _logger.LogInformation("[NotificationProcessor] Email sent for {Title}", title);
+            }
+            catch (Exception emailEx)
+            {
+                _logger.LogWarning(emailEx, "[NotificationProcessor] Failed to send email, but continuing");
+                // Don't throw - email failure shouldn't cause message reprocessing
+            }
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to process event {RoutingKey}", routingKey);
-            throw;
+            _logger.LogError(ex, "[NotificationProcessor] Failed to process event {RoutingKey}", routingKey);
+            throw; // Let the consumer handle this with DLQ
         }
     }
 }

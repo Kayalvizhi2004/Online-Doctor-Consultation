@@ -113,6 +113,7 @@ C:\Users\KayalvizhiNeelanaray\Online Doctor Consultation & Chat System\backend\C
 C:\Users\KayalvizhiNeelanaray\Online Doctor Consultation & Chat System\backend\ConsultationApi\obj\Debug\net8.0\ConsultationApi.csproj.CoreCompileInputs.cache
 C:\Users\KayalvizhiNeelanaray\Online Doctor Consultation & Chat System\backend\ConsultationApi\obj\Debug\net8.0\ConsultationApi.MvcApplicationPartsAssemblyInfo.cs
 C:\Users\KayalvizhiNeelanaray\Online Doctor Consultation & Chat System\backend\ConsultationApi\obj\Debug\net8.0\ConsultationApi.MvcApplicationPartsAssemblyInfo.cache
+C:\Users\KayalvizhiNeelanaray\Online Doctor Consultation & Chat System\backend\ConsultationApi\obj\Debug\net8.0\ConsultationApi.sourcelink.json
 C:\Users\KayalvizhiNeelanaray\Online Doctor Consultation & Chat System\backend\ConsultationApi\obj\Debug\net8.0\staticwebassets.build.json
 C:\Users\KayalvizhiNeelanaray\Online Doctor Consultation & Chat System\backend\ConsultationApi\obj\Debug\net8.0\staticwebassets.development.json
 C:\Users\KayalvizhiNeelanaray\Online Doctor Consultation & Chat System\backend\ConsultationApi\obj\Debug\net8.0\staticwebassets\msbuild.ConsultationApi.Microsoft.AspNetCore.StaticWebAssets.props

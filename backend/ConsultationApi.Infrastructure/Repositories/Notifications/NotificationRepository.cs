@@ -65,6 +65,15 @@ public class NotificationRepository
         {
             n.IsRead = true;
         }
+
+        await Task.CompletedTask;
+    }
+
+    public async Task UpdateAsync(
+        Notification notification)
+    {
+        _context.Notifications.Update(notification);
+        await Task.CompletedTask;
     }
 
     public async Task SaveChangesAsync()

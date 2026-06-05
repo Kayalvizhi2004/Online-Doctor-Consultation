@@ -23,15 +23,14 @@ public class NotificationController : ControllerBase
     //----------------------------------------------------
 
     [HttpGet]
-    public async Task<IActionResult> GetNotifications(
-        [FromQuery] int pageNumber = 1,
-        [FromQuery] int pageSize = 10)
+    public async Task<IActionResult> GetNotifications()
     {
+        var userId = Guid.Parse(User.FindFirst("sub")?.Value ??
+            User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value!);
+
         var response =
             await _notificationService
-                .GetNotificationsAsync(
-                    pageNumber,
-                    pageSize);
+                .GetNotificationsAsync(userId);
 
         return StatusCode(
             response.StatusCode,
@@ -47,9 +46,12 @@ public class NotificationController : ControllerBase
     public async Task<IActionResult> MarkAsRead(
         Guid id)
     {
+        var userId = Guid.Parse(User.FindFirst("sub")?.Value ??
+            User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value!);
+
         var response =
             await _notificationService
-                .MarkAsReadAsync(id);
+                .MarkReadAsync(id, userId);
 
         return StatusCode(
             response.StatusCode,
@@ -64,9 +66,12 @@ public class NotificationController : ControllerBase
     [HttpPatch("read-all")]
     public async Task<IActionResult> MarkAllAsRead()
     {
+        var userId = Guid.Parse(User.FindFirst("sub")?.Value ??
+            User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value!);
+
         var response =
             await _notificationService
-                .MarkAllAsReadAsync();
+                .MarkAllReadAsync(userId);
 
         return StatusCode(
             response.StatusCode,

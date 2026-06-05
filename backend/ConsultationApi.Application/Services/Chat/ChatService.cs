@@ -112,6 +112,8 @@ public class ChatService : IChatService
             sessionId,
             userId);
 
+        await _chatRepo.SaveChangesAsync();
+
         return new ApiResponse<string>
         {
             Success = true,

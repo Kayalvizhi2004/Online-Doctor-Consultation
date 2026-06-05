@@ -13,8 +13,8 @@ public class AppointmentEventConsumer : BackgroundService
     private readonly RabbitMqConnectionFactory _factory;
     private readonly NotificationProcessor _processor;
 
-    private dynamic? _connection;
-    private dynamic? _channel;
+    private IConnection? _connection;
+    private IModel? _channel;
 
     public AppointmentEventConsumer(
         RabbitMqConnectionFactory factory,
@@ -26,7 +26,7 @@ public class AppointmentEventConsumer : BackgroundService
         _logger = logger;
     }
 
-    public override async Task StartAsync(CancellationToken cancellationToken)
+    public override Task StartAsync(CancellationToken cancellationToken)
     {
         _logger.LogInformation("[AppointmentEventConsumer] Starting");
 
@@ -50,6 +50,8 @@ public class AppointmentEventConsumer : BackgroundService
             _logger.LogError(ex, "[AppointmentEventConsumer] Failed to initialize RabbitMQ");
             throw;
         }
+
+        return Task.CompletedTask;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -78,13 +80,13 @@ public class AppointmentEventConsumer : BackgroundService
                 {
                     try
                     {
-                        dynamic result = _channel.BasicGet(queueName, autoAck: false);
+                        var result = _channel.BasicGet(queueName, autoAck: false);
                         if (result == null)
                             continue;
 
-                        string routingKey = (string)result.RoutingKey;
-                        byte[] body = ((System.ReadOnlyMemory<byte>)result.Body).ToArray();
-                        ulong deliveryTag = (ulong)result.DeliveryTag;
+                        string routingKey = result.RoutingKey ?? string.Empty;
+                        byte[] body = result.Body.ToArray();
+                        ulong deliveryTag = result.DeliveryTag;
 
                         try
                         {

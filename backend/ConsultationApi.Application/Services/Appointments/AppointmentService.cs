@@ -78,6 +78,7 @@ public class AppointmentService : IAppointmentService
 
         await _appointments.AddAsync(appointment);
         await _slots.UpdateAsync(slot);
+        await _appointments.SaveChangesAsync();
 
         await _cache.RemoveByPatternAsync(
             $"doctors:{slot.DoctorId}:slots");
@@ -178,11 +179,16 @@ public class AppointmentService : IAppointmentService
 
         await _appointments.UpdateAsync(
             appointment);
+        await _appointments.SaveChangesAsync();
+
+        var patient =
+            await _users.GetByIdAsync(appointment.PatientId);
 
         var evt = new
         {
             appointmentId = appointment.Id,
             patientId = appointment.PatientId,
+            patientName = patient?.FullName ?? "Patient",
             doctorId = appointment.DoctorId
         };
 
@@ -208,8 +214,38 @@ public class AppointmentService : IAppointmentService
         {
             return new ApiResponse<string>
             {
-                Success = false
+                Success = false,
+                Message = "Appointment not found"
             };
+        }
+
+        // Determine if user is patient or doctor
+        bool isPatient = appointment.PatientId == userId;
+        bool isDoctor = appointment.DoctorId == userId;
+
+        if (!isPatient && !isDoctor)
+        {
+            return new ApiResponse<string>
+            {
+                Success = false,
+                Message = "Unauthorized to cancel this appointment"
+            };
+        }
+
+        // If patient, check 1-hour rule
+        if (isPatient && appointment.Slot != null)
+        {
+            var appointmentDateTime = appointment.Slot.Date.ToDateTime(appointment.Slot.StartTime);
+            var timeUntilAppointment = appointmentDateTime - DateTime.UtcNow;
+
+            if (timeUntilAppointment.TotalHours <= 1)
+            {
+                return new ApiResponse<string>
+                {
+                    Success = false,
+                    Message = "Cannot cancel appointment within 1 hour of session start"
+                };
+            }
         }
 
         appointment.Status =
@@ -217,12 +253,18 @@ public class AppointmentService : IAppointmentService
 
         await _appointments.UpdateAsync(
             appointment);
+        await _appointments.SaveChangesAsync();
+
+        var cancellationReason = isPatient ? "Patient requested cancellation" : "Doctor cancelled appointment";
+        var cancelledBy = isPatient ? "Patient" : "Doctor";
 
         var evt = new
         {
             appointmentId = appointment.Id,
             patientId = appointment.PatientId,
-            doctorId = appointment.DoctorId
+            doctorId = appointment.DoctorId,
+            cancellationReason = cancellationReason,
+            cancelledBy = cancelledBy
         };
 
         _publisher.Publish(evt, "appointment.cancelled");
@@ -264,6 +306,8 @@ public class AppointmentService : IAppointmentService
 
         await _appointments
             .CreateSessionAsync(session);
+        await _appointments.UpdateAsync(appointment);
+        await _appointments.SaveChangesAsync();
 
         await _cache.SetAsync(
             $"session:active:{session.Id}",
@@ -300,16 +344,30 @@ public class AppointmentService : IAppointmentService
 
         session.Summary = string.Empty;
 
+        var appointment =
+            await _appointments.GetByIdAsync(
+                session.AppointmentId);
+
+        if (appointment != null)
+        {
+            appointment.Status =
+                AppointmentStatus.Completed;
+            await _appointments.UpdateAsync(
+                appointment);
+        }
+
         await _appointments
             .UpdateSessionAsync(
                 session);
+        await _appointments.SaveChangesAsync();
 
         await _cache.RemoveAsync(
             $"session:active:{session.Id}");
 
         var evt = new
         {
-            appointmentId = session.AppointmentId
+            appointmentId = session.AppointmentId,
+            patientId = appointment?.PatientId
         };
 
         _publisher.Publish(evt, "consultation.completed");
