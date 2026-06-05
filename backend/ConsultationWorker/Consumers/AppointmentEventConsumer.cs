@@ -5,6 +5,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using ConsultationWorker.RabbitMQ;
+using RabbitMQ.Client.Events;
 using ConsultationWorker.Services;
 using ConsultationWorker.Configurations;
 using RabbitMQ.Client;
@@ -85,7 +86,7 @@ public class AppointmentEventConsumer : BackgroundService
     }
 
     /// <summary>
-    /// Polls 4 event queues continuously and processes each message.
+    /// Registers consumers for each queue to listen for incoming messages.
     /// </summary>
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -103,101 +104,41 @@ public class AppointmentEventConsumer : BackgroundService
             "consultation.completed.queue"
         };
 
-        _logger.LogInformation(
-            "[AppointmentEventConsumer] Started polling queues: {Queues}",
-            string.Join(", ", queues));
-
-        int consecutiveEmptyPolls = 0;
-
-        while (!stoppingToken.IsCancellationRequested)
+        foreach (var queueName in queues)
         {
-            try
+            var consumer = new AsyncEventingBasicConsumer(_channel);
+            consumer.Received += async (model, ea) =>
             {
-                bool messageProcessed = false;
+                var body = ea.Body.ToArray();
+                var routingKey = ea.RoutingKey;
 
-                foreach (var queueName in queues)
+                _logger.LogInformation("[AppointmentEventConsumer] Received message from {Queue}", queueName);
+
+                try
                 {
-                    try
-                    {
-                        // Try to get a message from the queue (non-blocking)
-                        var result = _channel.BasicGet(queueName, autoAck: false);
-                        if (result == null)
-                            continue; // No message available
-
-                        messageProcessed = true;
-                        consecutiveEmptyPolls = 0;
-
-                        var routingKey = result.RoutingKey ?? string.Empty;
-                        var body = result.Body.ToArray();
-
-                        _logger.LogInformation(
-                            "[AppointmentEventConsumer] Received message from {Queue} with routing key '{RoutingKey}' (size={Size} bytes)",
-                            queueName, routingKey, body.Length);
-
-                        try
-                        {
-                            // Process the message
-                            await _processor.ProcessAsync(routingKey, body, stoppingToken);
-
-                            // Acknowledge successful processing
-                            _channel.BasicAck(result.DeliveryTag, multiple: false);
-
-                            _logger.LogInformation(
-                                "[AppointmentEventConsumer] Successfully processed message with routing key '{RoutingKey}'",
-                                routingKey);
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogError(ex,
-                                "[AppointmentEventConsumer] Failed to process message from {Queue} with routing key '{RoutingKey}'",
-                                queueName, routingKey);
-
-                            // Negative acknowledgment sends message to DLQ
-                            try
-                            {
-                                _channel.BasicNack(result.DeliveryTag, multiple: false, requeue: false);
-                                _logger.LogInformation("[AppointmentEventConsumer] Message nacked and sent to DLQ for queue {Queue}", queueName);
-                            }
-                            catch (Exception nackEx)
-                            {
-                                _logger.LogError(nackEx, "[AppointmentEventConsumer] Failed to nack message");
-                            }
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "[AppointmentEventConsumer] Error processing queue {Queue}", queueName);
-                    }
+                    await _processor.ProcessAsync(routingKey, body, stoppingToken);
+                    _channel.BasicAck(ea.DeliveryTag, false);
                 }
-
-                // Adjust delay based on whether we found messages
-                if (!messageProcessed)
+                catch (Exception ex)
                 {
-                    consecutiveEmptyPolls++;
-                    if (consecutiveEmptyPolls % 10 == 0)
-                    {
-                        _logger.LogDebug("[AppointmentEventConsumer] No messages found in {ConsecutivePolls} consecutive polls", consecutiveEmptyPolls);
-                    }
-                    // Exponential backoff: wait longer if no messages found
-                    await Task.Delay(Math.Min(500 + (consecutiveEmptyPolls * 50), 2000), stoppingToken);
+                    _logger.LogError(ex, "[AppointmentEventConsumer] Error processing message. Nacking to DLQ.");
+                    // Nack and do NOT requeue (sends to Dead Letter Queue)
+                    _channel.BasicNack(ea.DeliveryTag, false, false);
                 }
-                else
-                {
-                    // Short delay after processing a message
-                    await Task.Delay(100, stoppingToken);
-                }
-            }
-            catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
-            {
-                _logger.LogInformation("[AppointmentEventConsumer] Polling loop cancelled");
-                break;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "[AppointmentEventConsumer] Error in polling loop");
-                // Wait before retrying to avoid tight loop on errors
-                await Task.Delay(2000, stoppingToken);
-            }
+            };
+
+            _channel.BasicConsume(queue: queueName, autoAck: false, consumer: consumer);
+            _logger.LogInformation("[AppointmentEventConsumer] Subscribed to queue: {Queue}", queueName);
+        }
+
+        try
+        {
+            // Keep the service alive while consumers are listening for events
+            await Task.Delay(Timeout.Infinite, stoppingToken);
+        }
+        catch (OperationCanceledException)
+        {
+            _logger.LogInformation("[AppointmentEventConsumer] Background service stopping...");
         }
     }
 

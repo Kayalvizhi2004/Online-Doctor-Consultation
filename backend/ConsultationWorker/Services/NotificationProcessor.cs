@@ -74,11 +74,13 @@ public class NotificationProcessor
                     {
                         var doctorNotif = new Notification
                         {
+                            Id = Guid.NewGuid(),
                             UserId = doctorId.Value,
                             Title = title,
                             Message = message,
                             Type = notificationType,
-                            IsRead = false
+                            IsRead = false,
+                            CreatedAt = DateTime.UtcNow
                         };
                         await notifications.AddAsync(doctorNotif);
                         _logger.LogInformation("[NotificationProcessor] Added notification for doctor {DoctorId}", doctorId);
@@ -94,11 +96,13 @@ public class NotificationProcessor
                     {
                         var patientNotif = new Notification
                         {
+                            Id = Guid.NewGuid(),
                             UserId = patientId.Value,
                             Title = title,
                             Message = message,
                             Type = notificationType,
-                            IsRead = false
+                            IsRead = false,
+                            CreatedAt = DateTime.UtcNow
                         };
                         await notifications.AddAsync(patientNotif);
                         _logger.LogInformation("[NotificationProcessor] Added notification for patient {PatientId}", patientId);
@@ -116,11 +120,13 @@ public class NotificationProcessor
                     {
                         var patientNotif = new Notification
                         {
+                            Id = Guid.NewGuid(),
                             UserId = patientId.Value,
                             Title = title,
                             Message = message,
                             Type = notificationType,
-                            IsRead = false
+                            IsRead = false,
+                            CreatedAt = DateTime.UtcNow
                         };
                         await notifications.AddAsync(patientNotif);
                         _logger.LogInformation("[NotificationProcessor] Added cancellation notification for patient {PatientId}", patientId);
@@ -130,11 +136,13 @@ public class NotificationProcessor
                     {
                         var doctorNotif = new Notification
                         {
+                            Id = Guid.NewGuid(),
                             UserId = doctorId.Value,
                             Title = title,
                             Message = message,
                             Type = notificationType,
-                            IsRead = false
+                            IsRead = false,
+                            CreatedAt = DateTime.UtcNow
                         };
                         await notifications.AddAsync(doctorNotif);
                         _logger.LogInformation("[NotificationProcessor] Added cancellation notification for doctor {DoctorId}", doctorId);
@@ -151,11 +159,13 @@ public class NotificationProcessor
                     {
                         var patientNotif = new Notification
                         {
+                            Id = Guid.NewGuid(),
                             UserId = patientId.Value,
                             Title = title,
                             Message = message,
                             Type = notificationType,
-                            IsRead = false
+                            IsRead = false,
+                            CreatedAt = DateTime.UtcNow
                         };
                         await notifications.AddAsync(patientNotif);
                         _logger.LogInformation("[NotificationProcessor] Added review notification for patient {PatientId}", patientId);
@@ -166,7 +176,7 @@ public class NotificationProcessor
                     _logger.LogWarning("[NotificationProcessor] Unknown routing key: {RoutingKey}", routingKey);
                     return;
             }
-
+        
             // Persist to database
             await notifications.SaveChangesAsync();
             _logger.LogInformation("[NotificationProcessor] Notifications persisted to database for routing key {RoutingKey}", routingKey);

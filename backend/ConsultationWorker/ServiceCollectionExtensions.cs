@@ -3,6 +3,7 @@ using ConsultationApi.Infrastructure;
 using ConsultationWorker.Configurations;
 using ConsultationWorker.RabbitMQ;
 using ConsultationWorker.Services;
+using ConsultationWorker.Consumers;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -13,7 +14,7 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddWorkerServices(this IServiceCollection services, IConfiguration configuration)
     {
         // Reuse the application's DI registrations
-        services.AddInfrastructure(configuration);
+        services.AddInfrastructure(configuration); 
         services.AddApplication();
 
         // Bind worker configuration
