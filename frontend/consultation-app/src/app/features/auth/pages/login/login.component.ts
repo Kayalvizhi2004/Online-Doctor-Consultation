@@ -1,51 +1,61 @@
 import { Component, inject } from '@angular/core';
-import { FormBuilder, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { RouterLink, Router } from '@angular/router';
 import { AuthService } from '../../../../core/services/auth.service';
-import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { AuthResponse } from '../../../../core/models/auth.model';
+import { User } from '../../../../core/models/user.model';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
-  templateUrl: './login.component.html'
+  imports: [ReactiveFormsModule, RouterLink, CommonModule], // Added CommonModule for *ngIf
+  templateUrl: './login.component.html',
+  styleUrl: './login.component.scss'
 })
 export class LoginComponent {
-  private fb = inject(FormBuilder);
+  loginForm: FormGroup;
+  isLoading: boolean = false; // Explicitly type and initialize
+  errorMessage = '';
 
-  loading = false;
-  error = '';
-
-  constructor(
-    private auth: AuthService,
-    private router: Router
-  ) {}
-
-  loginForm = this.fb.group({
-    email: ['', [Validators.required, Validators.email]],
-    password: ['', [Validators.required, Validators.minLength(8), Validators.pattern(/^(?=.*[0-9])(?=.*[a-z]).{8,}$/)]],
-    role: ['Patient']
-  });
+  constructor(private fb: FormBuilder, private authService: AuthService, private router: Router) {
+    this.loginForm = this.fb.group({
+      email: ['', [Validators.required, Validators.email]],
+      password: ['', [Validators.required]]
+    }); // Removed the 'role' field as it's not part of login request
+  }
 
   onSubmit() {
-    this.error = '';
-    if (this.loginForm.invalid) return;
+    if (this.loginForm.valid) {
+      this.isLoading = true;
+      this.authService.login(this.loginForm.value as any).subscribe({
+        next: (response: AuthResponse) => { // Expect AuthResponse object
+          this.isLoading = false;
+          
+          if (!response.user) {
+            this.errorMessage = 'User profile not found. Please try again.';
+            return;
+          }
 
-    this.loading = true;
+          const role = response.user.role;
+          const normalizedRole = role?.toLowerCase();
 
-    this.auth.login(this.loginForm.value as any).subscribe({
-      next: () => {
-        this.loading = false;
-        const user = JSON.parse(localStorage.getItem('user') || '{}');
-        const role = user?.role || '';
-        if (role === 'Doctor') this.router.navigate(['/dashboard/doctor']);
-        else if (role === 'Patient') this.router.navigate(['/dashboard/patient']);
-        else this.router.navigate(['/home']);
-      },
-      error: (err: any) => {
-        this.loading = false;
-        this.error = err?.error?.message || 'Login failed. Check credentials.';
-      }
-    });
+          if (normalizedRole === 'doctor') {
+            console.log('Navigating to Doctor Dashboard');
+            this.router.navigate(['/dashboard/doctor']);
+          } else if (normalizedRole === 'patient') {
+            console.log('Navigating to Patient Dashboard');
+            this.router.navigate(['/dashboard/patient']);
+          } else if (normalizedRole === 'admin') {
+            console.log('Navigating to Admin Dashboard');
+            this.router.navigate(['/dashboard/admin']);
+          }
+        },
+        error: (err:any) => {
+          this.errorMessage = err.error?.message || 'Login failed';
+          this.isLoading = false;
+        }
+      });
+    }
   }
 }

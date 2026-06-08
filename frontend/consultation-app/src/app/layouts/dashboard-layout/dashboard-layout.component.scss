@@ -1,0 +1,126 @@
+.topbar {
+  height: 64px;
+  background: white;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 1000;
+
+  .logo-text {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #2563eb;
+    margin-left: 8px;
+  }
+}
+
+.layout {
+  display: flex;
+  margin-top: 64px;
+  min-height: calc(100vh - 64px);
+
+  .sidebar {
+    width: 260px;
+    background: #0f172a;
+    color: #cbd5e1;
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    height: calc(100vh - 64px);
+    left: 0;
+
+    nav {
+      padding: 16px 0;
+      flex: 1;
+
+      .menu-label {
+        padding: 12px 24px 8px;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #64748b;
+      }
+
+      a {
+        display: flex;
+        align-items: center;
+        padding: 12px 24px;
+        color: #cbd5e1;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        font-size: 0.9375rem;
+        border-left: 4px solid transparent;
+
+        &:hover {
+          background: rgba(255, 255, 255, 0.05);
+          color: white;
+        }
+
+        &.active {
+          background: rgba(37, 99, 235, 0.15);
+          color: white;
+          border-left-color: #2563eb;
+        }
+      }
+    }
+
+    .icon {
+      margin-right: 12px;
+      font-size: 1.1rem;
+    }
+  }
+
+  .main {
+    flex: 1;
+    margin-left: 260px;
+    padding: 32px;
+    background: #f8fafc;
+  }
+}
+
+.user-menu {
+  position: relative;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+
+  .avatar {
+    width: 36px;
+    height: 36px;
+    background: #2563eb;
+    color: white;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+  }
+
+  .user-info {
+    margin-left: 12px;
+    display: flex;
+    flex-direction: column;
+
+    .user-role {
+      font-size: 0.75rem;
+      color: #64748b;
+    }
+  }
+}
+
+@media (max-width: 1024px) {
+  .layout {
+    .sidebar {
+      width: 0;
+      transform: translateX(-100%);
+    }
+    .main {
+      margin-left: 0;
+    }
+  }
+}

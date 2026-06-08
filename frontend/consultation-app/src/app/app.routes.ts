@@ -53,10 +53,15 @@ export const routes: Routes = [
           import('./features/notifications/notifications.routes').then(m => m.NOTIFICATION_ROUTES)
       },
       {
-        path: 'dashboard',
+        path: 'dashboard/patient',
         loadChildren: () =>
-          import('./features/dashboard/patient/patient.routes').then(m => (m as any).PATIENT_ROUTES)
-      }
+          import('./features/dashboard/patient/patient.routes').then(m => m.PATIENT_DASHBOARD_ROUTES)
+      },
+      {
+        path: 'dashboard/doctor',
+        loadChildren: () =>
+          import('./features/dashboard/doctor/doctor.routes').then(m => m.DOCTOR_DASHBOARD_ROUTES)
+      },
     ]
   },
 

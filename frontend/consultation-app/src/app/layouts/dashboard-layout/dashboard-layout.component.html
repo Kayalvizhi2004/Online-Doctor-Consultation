@@ -1,51 +1,94 @@
-<!-- Top bar -->
 <header class="topbar">
   <div class="logo">
     <span class="logo-icon">🏥</span>
-    <span class="logo-text">CareConnect</span>
+    <span class="logo-text">HealthConnect</span>
   </div>
 
-  <div class="search-box">
+  <div class="search-box" *ngIf="role === 'Patient'">
     <input type="text" placeholder="Search doctors, appointments..." />
   </div>
 
   <div class="actions">
-    <div class="icon-btn">
+    <div class="session-indicator" *ngIf="role === 'Doctor'">
+      <span class="dot"></span> Online
+    </div>
+
+    <div class="icon-btn notification-bell">
       🔔
-      <span class="badge">3</span>
+      <span class="badge" *ngIf="unreadCount > 0">{{ unreadCount }}</span>
     </div>
 
     <div class="user-menu">
-      <div class="avatar">U</div>
-      <span class="username">{{ role || 'User' }}</span>
+      <div class="avatar">{{ user?.fullName?.[0] || 'U' }}</div>
+      <div class="user-info">
+        <span class="username">{{ user?.fullName }}</span>
+        <span class="user-role">{{ role }}</span>
+      </div>
+      <div class="dropdown-content">
+        <a routerLink="/profile">My Profile</a>
+        <a routerLink="/settings">Settings</a>
+        <hr>
+        <a (click)="logout()" class="logout-link">Logout</a>
+      </div>
     </div>
-
-    <button class="logout-btn" (click)="logout()">Logout</button>
   </div>
 </header>
 
 <div class="layout">
-
-  <!-- SIDEBAR -->
   <aside class="sidebar">
-    <div style="padding: 0 1.5rem; margin-bottom: 1rem;">
-      <h3 style="color: #0369a1; margin: 0;">🏥 CareConnect</h3>
-    </div>
-
     <nav>
-      <a routerLink="/dashboard/patient" routerLinkActive="active" *ngIf="role==='Patient'">Patient Dashboard</a>
-      <a routerLink="/dashboard/doctor" routerLinkActive="active" *ngIf="role==='Doctor'">Doctor Dashboard</a>
+      <!-- DOCTOR SIDEBAR -->
+      <ng-container *ngIf="role === 'Doctor'">
+        <div class="menu-label">Main Menu</div>
+        <a routerLink="/dashboard/doctor" routerLinkActive="active"><i class="icon">📊</i> Dashboard Home</a>
+        <a routerLink="/appointments" routerLinkActive="active"><i class="icon">📅</i> Appointments</a>
+        <a routerLink="/sessions" routerLinkActive="active"><i class="icon">⏱️</i> Consultation Sessions</a>
+        <a routerLink="/slots" routerLinkActive="active"><i class="icon">🕒</i> Availability Management</a>
+        
+        <div class="menu-label">Settings</div>
+        <a routerLink="/profile" routerLinkActive="active"><i class="icon">👨‍⚕️</i> Profile Management</a>
+        <a routerLink="/reviews" routerLinkActive="active"><i class="icon">⭐</i> Reviews</a>
+        <a routerLink="/notifications" routerLinkActive="active"><i class="icon">🔔</i> Notifications</a>
+        <a routerLink="/chat" routerLinkActive="active"><i class="icon">💬</i> Chat History</a>
+      </ng-container>
 
-      <a routerLink="/doctors" routerLinkActive="active">Doctors</a>
-      <a routerLink="/appointments" routerLinkActive="active">Appointments</a>
-      <a routerLink="/chat" routerLinkActive="active">Chat</a>
-      <a routerLink="/notifications" routerLinkActive="active">Notifications</a>
+      <!-- PATIENT SIDEBAR -->
+      <ng-container *ngIf="role === 'Patient'">
+        <div class="menu-label">Overview</div>
+        <a routerLink="/dashboard/patient" routerLinkActive="active"><i class="icon">🏠</i> Dashboard Home</a>
+        <a routerLink="/doctors" routerLinkActive="active"><i class="icon">🔍</i> Find Doctors</a>
+        <a routerLink="/appointments" routerLinkActive="active"><i class="icon">📅</i> My Appointments</a>
+        
+        <div class="menu-label">Consultation</div>
+        <a routerLink="/active-session" routerLinkActive="active"><i class="icon">💬</i> Active Consultation</a>
+        <a routerLink="/my-reviews" routerLinkActive="active"><i class="icon">⭐</i> My Reviews</a>
+        <a routerLink="/notifications" routerLinkActive="active"><i class="icon">🔔</i> Notifications</a>
+        <a routerLink="/profile" routerLinkActive="active"><i class="icon">👤</i> Profile Settings</a>
+      </ng-container>
+
+      <!-- ADMIN SIDEBAR -->
+      <ng-container *ngIf="role === 'Admin'">
+        <div class="menu-label">System Admin</div>
+        <a routerLink="/dashboard/admin" routerLinkActive="active"><i class="icon">📊</i> Dashboard Overview</a>
+        <a routerLink="/admin/users" routerLinkActive="active"><i class="icon">👥</i> User Management</a>
+        <a routerLink="/admin/verification" routerLinkActive="active"><i class="icon">🩺</i> Doctor Verification</a>
+        
+        <div class="menu-label">Analytics</div>
+        <a routerLink="/admin/analytics" routerLinkActive="active"><i class="icon">📅</i> Appointment Analytics</a>
+        <a routerLink="/admin/reports" routerLinkActive="active"><i class="icon">📈</i> Revenue Reports</a>
+        <a routerLink="/admin/system-logs" routerLinkActive="active"><i class="icon">🔔</i> System Notifications</a>
+        <a routerLink="/admin/settings" routerLinkActive="active"><i class="icon">⚙️</i> System Settings</a>
+      </ng-container>
     </nav>
+
+    <div class="sidebar-footer">
+      <button class="btn-logout-minimal" (click)="logout()">
+        <i class="icon">🚪</i> Logout
+      </button>
+    </div>
   </aside>
 
-  <!-- MAIN -->
   <main class="main">
     <router-outlet></router-outlet>
   </main>
-
 </div>

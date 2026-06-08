@@ -14,15 +14,8 @@
         <small class="error" *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched">Password is required</small>
       </label>
 
-      <label>Role
-        <select formControlName="role">
-          <option value="Patient">Patient</option>
-          <option value="Doctor">Doctor</option>
-        </select>
-      </label>
-
-      <button class="btn btn-primary" [disabled]="loginForm.invalid || loading">
-        <span *ngIf="loading" class="spinner"></span>
+      <button class="btn btn-primary" [disabled]="loginForm.invalid || isLoading">
+        <span *ngIf="isLoading" class="spinner"></span>
         Login
       </button>
     </form>

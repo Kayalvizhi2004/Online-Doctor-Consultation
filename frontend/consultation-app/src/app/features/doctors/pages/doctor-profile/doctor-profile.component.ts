@@ -10,7 +10,8 @@ import { RatingStarsComponent } from '../../../../shared/components/rating-stars
   selector: 'app-doctor-profile',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, SlotCalendarComponent, RatingStarsComponent],
-  templateUrl: './doctor-profile.component.html'
+  templateUrl: './doctor-profile.component.html',
+  styleUrls: ['./doctor-profile.component.scss']
 })
 export class DoctorProfileComponent implements OnInit {
   private fb = inject(FormBuilder);

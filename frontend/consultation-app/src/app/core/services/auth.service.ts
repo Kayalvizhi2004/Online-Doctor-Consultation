@@ -1,50 +1,68 @@
 import { Injectable, inject } from '@angular/core';
 import { ApiService } from './api.service';
-import { BehaviorSubject, Observable, switchMap, tap, of } from 'rxjs';
-import { LoginRequest, RegisterRequest } from '../models/auth.model';
-
-interface ApiResponse<T> {
-  success: boolean;
-  message?: string;
-  data?: T;
-}
-
-interface AuthPayload {
-  accessToken: string;
-  refreshToken?: string;
-  expiresAt?: string;
-}
+import { BehaviorSubject, Observable, tap, switchMap, of, map } from 'rxjs';
+import { LoginRequest, RegisterRequest, AuthResponse } from '../models/auth.model';
+import { User } from '../models/user.model';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly api = inject(ApiService);
-  private readonly userSubject = new BehaviorSubject<any>(null);
+  private readonly userSubject = new BehaviorSubject<User | null>(null);
   public readonly user$ = this.userSubject.asObservable();
 
-  login(data: LoginRequest): Observable<any> {
-    // backend returns { data: AuthPayload }
-    return this.api.post<AuthPayload>('/api/auth/login', data).pipe(
+  constructor() {
+    this.loadUserFromLocalStorage();
+  }
+
+  login(data: LoginRequest): Observable<AuthResponse> {
+    return this.api.post<AuthResponse>('/api/auth/login', data).pipe(
       switchMap(payload => {
-        if (!payload || !payload.accessToken) return of(null);
-        this.saveTokens(payload.accessToken, payload.refreshToken || '');
-        return this.api.get<any>('/api/auth/me').pipe(
-          tap(profile => {
-            if (profile) {
-              localStorage.setItem('user', JSON.stringify(profile));
-              this.userSubject.next(profile);
-            }
-          })
-        );
+        // Handle property name variations (AccessToken vs accessToken)
+        const token = payload.accessToken || (payload as any).AccessToken;
+        const refreshToken = payload.refreshToken || (payload as any).RefreshToken;
+        const user = payload.user || (payload as any).User;
+
+        if (token) this.saveTokens(token, refreshToken || '');
+
+        // Robust user detection: if payload is the user, or contains User/user
+        let userObj = user || ((payload as any).role || (payload as any).Role ? payload : null);
+
+        if (!userObj) {
+          return this.me().pipe(map(u => ({ ...payload, user: this.normalizeUser(u), accessToken: token })));
+        }
+
+        userObj = this.normalizeUser(userObj);
+        localStorage.setItem('user', JSON.stringify(userObj));
+        this.userSubject.next(userObj);
+        return of({ ...payload, user: userObj, accessToken: token });
       })
     );
   }
 
-  register(data: RegisterRequest): Observable<any> {
-    return this.api.post<any>('/api/auth/register', data);
+  register(data: RegisterRequest): Observable<AuthResponse> {
+    return this.api.post<AuthResponse>('/api/auth/register', data).pipe(
+      tap(payload => {
+        const token = payload.accessToken || (payload as any).AccessToken;
+        const user = this.normalizeUser(payload.user || (payload as any).User);
+        if (token && user) {
+          this.saveTokens(token, payload.refreshToken || '');
+          localStorage.setItem('user', JSON.stringify(user));
+          this.userSubject.next(user);
+        }
+      })
+    );
   }
 
-  me(): Observable<any> {
-    return this.api.get<any>('/api/auth/me');
+  me(): Observable<User> {
+    return this.api.get<User>('/api/auth/me').pipe(
+      map(u => this.normalizeUser(u)),
+      tap(user => {
+        if (user) {
+          localStorage.setItem('user', JSON.stringify(user));
+          this.userSubject.next(user);
+        }
+      })
+    );
   }
 
   saveTokens(accessToken: string, refreshToken: string) {
@@ -67,12 +85,32 @@ export class AuthService {
     this.userSubject.next(null);
   }
 
-  isLoggedIn(): boolean {
-    return !!this.getToken();
+  isLoggedIn(): boolean { // Check if userSubject has a value
+    return !!this.userSubject.value;
   }
 
   getUserRole(): string {
-    const user = JSON.parse(localStorage.getItem('user') || 'null');
-    return user?.role || '';
+    return this.userSubject.value?.role || '';
+  }
+
+  private loadUserFromLocalStorage(): void {
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      try {
+        this.userSubject.next(JSON.parse(storedUser));
+      } catch (e) { console.error('Error parsing user from localStorage:', e); }
+    }
+  }
+
+  private normalizeUser(u: any): User {
+    if (!u) return u;
+    return {
+      id: u.id || u.Id,
+      fullName: u.fullName || u.FullName,
+      email: u.email || u.Email,
+      phone: u.phone || u.Phone,
+      role: u.role || u.Role,
+      createdAt: u.createdAt || u.CreatedAt
+    };
   }
 }

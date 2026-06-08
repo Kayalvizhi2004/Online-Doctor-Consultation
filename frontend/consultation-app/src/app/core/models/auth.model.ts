@@ -10,11 +10,14 @@ export interface RegisterRequest {
   email: string;
   password: string;
   phone: string;
-  role: 'Patient' | 'Doctor';
+  role: 'Patient' | 'Doctor' | 'Admin';
+  specialization?: string; // Optional for Doctor
 }
 
+// This interface should match the JSON structure returned by the backend's AuthResponseDto
 export interface AuthResponse {
   accessToken: string;
-  refreshToken: string;
-  user: User;
+  user: User; 
+  refreshToken?: string;
+  expiresAt?: string;
 }

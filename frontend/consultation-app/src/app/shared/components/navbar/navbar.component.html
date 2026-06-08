@@ -20,7 +20,7 @@
 
     <ng-container *ngIf="isAuthenticated">
       <div class="user-menu">
-        <button class="avatar-btn">{{ user?.fullName?.split(' ')[0] }}</button>
+        <button class="avatar-btn">{{ user?.fullName?.split(' ')?.[0] || user?.email?.charAt(0) || 'U' }}</button>
         <ul class="dropdown">
           <li><a routerLink="/dashboard">Dashboard</a></li>
           <li><a (click)="logout()">Logout</a></li>

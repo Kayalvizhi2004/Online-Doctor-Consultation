@@ -1,9 +1,58 @@
-.auth-page{display:flex;align-items:center;justify-content:center;height:100vh;background:#f8fafc}
-.auth-card{width:420px;background:#fff;padding:28px;border-radius:12px;box-shadow:0 10px 30px rgba(16,24,40,0.06)}
-.auth-card h2{margin-bottom:4px}
-label{display:block;margin-top:12px;font-weight:600}
-input,select{width:100%;padding:10px;border:1px solid #e2e8f0;border-radius:8px;margin-top:6px}
-.error{color:#ef4444;font-size:12px}
-.auth-footer{margin-top:12px;color:#64748b}
-.spinner{width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;display:inline-block;animation:spin .8s linear infinite;margin-right:8px}
-@keyframes spin{to{transform:rotate(360deg)}}
+.auth-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background: linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%);
+
+  .card {
+    width: 100%;
+    max-width: 480px;
+    padding: 2.25rem;
+    box-shadow: 0 10px 30px rgba(2, 6, 23, 0.08);
+    border-radius: 12px;
+    background: #ffffff;
+
+    label {
+      display: block;
+      font-weight: 600;
+      margin-top: 0.5rem;
+      color: #0f172a;
+    }
+
+    input {
+      width: 100%;
+      margin: 8px 0 12px 0;
+      padding: 12px 14px;
+      border: 1px solid #e6edf3;
+      border-radius: 8px;
+      outline: none;
+
+      &:focus {
+        border-color: #0369a1;
+        box-shadow: 0 6px 18px rgba(3, 105, 161, 0.06);
+      }
+    }
+
+    .error {
+      color: #b91c1c;
+      margin: 8px 0;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background: linear-gradient(135deg, #0369a1 0%, #0284c7 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    small {
+      color: #64748b;
+      font-size: 0.9rem;
+    }
+  }
+}
