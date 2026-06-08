@@ -1,0 +1,8 @@
+.dashboard-shell{display:flex;min-height:100vh}
+.sidebar{width:240px;background:#fff;padding:18px;border-right:1px solid #eef2f7}
+.sidebar ul{list-style:none;padding:0}
+.sidebar li{margin-bottom:8px}
+.main{flex:1;padding:18px}
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+
+@media (max-width:900px){ .sidebar{display:none} }

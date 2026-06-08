@@ -1,0 +1,14 @@
+<div class="profile" *ngIf="doctor">
+
+  <h2>Dr. {{ doctor.fullName }}</h2>
+
+  <p><b>Specialization:</b> {{ doctor.specialization }}</p>
+  <p><b>Email:</b> {{ doctor.email }}</p>
+
+  <p><b>Status:</b>
+    <span [class.available]="doctor.isAvailable">
+      {{ doctor.isAvailable ? 'Available' : 'Busy' }}
+    </span>
+  </p>
+
+</div>

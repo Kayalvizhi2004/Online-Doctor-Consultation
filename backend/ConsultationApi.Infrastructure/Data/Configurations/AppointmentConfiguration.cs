@@ -34,7 +34,8 @@ public class AppointmentConfiguration
             .HasColumnName("notes");
 
         builder.Property(x => x.CreatedAt)
-            .HasColumnName("created_at");
+            .HasColumnName("created_at")
+            .HasDefaultValueSql("now()");
 
         builder.HasIndex(x => x.PatientId)
             .HasDatabaseName(

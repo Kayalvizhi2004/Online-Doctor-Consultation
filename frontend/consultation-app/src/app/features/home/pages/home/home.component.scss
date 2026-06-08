@@ -1,0 +1,12 @@
+.home-hero { display:flex; gap:32px; padding:48px 24px; background:#f8fafc; align-items:center }
+.hero-left { flex:1 }
+.hero-left h1 { font-size:36px; color:#0f172a; margin-bottom:8px }
+.lead { color:#475569; margin-bottom:16px }
+.search-hero { display:flex; gap:12px; margin-top:18px }
+.search-hero input{ flex:1; padding:12px; border-radius:10px; border:1px solid #e2e8f0 }
+.feature-card{ background:#fff; padding:16px; border-radius:12px; box-shadow:0 6px 18px rgba(16,24,40,0.04); width:220px }
+.features{ display:flex; gap:12px; margin-top:24px }
+.hero-right .illustration{ width:420px; height:300px; background:linear-gradient(180deg, #e6f0ff, #fff); border-radius:12px }
+.home-footer{ padding:20px; text-align:center; color:#64748b }
+
+@media (max-width:900px){ .home-hero{flex-direction:column} .hero-right{order:-1} }

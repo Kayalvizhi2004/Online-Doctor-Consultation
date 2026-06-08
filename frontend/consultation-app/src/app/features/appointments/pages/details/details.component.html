@@ -1,0 +1,11 @@
+<div *ngIf="appointment">
+  <h2>Appointment Details</h2>
+
+  <p>Status: {{appointment.status}}</p>
+  <p>Doctor: {{appointment.doctorName}}</p>
+  <p>Patient: {{appointment.patientName}}</p>
+
+  <button (click)="appointment.status === 'Pending' && null">
+    Action Placeholder
+  </button>
+</div>

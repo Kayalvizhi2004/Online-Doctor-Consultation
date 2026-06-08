@@ -1,0 +1,23 @@
+<div class="container">
+
+  <h2>Book Appointment</h2>
+
+  <form [formGroup]="form" (ngSubmit)="book()" class="form-card">
+
+    <label>Slot ID</label>
+    <input type="text" formControlName="slotId" placeholder="Enter slot ID">
+
+    <div class="error" *ngIf="form.get('slotId')?.invalid && form.get('slotId')?.touched">
+      Slot is required
+    </div>
+
+    <label>Notes</label>
+    <textarea formControlName="notes" placeholder="Optional notes"></textarea>
+
+    <button type="submit" [disabled]="form.invalid || loading">
+      {{ loading ? 'Booking...' : 'Book Appointment' }}
+    </button>
+
+  </form>
+
+</div>

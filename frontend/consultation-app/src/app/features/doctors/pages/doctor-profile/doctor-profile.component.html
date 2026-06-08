@@ -1,0 +1,26 @@
+<div class="profile-hero">
+  <div class="left">
+    <img class="avatar-lg" [src]="doctor?.avatarUrl || '/assets/avatar.png'" alt="Doctor avatar" />
+  </div>
+  <div class="right">
+    <h2>Dr. {{ doctor?.fullName }}</h2>
+    <div class="meta">{{ doctor?.specialization }} · {{ doctor?.experience }} yrs</div>
+    <div class="actions">
+      <div class="fee">₹{{ doctor?.consultationFee }}</div>
+      <button class="btn btn-primary" (click)="openBooking()">Book Appointment</button>
+    </div>
+  </div>
+</div>
+
+<section class="slots">
+  <h3>Available Slots</h3>
+  <slot-calendar [slots]="doctor?.availabilitySlots" (select)="bookSlot($event)"></slot-calendar>
+</section>
+
+<section class="reviews">
+  <h3>Reviews</h3>
+  <div *ngFor="let r of doctor?.reviews" class="review">
+    <div class="rhead"><strong>{{ r.patientName }}</strong> <rating-stars [rate]="r.rating"></rating-stars></div>
+    <p>{{ r.comment }}</p>
+  </div>
+</section>

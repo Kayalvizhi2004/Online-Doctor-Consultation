@@ -1,0 +1,9 @@
+<div class="slot-calendar">
+  <div *ngIf="!slots || slots.length===0" class="empty">No available slots</div>
+  <ul class="slot-list">
+    <li *ngFor="let s of slots" (click)="select.emit(s)" [class.booked]="s.isBooked">
+      <div class="date">{{ s.date | date:'mediumDate' }}</div>
+      <div class="time">{{ s.startTime }} - {{ s.endTime }}</div>
+    </li>
+  </ul>
+</div>

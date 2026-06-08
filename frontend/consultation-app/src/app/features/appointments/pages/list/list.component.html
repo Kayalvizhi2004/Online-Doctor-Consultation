@@ -1,0 +1,27 @@
+<section class="appointments">
+  <div class="toolbar">
+    <select (change)="filterStatus($event)">
+      <option value="">All</option>
+      <option>Pending</option>
+      <option>Confirmed</option>
+      <option>Completed</option>
+      <option>Cancelled</option>
+    </select>
+  </div>
+
+  <ul class="appt-list">
+    <li *ngFor="let a of appointments">
+      <div class="left">
+        <div class="doctor">Dr. {{ a.doctorName }}</div>
+        <div class="slot">{{ a.date | date:'mediumDate' }} · {{ a.startTime }} - {{ a.endTime }}</div>
+      </div>
+      <div class="right">
+        <span class="badge status-{{ a.status | lowercase }}">{{ a.status }}</span>
+        <div class="actions">
+          <button *ngIf="canCancel(a)" class="btn btn-outline" (click)="cancel(a.id)">Cancel</button>
+          <button *ngIf="canJoin(a)" class="btn btn-primary" (click)="join(a.sessionId)">Join</button>
+        </div>
+      </div>
+    </li>
+  </ul>
+</section>

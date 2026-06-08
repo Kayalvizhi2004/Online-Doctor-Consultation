@@ -1,0 +1,51 @@
+<!-- Top bar -->
+<header class="topbar">
+  <div class="logo">
+    <span class="logo-icon">🏥</span>
+    <span class="logo-text">CareConnect</span>
+  </div>
+
+  <div class="search-box">
+    <input type="text" placeholder="Search doctors, appointments..." />
+  </div>
+
+  <div class="actions">
+    <div class="icon-btn">
+      🔔
+      <span class="badge">3</span>
+    </div>
+
+    <div class="user-menu">
+      <div class="avatar">U</div>
+      <span class="username">{{ role || 'User' }}</span>
+    </div>
+
+    <button class="logout-btn" (click)="logout()">Logout</button>
+  </div>
+</header>
+
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div style="padding: 0 1.5rem; margin-bottom: 1rem;">
+      <h3 style="color: #0369a1; margin: 0;">🏥 CareConnect</h3>
+    </div>
+
+    <nav>
+      <a routerLink="/dashboard/patient" routerLinkActive="active" *ngIf="role==='Patient'">Patient Dashboard</a>
+      <a routerLink="/dashboard/doctor" routerLinkActive="active" *ngIf="role==='Doctor'">Doctor Dashboard</a>
+
+      <a routerLink="/doctors" routerLinkActive="active">Doctors</a>
+      <a routerLink="/appointments" routerLinkActive="active">Appointments</a>
+      <a routerLink="/chat" routerLinkActive="active">Chat</a>
+      <a routerLink="/notifications" routerLinkActive="active">Notifications</a>
+    </nav>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <router-outlet></router-outlet>
+  </main>
+
+</div>

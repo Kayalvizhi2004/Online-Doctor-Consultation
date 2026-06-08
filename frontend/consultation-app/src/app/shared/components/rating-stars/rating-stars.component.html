@@ -1,0 +1,6 @@
+<div class="rating" aria-hidden="true">
+  <ng-container *ngFor="let i of stars; let idx = index">
+    <i class="star" [class.filled]="idx &lt; rate">★</i>
+  </ng-container>
+  <span class="sr-only">Rating: {{ rate }} of 5</span>
+</div>

@@ -1,0 +1,34 @@
+<div class="container">
+
+  <h2>Find Doctors</h2>
+
+  <div class="filters" [formGroup]="filterForm">
+    <input formControlName="search" placeholder="Search doctor...">
+
+    <select formControlName="specialization">
+      <option value="">All Specializations</option>
+      <option *ngFor="let s of specializations" [value]="s">{{ s }}</option>
+    </select>
+  </div>
+
+  <div *ngIf="loading">Loading...</div>
+
+  <div class="grid">
+    <div class="card" *ngFor="let doc of doctors">
+
+      <h3>Dr. {{ doc.fullName }}</h3>
+      <p>{{ doc.specialization }}</p>
+
+      <p [class.available]="doc.isAvailable"
+         [class.not]="!doc.isAvailable">
+        {{ doc.isAvailable ? 'Available' : 'Not Available' }}
+      </p>
+
+      <button (click)="viewDoctor(doc.id)">
+        View Details
+      </button>
+
+    </div>
+  </div>
+
+</div>

@@ -32,6 +32,11 @@ public class AvailabilitySlotConfiguration
         builder.Property(x => x.IsBooked)
             .HasColumnName("is_booked");
 
+        builder.Property<DateTime>("CreatedAt")
+            .HasColumnName("created_at")
+            .HasDefaultValueSql("now()")
+            .IsRequired();
+
         builder.HasOne(x => x.Doctor)
             .WithMany(x => x.AvailabilitySlots)
             .HasForeignKey(x => x.DoctorId)

@@ -38,7 +38,6 @@ public class RefreshTokenConfiguration : IEntityTypeConfiguration<RefreshToken>
             .HasDatabaseName("ix_refresh_tokens_token")
             .IsUnique();
 
-        // Link the 'User' navigation property to the 'UserId' foreign key explicitly
         builder.HasOne(x => x.User)
             .WithMany()
             .HasForeignKey(x => x.UserId)

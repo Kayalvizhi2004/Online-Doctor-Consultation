@@ -1,0 +1,5 @@
+.slot-list{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px}
+.slot-list li{background:#fff;padding:12px;border-radius:8px;border:1px solid #eef2f7;cursor:pointer}
+.slot-list li.booked{opacity:.5}
+.date{font-weight:700}
+.time{color:#64748b;font-size:13px}

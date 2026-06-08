@@ -1,0 +1,41 @@
+<div class="container">
+
+  <h2>Users Management</h2>
+
+  @if (loading) {
+    <div>Loading...</div>
+  }
+
+  <div class="table">
+    <div class="row header">
+      <span>Name</span>
+      <span>Email</span>
+      <span>Role</span>
+      <span>Actions</span>
+    </div>
+
+    @for (u of users; track u.id) {
+      <div class="row">
+      <span>{{u.fullName}}</span>
+      <span>{{u.email}}</span>
+      <span>{{u.role}}</span>
+      <span class="actions">
+        <select #roleSelect (change)="changeRole(u.id, roleSelect.value)">
+          <option>Patient</option>
+          <option>Doctor</option>
+          <option>Admin</option>
+        </select>
+
+        <button (click)="toggleStatus(u.id)">
+          Toggle
+        </button>
+
+      </span>
+
+    </div>
+
+    }
+  </div>
+
+
+</div>

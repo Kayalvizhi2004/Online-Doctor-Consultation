@@ -22,35 +22,58 @@ public class DoctorRepository
             string? specialization,
             DateOnly? date)
     {
-        var query =
-            _context.DoctorProfiles
-                .Include(x => x.User)
-                .Include(x =>
-                    x.AvailabilitySlots)
-                .AsQueryable();
+        // Project only required columns to avoid referencing DB columns
+        // that might be missing (e.g. availability_slots.created_at).
+        var baseQuery = _context.DoctorProfiles
+            .AsQueryable();
 
-        if (!string.IsNullOrWhiteSpace(
-            specialization))
+        if (!string.IsNullOrWhiteSpace(specialization))
         {
-            query = query.Where(
-                x =>
-                    x.Specialization ==
-                    specialization);
+            baseQuery = baseQuery.Where(d => d.Specialization == specialization);
         }
 
         if (date.HasValue)
         {
-            query = query.Where(
-                x =>
-                    x.AvailabilitySlots
-                        .Any(
-                            s =>
-                                s.Date ==
-                                date &&
-                                !s.IsBooked));
+            baseQuery = baseQuery.Where(d => d.AvailabilitySlots.Any(s => s.Date == date && !s.IsBooked));
         }
 
-        return await query.ToListAsync();
+        var projected = await baseQuery
+            .Select(d => new DoctorProfile
+            {
+                Id = d.Id,
+                Bio = d.Bio,
+                ConsultationFee = d.ConsultationFee,
+                CreatedAt = d.CreatedAt,
+                IsAvailable = d.IsAvailable,
+                Specialization = d.Specialization,
+                UpdatedAt = d.UpdatedAt,
+                UserId = d.UserId,
+                User = new ConsultationApi.Domain.Entities.Users.User
+                {
+                    Id = d.User.Id,
+                    Email = d.User.Email,
+                    FullName = d.User.FullName,
+                    Phone = d.User.Phone,
+                    Role = d.User.Role,
+                    CreatedAt = d.User.CreatedAt,
+                    UpdatedAt = d.User.UpdatedAt
+                },
+                AvailabilitySlots = d.AvailabilitySlots
+                    .Select(s => new AvailabilitySlot
+                    {
+                        Id = s.Id,
+                        Date = s.Date,
+                        StartTime = s.StartTime,
+                        EndTime = s.EndTime,
+                        IsBooked = s.IsBooked,
+                        DoctorId = s.DoctorId,
+                        UpdatedAt = s.UpdatedAt
+                    })
+                    .ToList()
+            })
+            .ToListAsync();
+
+        return projected;
     }
 
     public async Task<DoctorProfile?>

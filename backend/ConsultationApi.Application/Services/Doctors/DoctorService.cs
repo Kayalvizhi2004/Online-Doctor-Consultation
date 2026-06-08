@@ -5,7 +5,8 @@ using ConsultationApi.Application.Interfaces.Doctors;
 using ConsultationApi.Domain.Entities.Doctors;
 using ConsultationApi.Domain.Interfaces.Repositories;
 using ConsultationApi.Domain.Interfaces.Redis;
-using ConsultationApi.Application.Common;
+// alias CacheKeys from Application.Common to avoid importing the entire namespace
+using CacheKeys = ConsultationApi.Application.Common.CacheKeys;
 
 namespace ConsultationApi.Application.Services.Doctors;
 

@@ -1,0 +1,13 @@
+<div class="chat-shell">
+  <div class="chat-header">{{ sessionTitle }} <span class="status">{{ status }}</span></div>
+  <div class="chat-body" #scrollHost>
+    <div *ngFor="let m of messages" [ngClass]="{ 'mine': m.senderId===me }" class="chat-bubble">
+      <div class="text">{{ m.message }}</div>
+      <div class="meta">{{ m.sentAt | timeAgo }}</div>
+    </div>
+  </div>
+  <div class="chat-input">
+    <input [(ngModel)]="draft" (keydown.enter)="send()" placeholder="Write a message..." />
+    <button class="btn btn-primary" (click)="send()">Send</button>
+  </div>
+</div>

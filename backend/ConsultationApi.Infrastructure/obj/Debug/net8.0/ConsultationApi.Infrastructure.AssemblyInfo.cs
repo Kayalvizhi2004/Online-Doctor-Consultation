@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("ConsultationApi.Infrastructure")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e210dc29502414ab98974eeb6d277f1cbf7ea8ba")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0627e2d252be809a57219b2c216613607fc62c93")]
 [assembly: System.Reflection.AssemblyProductAttribute("ConsultationApi.Infrastructure")]
 [assembly: System.Reflection.AssemblyTitleAttribute("ConsultationApi.Infrastructure")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

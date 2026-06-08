@@ -34,6 +34,7 @@ public class NotificationConfiguration
             .HasColumnName("is_read");
 
         builder.Property(x => x.CreatedAt)
-            .HasColumnName("created_at");
+            .HasColumnName("created_at")
+            .HasDefaultValueSql("now()");
     }
 }

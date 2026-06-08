@@ -1,0 +1,35 @@
+<div class="auth-page">
+  <div class="auth-card">
+    <h2>Create an account</h2>
+    <p class="muted">Register as Patient or Doctor</p>
+
+    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+      <label>Full name
+        <input formControlName="fullName" type="text" />
+      </label>
+
+      <label>Email
+        <input formControlName="email" type="email" />
+      </label>
+
+      <label>Password
+        <input formControlName="password" type="password" />
+        <small class="muted">Min 8 characters, include number & letter</small>
+      </label>
+
+      <label>Role
+        <select formControlName="role">
+          <option value="Patient">Patient</option>
+          <option value="Doctor">Doctor</option>
+        </select>
+      </label>
+
+      <button class="btn btn-primary" [disabled]="registerForm.invalid || loading">
+        <span *ngIf="loading" class="spinner"></span>
+        Register
+      </button>
+    </form>
+
+    <div class="auth-footer">Already have an account? <a routerLink="/auth/login">Login</a></div>
+  </div>
+</div>

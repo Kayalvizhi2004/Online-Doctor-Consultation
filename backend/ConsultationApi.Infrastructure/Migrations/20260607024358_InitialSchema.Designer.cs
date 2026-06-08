@@ -9,11 +9,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace ConsultationApi.Infrastructure.Data.Migrations.AddRefreshToken
+namespace ConsultationApi.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260604044040_AddRefreshToken")]
-    partial class AddRefreshToken
+    [Migration("20260607024358_InitialSchema")]
+    partial class InitialSchema
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -138,9 +138,6 @@ namespace ConsultationApi.Infrastructure.Data.Migrations.AddRefreshToken
                         .HasColumnType("uuid")
                         .HasColumnName("session_id");
 
-                    b.Property<Guid?>("SessionId1")
-                        .HasColumnType("uuid");
-
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -149,8 +146,6 @@ namespace ConsultationApi.Infrastructure.Data.Migrations.AddRefreshToken
                     b.HasIndex("SenderId");
 
                     b.HasIndex("SessionId");
-
-                    b.HasIndex("SessionId1");
 
                     b.ToTable("chat_messages", (string)null);
                 });
@@ -292,7 +287,7 @@ namespace ConsultationApi.Infrastructure.Data.Migrations.AddRefreshToken
                             Id = new Guid("66666666-6666-6666-6666-666666666666"),
                             Bio = "Heart specialist",
                             ConsultationFee = 500m,
-                            CreatedAt = new DateTime(2026, 6, 4, 4, 40, 39, 648, DateTimeKind.Utc).AddTicks(7069),
+                            CreatedAt = new DateTime(2026, 6, 7, 2, 43, 56, 586, DateTimeKind.Utc).AddTicks(8231),
                             IsAvailable = true,
                             Specialization = "Cardiology",
                             UserId = new Guid("33333333-3333-3333-3333-333333333333")
@@ -302,7 +297,7 @@ namespace ConsultationApi.Infrastructure.Data.Migrations.AddRefreshToken
                             Id = new Guid("77777777-7777-7777-7777-777777777777"),
                             Bio = "Skin specialist",
                             ConsultationFee = 400m,
-                            CreatedAt = new DateTime(2026, 6, 4, 4, 40, 39, 648, DateTimeKind.Utc).AddTicks(7071),
+                            CreatedAt = new DateTime(2026, 6, 7, 2, 43, 56, 586, DateTimeKind.Utc).AddTicks(8237),
                             IsAvailable = true,
                             Specialization = "Dermatology",
                             UserId = new Guid("44444444-4444-4444-4444-444444444444")
@@ -312,7 +307,7 @@ namespace ConsultationApi.Infrastructure.Data.Migrations.AddRefreshToken
                             Id = new Guid("88888888-8888-8888-8888-888888888888"),
                             Bio = "Senior cardiologist",
                             ConsultationFee = 700m,
-                            CreatedAt = new DateTime(2026, 6, 4, 4, 40, 39, 648, DateTimeKind.Utc).AddTicks(7073),
+                            CreatedAt = new DateTime(2026, 6, 7, 2, 43, 56, 586, DateTimeKind.Utc).AddTicks(8240),
                             IsAvailable = true,
                             Specialization = "Cardiology",
                             UserId = new Guid("55555555-5555-5555-5555-555555555555")
@@ -429,9 +424,6 @@ namespace ConsultationApi.Infrastructure.Data.Migrations.AddRefreshToken
                         .HasColumnType("uuid")
                         .HasColumnName("user_id");
 
-                    b.Property<Guid?>("UserId1")
-                        .HasColumnType("uuid");
-
                     b.HasKey("Id");
 
                     b.HasIndex("Token")
@@ -439,8 +431,6 @@ namespace ConsultationApi.Infrastructure.Data.Migrations.AddRefreshToken
                         .HasDatabaseName("ix_refresh_tokens_token");
 
                     b.HasIndex("UserId");
-
-                    b.HasIndex("UserId1");
 
                     b.ToTable("refresh_tokens", (string)null);
                 });
@@ -497,50 +487,50 @@ namespace ConsultationApi.Infrastructure.Data.Migrations.AddRefreshToken
                         new
                         {
                             Id = new Guid("11111111-1111-1111-1111-111111111111"),
-                            CreatedAt = new DateTime(2026, 6, 4, 4, 40, 39, 175, DateTimeKind.Utc).AddTicks(2442),
+                            CreatedAt = new DateTime(2026, 6, 7, 2, 43, 55, 794, DateTimeKind.Utc).AddTicks(8407),
                             Email = "patient1@test.com",
                             FullName = "John Patient",
-                            PasswordHash = "$2a$11$tcdwMoxG.4UqVTrP/JfGge19s8auA12ssTblPwyObMUa.tyQ0yk9C",
+                            PasswordHash = "$2a$11$sJH5SwZo2zlJsZ8qTOvNFOktz03FV/L8tpil9R9UuVtinLPD7sqL6",
                             Phone = "9000000001",
                             Role = "Patient"
                         },
                         new
                         {
                             Id = new Guid("22222222-2222-2222-2222-222222222222"),
-                            CreatedAt = new DateTime(2026, 6, 4, 4, 40, 39, 291, DateTimeKind.Utc).AddTicks(5734),
+                            CreatedAt = new DateTime(2026, 6, 7, 2, 43, 55, 995, DateTimeKind.Utc).AddTicks(3832),
                             Email = "patient2@test.com",
                             FullName = "Mary Patient",
-                            PasswordHash = "$2a$11$.ArmVbnTqnzKKASN85m5be.tyYDeUszPnEPPdhvlltV7o/51nBQZa",
+                            PasswordHash = "$2a$11$.6CewTf9N9t4JPLk13dqWeWa6ceZ31BkQde5lcmHzzcQqhMA4w9wi",
                             Phone = "9000000002",
                             Role = "Patient"
                         },
                         new
                         {
                             Id = new Guid("33333333-3333-3333-3333-333333333333"),
-                            CreatedAt = new DateTime(2026, 6, 4, 4, 40, 39, 408, DateTimeKind.Utc).AddTicks(7743),
+                            CreatedAt = new DateTime(2026, 6, 7, 2, 43, 56, 196, DateTimeKind.Utc).AddTicks(3660),
                             Email = "doctor1@test.com",
                             FullName = "Dr Arun Kumar",
-                            PasswordHash = "$2a$11$SBqk/MYkdURaToCcs807H.rpTBfFU7fbMopDljpNt0hk3C4L.d9Vy",
+                            PasswordHash = "$2a$11$UOGuIqqm85hKRtmUO4c7O.q8z0vy.JbhM7S.t19Ai6tXVuLYJN7Xm",
                             Phone = "9000000003",
                             Role = "Doctor"
                         },
                         new
                         {
                             Id = new Guid("44444444-4444-4444-4444-444444444444"),
-                            CreatedAt = new DateTime(2026, 6, 4, 4, 40, 39, 529, DateTimeKind.Utc).AddTicks(1056),
+                            CreatedAt = new DateTime(2026, 6, 7, 2, 43, 56, 388, DateTimeKind.Utc).AddTicks(6031),
                             Email = "doctor2@test.com",
                             FullName = "Dr Priya Sharma",
-                            PasswordHash = "$2a$11$Js0VJbZ/a.sDkStQrAZDJ./FH1FGwWqEr8M5/9nAnnyuKJJktPe16",
+                            PasswordHash = "$2a$11$OhCIjGMevcb86erAGyL/Muo1rkhz.5GmfEYym/yXJkuFZicAmoezm",
                             Phone = "9000000004",
                             Role = "Doctor"
                         },
                         new
                         {
                             Id = new Guid("55555555-5555-5555-5555-555555555555"),
-                            CreatedAt = new DateTime(2026, 6, 4, 4, 40, 39, 648, DateTimeKind.Utc).AddTicks(6439),
+                            CreatedAt = new DateTime(2026, 6, 7, 2, 43, 56, 586, DateTimeKind.Utc).AddTicks(6952),
                             Email = "doctor3@test.com",
                             FullName = "Dr Rajesh Singh",
-                            PasswordHash = "$2a$11$urpk1Wzi1xV1qlgc.EjXl.OEIiHtWGHUudsMPariTPuSgCGTI4BbW",
+                            PasswordHash = "$2a$11$5rOg7fq7ZkVfRhlvJay2YeRBQ4zqWpGDPawnZbsrXmuKKBIPvt1La",
                             Phone = "9000000005",
                             Role = "Doctor"
                         });
@@ -592,15 +582,11 @@ namespace ConsultationApi.Infrastructure.Data.Migrations.AddRefreshToken
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("ConsultationApi.Domain.Entities.Appointments.ConsultationSession", null)
+                    b.HasOne("ConsultationApi.Domain.Entities.Appointments.ConsultationSession", "Session")
                         .WithMany()
                         .HasForeignKey("SessionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.HasOne("ConsultationApi.Domain.Entities.Appointments.ConsultationSession", "Session")
-                        .WithMany()
-                        .HasForeignKey("SessionId1");
 
                     b.Navigation("Sender");
 
@@ -650,15 +636,11 @@ namespace ConsultationApi.Infrastructure.Data.Migrations.AddRefreshToken
 
             modelBuilder.Entity("ConsultationApi.Domain.Entities.Users.RefreshToken", b =>
                 {
-                    b.HasOne("ConsultationApi.Domain.Entities.Users.User", null)
+                    b.HasOne("ConsultationApi.Domain.Entities.Users.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.HasOne("ConsultationApi.Domain.Entities.Users.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId1");
 
                     b.Navigation("User");
                 });

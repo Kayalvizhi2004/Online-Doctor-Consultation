@@ -1,0 +1,32 @@
+<div class="auth-page">
+  <div class="auth-card">
+    <h2>Welcome back</h2>
+    <p class="muted">Login to your account</p>
+
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+      <label>Email
+        <input formControlName="email" type="email" />
+        <small class="error" *ngIf="loginForm.get('email')?.invalid && loginForm.get('email')?.touched">Enter a valid email</small>
+      </label>
+
+      <label>Password
+        <input formControlName="password" type="password" />
+        <small class="error" *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched">Password is required</small>
+      </label>
+
+      <label>Role
+        <select formControlName="role">
+          <option value="Patient">Patient</option>
+          <option value="Doctor">Doctor</option>
+        </select>
+      </label>
+
+      <button class="btn btn-primary" [disabled]="loginForm.invalid || loading">
+        <span *ngIf="loading" class="spinner"></span>
+        Login
+      </button>
+    </form>
+
+    <div class="auth-footer">Don't have an account? <a routerLink="/auth/register">Register</a></div>
+  </div>
+</div>

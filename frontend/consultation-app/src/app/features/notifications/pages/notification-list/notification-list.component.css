@@ -1,0 +1,60 @@
+.container {
+  max-width: 900px;
+  margin: auto;
+  padding: 20px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.btn-clear {
+  padding: 8px 12px;
+  background: #d32f2f;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.badge {
+  margin: 10px 0;
+  font-weight: bold;
+  color: #1976d2;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.card {
+  display: flex;
+  justify-content: space-between;
+  padding: 15px;
+  border-radius: 10px;
+  background: #f5f5f5;
+  border-left: 5px solid transparent;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.card.unread {
+  border-left: 5px solid #1976d2;
+  background: #e3f2fd;
+}
+
+.content h4 {
+  margin: 0;
+}
+
+button {
+  padding: 6px 10px;
+  border: none;
+  background: #1976d2;
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+}

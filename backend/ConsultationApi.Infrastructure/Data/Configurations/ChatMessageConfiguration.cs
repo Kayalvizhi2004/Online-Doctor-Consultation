@@ -29,12 +29,13 @@ public class ChatMessageConfiguration
             .IsRequired();
 
         builder.Property(x => x.SentAt)
-            .HasColumnName("sent_at");
+            .HasColumnName("sent_at")
+            .HasDefaultValueSql("now()");
 
         builder.Property(x => x.IsRead)
             .HasColumnName("is_read");
 
-        builder.HasOne<ConsultationSession>()
+        builder.HasOne(x => x.Session)
             .WithMany()
             .HasForeignKey(x => x.SessionId)
             .OnDelete(DeleteBehavior.Cascade);

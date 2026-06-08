@@ -22,13 +22,15 @@ public class ConsultationSessionConfiguration
             .HasColumnName("appointment_id");
 
         builder.Property(x => x.StartedAt)
-            .HasColumnName("started_at");
+            .HasColumnName("started_at")
+            .HasDefaultValueSql("now()");
 
         builder.Property(x => x.EndedAt)
             .HasColumnName("ended_at");
 
         builder.Property(x => x.Summary)
-            .HasColumnName("summary");
+            .HasColumnName("summary")
+            .HasColumnType("text");
 
         builder.HasOne(x => x.Appointment)
             .WithOne(x => x.ConsultationSession)
