@@ -80,8 +80,11 @@ public class AppointmentService : IAppointmentService
         await _slots.UpdateAsync(slot);
         await _appointments.SaveChangesAsync();
 
+        // Clear ALL doctor caches (list + profile + slots) so the booked slot
+        // is reflected everywhere immediately. The detail endpoint caches under
+        // "doctors:{id}:profile", which a narrower "...:slots" pattern would miss.
         await _cache.RemoveByPatternAsync(
-            $"doctors:{slot.DoctorId}:slots");
+            "doctors:");
 
         var patient =
             await _users.GetByIdAsync(patientId);
@@ -173,7 +176,26 @@ public class AppointmentService : IAppointmentService
         {
             return new ApiResponse<string>
             {
-                Success = false
+                Success = false,
+                Message = "Appointment not found"
+            };
+        }
+
+        if (appointment.Doctor == null || appointment.Doctor.UserId != doctorId)
+        {
+            return new ApiResponse<string>
+            {
+                Success = false,
+                Message = "You are not allowed to manage this appointment"
+            };
+        }
+
+        if (appointment.Status != AppointmentStatus.Pending)
+        {
+            return new ApiResponse<string>
+            {
+                Success = false,
+                Message = "Only pending appointments can be confirmed"
             };
         }
 
@@ -222,9 +244,11 @@ public class AppointmentService : IAppointmentService
             };
         }
 
-        // Determine if user is patient or doctor
+        // Determine if user is patient or doctor.
+        // Patient id IS a user id, but DoctorId is the doctor PROFILE id, so the
+        // doctor check must go through the profile's UserId.
         bool isPatient = appointment.PatientId == userId;
-        bool isDoctor = appointment.DoctorId == userId;
+        bool isDoctor = appointment.Doctor != null && appointment.Doctor.UserId == userId;
 
         if (!isPatient && !isDoctor)
         {
@@ -256,7 +280,18 @@ public class AppointmentService : IAppointmentService
 
         await _appointments.UpdateAsync(
             appointment);
+
+        // Free the slot so it can be booked again.
+        if (appointment.Slot != null)
+        {
+            appointment.Slot.IsBooked = false;
+            await _slots.UpdateAsync(appointment.Slot);
+        }
+
         await _appointments.SaveChangesAsync();
+
+        // Doctor list/detail caches embed slot booking state -> refresh them.
+        await _cache.RemoveByPatternAsync("doctors:");
 
         var cancellationReason = isPatient ? "Patient requested cancellation" : "Doctor cancelled appointment";
         var cancelledBy = isPatient ? "Patient" : "Doctor";
@@ -292,7 +327,26 @@ public class AppointmentService : IAppointmentService
         {
             return new ApiResponse<Guid>
             {
-                Success = false
+                Success = false,
+                Message = "Appointment not found"
+            };
+        }
+
+        if (appointment.Doctor == null || appointment.Doctor.UserId != doctorId)
+        {
+            return new ApiResponse<Guid>
+            {
+                Success = false,
+                Message = "You are not allowed to manage this appointment"
+            };
+        }
+
+        if (appointment.Status != AppointmentStatus.Confirmed)
+        {
+            return new ApiResponse<Guid>
+            {
+                Success = false,
+                Message = "Only confirmed appointments can be started"
             };
         }
 
@@ -351,13 +405,37 @@ public class AppointmentService : IAppointmentService
             await _appointments.GetByIdAsync(
                 session.AppointmentId);
 
-        if (appointment != null)
+        if (appointment == null)
         {
-            appointment.Status =
-                AppointmentStatus.Completed;
-            await _appointments.UpdateAsync(
-                appointment);
+            return new ApiResponse<string>
+            {
+                Success = false,
+                Message = "Appointment not found"
+            };
         }
+
+        if (appointment.Doctor == null || appointment.Doctor.UserId != doctorId)
+        {
+            return new ApiResponse<string>
+            {
+                Success = false,
+                Message = "You are not allowed to manage this appointment"
+            };
+        }
+
+        if (appointment.Status != AppointmentStatus.InProgress)
+        {
+            return new ApiResponse<string>
+            {
+                Success = false,
+                Message = "Only an in-progress consultation can be ended"
+            };
+        }
+
+        appointment.Status =
+            AppointmentStatus.Completed;
+        await _appointments.UpdateAsync(
+            appointment);
 
         await _appointments
             .UpdateSessionAsync(
@@ -382,3 +460,4 @@ public class AppointmentService : IAppointmentService
         };
     }
 }
+

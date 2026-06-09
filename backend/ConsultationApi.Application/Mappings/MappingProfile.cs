@@ -91,9 +91,32 @@ public class MappingProfile : Profile
                 opt => opt.MapFrom(src =>
                     src.Doctor != null && src.Doctor.User != null ? src.Doctor.User.FullName : string.Empty))
             .ForMember(
+                dest => dest.Specialization,
+                opt => opt.MapFrom(src =>
+                    src.Doctor != null ? src.Doctor.Specialization : string.Empty))
+            .ForMember(
+                dest => dest.ConsultationFee,
+                opt => opt.MapFrom(src =>
+                    src.Doctor != null ? src.Doctor.ConsultationFee : 0))
+            .ForMember(
                 dest => dest.PatientName,
                 opt => opt.MapFrom(src =>
                     src.Patient != null ? src.Patient.FullName : string.Empty))
+            .ForMember(
+                dest => dest.Date,
+                opt => opt.MapFrom(src =>
+                    src.Slot != null ? (DateOnly?)src.Slot.Date : null))
+            .ForMember(
+                dest => dest.StartTime,
+                opt => opt.MapFrom(src =>
+                    src.Slot != null ? (TimeOnly?)src.Slot.StartTime : null))
+            .ForMember(
+                dest => dest.EndTime,
+                opt => opt.MapFrom(src =>
+                    src.Slot != null ? (TimeOnly?)src.Slot.EndTime : null))
+            .ForMember(
+                dest => dest.DoctorId,
+                opt => opt.MapFrom(src => src.DoctorId))
             .ForMember(
                 dest => dest.Status,
                 opt => opt.MapFrom(src =>
@@ -160,3 +183,4 @@ public class MappingProfile : Profile
                     src.CreatedAt));
     }
 }
+

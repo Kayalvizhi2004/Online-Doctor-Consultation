@@ -66,7 +66,8 @@ export class ConsultationChatComponent implements OnInit, OnDestroy, AfterViewCh
     this.isLoading = true;
     this.chatService.getMessages(this.sessionId).subscribe({
       next: (res: any) => {
-        this.messages = Array.isArray(res) ? res : (res?.items ?? res?.data ?? []);
+        // Support the Data.Items structure provided in the input
+        this.messages = Array.isArray(res) ? res : (res?.items ?? res?.Items ?? res?.data?.items ?? res?.Data?.Items ?? res?.data ?? res?.Data ?? []);
         this.scrollToBottomOnNextCheck = true;
         this.isLoading = false;
       },

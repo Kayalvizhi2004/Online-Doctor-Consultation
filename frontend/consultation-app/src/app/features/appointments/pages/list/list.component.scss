@@ -120,6 +120,10 @@
     border-left: 4px solid #10b981;
   }
 
+  &.status-inprogress {
+    border-left: 4px solid #8b5cf6;
+  }
+
   &.status-completed {
     border-left: 4px solid #3b82f6;
   }
@@ -288,6 +292,16 @@
       text-decoration: underline;
     }
   }
+
+  &.btn-danger {
+    background: #ef4444;
+    color: white;
+
+    &:hover {
+      background: #dc2626;
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+    }
+  }
 }
 
 @media (max-width: 768px) {
@@ -310,4 +324,3 @@
     text-align: center;
   }
 }
-

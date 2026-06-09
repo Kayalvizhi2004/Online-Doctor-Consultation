@@ -35,6 +35,7 @@ public class AppointmentRepository
             .Appointments
             .Include(x => x.Patient)
             .Include(x => x.Doctor)
+                .ThenInclude(d => d!.User)
             .Include(x => x.Slot)
             .Include(x =>
                 x.ConsultationSession)
@@ -55,6 +56,7 @@ public class AppointmentRepository
             _context.Appointments
                 .Include(x => x.Patient)
                 .Include(x => x.Doctor)
+                    .ThenInclude(d => d!.User)
                 .Include(x => x.Slot)
                 .AsQueryable();
 
@@ -68,9 +70,11 @@ public class AppointmentRepository
 
         if (role == "Doctor")
         {
+            // userId is the logged-in user's id; appointments reference the
+            // doctor PROFILE id, so match through the profile's UserId.
             query = query.Where(
                 x =>
-                    x.DoctorId ==
+                    x.Doctor!.UserId ==
                     userId);
         }
 
@@ -109,7 +113,7 @@ public class AppointmentRepository
 
         if (role == "Doctor")
         {
-            query = query.Where(x => x.DoctorId == userId);
+            query = query.Where(x => x.Doctor!.UserId == userId);
         }
 
         if (!string.IsNullOrWhiteSpace(status))

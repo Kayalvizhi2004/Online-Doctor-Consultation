@@ -4,7 +4,12 @@ public class AppointmentDto
 {
     public Guid Id { get; set; }
 
+    public Guid DoctorId { get; set; }
+
     public string DoctorName { get; set; }
+        = string.Empty;
+
+    public string Specialization { get; set; }
         = string.Empty;
 
     public string PatientName { get; set; }
@@ -15,6 +20,14 @@ public class AppointmentDto
 
     public string Notes { get; set; }
         = string.Empty;
+
+    public decimal ConsultationFee { get; set; }
+
+    public DateOnly? Date { get; set; }
+
+    public TimeOnly? StartTime { get; set; }
+
+    public TimeOnly? EndTime { get; set; }
 
     public DateTime CreatedAt { get; set; }
 }

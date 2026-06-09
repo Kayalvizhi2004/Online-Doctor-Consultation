@@ -111,6 +111,13 @@ export class AuthService {
       phone: u.phone || u.Phone,
       role: u.role || u.Role,
       createdAt: u.createdAt || u.CreatedAt,
+      specialization: u.specialization || u.Specialization,
+      bio: u.bio || u.Bio,
+      consultationFee: u.consultationFee ?? u.ConsultationFee,
+      isAvailable: u.isAvailable ?? u.IsAvailable,
+      dateOfBirth: u.dateOfBirth || u.DateOfBirth,
+      gender: u.gender || u.Gender,
+      address: u.address || u.Address,
       // Use locally stored photo if available
       photoUrl: localStorage.getItem('photoUrl') || 'assets/default-avatar.svg'
     };

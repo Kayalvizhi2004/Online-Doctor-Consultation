@@ -72,8 +72,8 @@ public class AppointmentController : ControllerBase
         var filter = new AppointmentFilterDto
         {
             Status = status?.ToString(),
-            Page = pageNumber,
-            PageSize = pageSize
+            Page = pageNumber < 1 ? 1 : pageNumber,
+            PageSize = pageSize < 1 ? 10 : pageSize
         };
 
         var response =

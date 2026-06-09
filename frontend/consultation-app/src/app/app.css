@@ -514,6 +514,10 @@ html, body {
 
 /* Sidebar */
 .sidebar {
+  position: fixed;
+  top: 70px;
+  left: 0;
+  bottom: 0;
   width: 250px;
   background: linear-gradient(180deg,#ffffff 0%, #f7fbff 100%);
   border-right: 1px solid #e6eef6;
@@ -524,7 +528,16 @@ html, body {
   flex-direction: column;
   justify-content: space-between;
   transition: transform 320ms ease, width 320ms ease;
-  min-height: 100vh;
+  z-index: 85;
+}
+
+.sidebar.collapsed {
+  transform: translateX(-100%);
+}
+
+.main {
+  flex: 1;
+  transition: margin 320ms ease;
 }
 
 .sidebar nav {
@@ -583,7 +596,7 @@ html, body {
 
 /* Collapsed / toggled states are handled in dashboard layout stylesheet to avoid conflicts. */
 /* Main offset when sidebar is present */
-.layout:not(.sidebar-collapsed) .main { margin-left: 250px; transition: margin 320ms ease; }
+.layout:not(.sidebar-collapsed) .main { margin-left: 250px; }
 
 /* Mobile: show sidebar as top overlay when opened; collapse vertically */
 @media (max-width: 768px) {
@@ -602,6 +615,8 @@ html, body {
 
   .layout.sidebar-collapsed .sidebar { transform: translateY(-100%); }
   .layout:not(.sidebar-collapsed) .sidebar { transform: translateY(0); }
+
+  .layout:not(.sidebar-collapsed) .main { margin-left: 0; }
 
   .mobile-close { position: absolute; top: 10px; right: 12px; background: transparent; border: none; font-size: 20px; }
 }

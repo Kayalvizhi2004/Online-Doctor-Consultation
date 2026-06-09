@@ -144,4 +144,3 @@ export class ProfileComponent implements OnInit {
     return this.userRole === 'patient';
   }
 }
-

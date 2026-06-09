@@ -16,7 +16,7 @@
   <div class="grid">
     <div class="card" *ngFor="let doc of doctors">
 
-      <h3>Dr. {{ doc.fullName }}</h3>
+      <h3>{{ doc.fullName }}</h3>
       <p>{{ doc.specialization }}</p>
 
       <p [class.available]="doc.isAvailable"

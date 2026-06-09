@@ -1,113 +1,128 @@
 <div class="appointments-container">
-  <!-- Page Header -->
-  <div class="page-header">
-    <div>
-      <h1>My Appointments</h1>
-      <p class="subtitle">Manage your consultation appointments</p>
-    </div>
-    <button class="btn btn-primary" routerLink="/book-appointment">+ New Appointment</button>
-  </div>
+ <!-- Page Header -->
+ <div class="page-header">
+ <div>
+ <h1>My Appointments</h1>
+ <p class="subtitle">Manage your consultation appointments</p>
+ </div>
+ <button class="btn btn-primary" routerLink="/doctors">+ New Appointment</button>
+ </div>
 
-  <!-- Filter Section -->
-  <div class="filter-section">
-    <div class="filter-group">
-      <label>Filter by Status:</label>
-      <select (change)="filterStatus($event)" class="filter-select">
-        <option value="">All Appointments</option>
-        <option value="Pending">Pending</option>
-        <option value="Confirmed">Confirmed</option>
-        <option value="Completed">Completed</option>
-        <option value="Cancelled">Cancelled</option>
-      </select>
-    </div>
-  </div>
+ <!-- Filter Section -->
+ <div class="filter-section">
+ <div class="filter-group">
+ <label>Filter by Status:</label>
+ <select (change)="filterStatus($event)" class="filter-select">
+ <option value="">All Appointments</option>
+ <option value="Pending">Pending</option>
+ <option value="Confirmed">Confirmed</option>
+ <option value="Completed">Completed</option>
+ <option value="Cancelled">Cancelled</option>
+ </select>
+ </div>
+ </div>
 
-  <!-- Empty State -->
-  <div *ngIf="appointments.length === 0" class="empty-state">
-    <div class="empty-icon">📋</div>
-    <p class="empty-title">No Appointments</p>
-    <p class="empty-subtitle">You don't have any appointments scheduled yet</p>
-    <button class="btn btn-primary" routerLink="/book-appointment">Book Your First Appointment</button>
-  </div>
+ <!-- Loading State -->
+ <div *ngIf="loading() && appointments().length === 0" class="empty-state">
+ <div class="empty-icon">⏳</div>
+ <p class="empty-title">Loading appointments…</p>
+ </div>
 
-  <!-- Appointments List -->
-  <div *ngIf="appointments.length > 0" class="appointments-list">
-    <div *ngFor="let appt of appointments" class="appointment-card" [class]="'status-' + (appt.status | lowercase)">
-      
-      <!-- Card Header with Status -->
-      <div class="card-header">
-        <div class="status-indicator" [style.background-color]="getStatusColor(appt.status)"></div>
-        <span class="status-badge" [style.background-color]="getStatusBg(appt.status)" [style.color]="getStatusColor(appt.status)">
-          {{ appt.status }}
-        </span>
-        <span class="card-time">{{ appt.date | date: 'MMM dd, yyyy' }}</span>
-      </div>
+ <!-- Empty State -->
+ <div *ngIf="!loading() && appointments().length === 0" class="empty-state">
+ <div class="empty-icon">📋</div>
+ <p class="empty-title">No Appointments</p>
+ <p class="empty-subtitle">You don't have any appointments scheduled yet</p>
+ <button class="btn btn-primary" routerLink="/doctors">Book Your First Appointment</button>
+ </div>
 
-      <!-- Card Body -->
-      <div class="card-body">
-        <div class="doctor-section">
-          <div class="doctor-avatar">👨‍⚕️</div>
-          <div class="doctor-info">
-            <h3 class="doctor-name">Dr. {{ appt.doctorName }}</h3>
-            <p class="specialization">{{ appt.specialization || 'General Practitioner' }}</p>
-          </div>
-        </div>
+ <!-- Appointments List -->
+ <div *ngIf="appointments().length > 0" class="appointments-list">
+ <div *ngFor="let appt of appointments()" class="appointment-card" [class]="'status-' + (appt.status | lowercase)">
+ 
+ <!-- Card Header with Status -->
+ <div class="card-header">
+ <div class="status-indicator" [style.background-color]="getStatusColor(appt.status)"></div>
+ <span class="status-badge" [style.background-color]="getStatusBg(appt.status)" [style.color]="getStatusColor(appt.status)">
+ {{ statusLabel(appt.status) }}
+ </span>
+ <span class="card-time">{{ appt.date | date: 'MMM dd, yyyy' }}</span>
+ </div>
 
-        <div class="appointment-details">
-          <div class="detail-item">
-            <span class="detail-icon">📅</span>
-            <span class="detail-text">{{ appt.date | date: 'EEEE, MMM dd, yyyy' }}</span>
-          </div>
-          <div class="detail-item">
-            <span class="detail-icon">⏰</span>
-            <span class="detail-text">{{ appt.startTime }} - {{ appt.endTime }}</span>
-          </div>
-          <div class="detail-item" *ngIf="appt.reason">
-            <span class="detail-icon">📝</span>
-            <span class="detail-text">{{ appt.reason }}</span>
-          </div>
-          <div class="detail-item" *ngIf="appt.consultationFee">
-            <span class="detail-icon">💰</span>
-            <span class="detail-text">₹{{ appt.consultationFee }}</span>
-          </div>
-        </div>
-      </div>
+ <!-- Card Body -->
+ <div class="card-body">
+ <div class="doctor-section">
+ <div class="doctor-avatar">{{ isDoctor() ? '🧑' : '👨‍⚕️' }}</div>
+ <div class="doctor-info">
+ <h3 class="doctor-name">
+ {{ isDoctor() ? (appt.patientName || 'Patient') : (appt.doctorName || 'Doctor') }}
+ </h3>
+ <p class="specialization">
+ {{ isDoctor() ? 'Patient' : (appt.specialization || 'General Practitioner') }}
+ </p>
+ </div>
+ </div>
 
-      <!-- Card Footer with Actions -->
-      <div class="card-footer">
-        <div class="action-buttons">
-          <!-- Pending Actions -->
-          <ng-container *ngIf="appt.status?.toLowerCase() === 'pending'">
-            <button class="btn btn-sm btn-primary">Confirm</button>
-            <button class="btn btn-sm btn-outline">Reschedule</button>
-          </ng-container>
+ <div class="appointment-details">
+ <div class="detail-item">
+ <span class="detail-icon">📅</span>
+ <span class="detail-text">{{ appt.date | date: 'EEEE, MMM dd, yyyy' }}</span>
+ </div>
+ <div class="detail-item">
+ <span class="detail-icon">⏰</span>
+ <span class="detail-text">{{ appt.startTime }} - {{ appt.endTime }}</span>
+ </div>
+ <div class="detail-item" *ngIf="appt.notes">
+ <span class="detail-icon">📝</span>
+ <span class="detail-text">{{ appt.notes }}</span>
+ </div>
+ <div class="detail-item" *ngIf="appt.consultationFee">
+ <span class="detail-icon">💰</span>
+ <span class="detail-text">₹{{ appt.consultationFee }}</span>
+ </div>
+ </div>
+ </div>
 
-          <!-- Confirmed Actions -->
-          <ng-container *ngIf="appt.status?.toLowerCase() === 'confirmed'">
-            <button class="btn btn-sm btn-success" (click)="join(appt.id)">
-              Start Consultation
-            </button>
-            <button class="btn btn-sm btn-outline" *ngIf="canCancel(appt)" (click)="cancel(appt.id)">
-              Cancel
-            </button>
-            <button class="btn btn-sm btn-outline" *ngIf="!canCancel(appt)">
-              Can't Cancel
-            </button>
-          </ng-container>
+ <!-- Card Footer with Actions (role-aware) -->
+ <div class="card-footer" *ngIf="hasActions(appt)">
+ <div class="action-buttons">
 
-          <!-- Completed Actions -->
-          <ng-container *ngIf="appt.status?.toLowerCase() === 'completed'">
-            <button class="btn btn-sm btn-link">View Summary</button>
-            <button class="btn btn-sm btn-link">Write Review</button>
-          </ng-container>
+ <!-- PATIENT: can only cancel an upcoming Pending/Confirmed appointment -->
+ <ng-container *ngIf="isPatient()">
+ <button class="btn btn-sm btn-danger" (click)="cancel(appt.id)">
+ Cancel Appointment
+ </button>
+ </ng-container>
 
-          <!-- Cancelled Actions -->
-          <ng-container *ngIf="appt.status?.toLowerCase() === 'cancelled'">
-            <button class="btn btn-sm btn-primary">Book Again</button>
-          </ng-container>
-        </div>
-      </div>
-    </div>
-  </div>
+ <!-- DOCTOR: drives the status lifecycle -->
+ <ng-container *ngIf="isDoctor()">
+ <button class="btn btn-sm btn-primary"
+ *ngIf="appt.status?.toLowerCase() === 'pending'"
+ (click)="confirmAppointment(appt.id)">
+ Confirm
+ </button>
+ <button class="btn btn-sm btn-success"
+ *ngIf="appt.status?.toLowerCase() === 'confirmed'"
+ (click)="startSession(appt.id)">
+ Start Session
+ </button>
+ <button class="btn btn-sm btn-outline"
+ *ngIf="appt.status?.toLowerCase() === 'inprogress'"
+ (click)="endSession(appt.id)">
+ End Session
+ </button>
+
+ <!-- Doctor can cancel a Pending or Confirmed appointment -->
+ <button class="btn btn-sm btn-danger"
+ *ngIf="appt.status?.toLowerCase() === 'pending' || appt.status?.toLowerCase() === 'confirmed'"
+ (click)="cancel(appt.id)">
+ Cancel
+ </button>
+ </ng-container>
+
+ </div>
+ </div>
+ </div>
+ </div>
 </div>
 

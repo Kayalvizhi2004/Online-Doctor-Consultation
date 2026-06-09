@@ -1,14 +1,133 @@
-<div class="profile" *ngIf="doctor">
+@if (loading()) {
+  <div class="state">Loading doctor details…</div>
+} @else if (error()) {
+  <div class="state error">{{ error() }}</div>
+} @else if (doctor(); as doc) {
 
-  <h2>Dr. {{ doctor.fullName }}</h2>
+  <div class="profile">
 
-  <p><b>Specialization:</b> {{ doctor.specialization }}</p>
-  <p><b>Email:</b> {{ doctor.email }}</p>
+    <div class="profile-head">
+      <div class="avatar">{{ (doc.fullName || '?').charAt(0) }}</div>
 
-  <p><b>Status:</b>
-    <span [class.available]="doctor.isAvailable">
-      {{ doctor.isAvailable ? 'Available' : 'Busy' }}
-    </span>
-  </p>
+      <div class="head-text">
+        <h2>{{ doc.fullName }}</h2>
+        <p class="spec">{{ doc.specialization }}</p>
+      </div>
 
-</div>
+      <span class="status"
+            [class.available]="doc.isAvailable"
+            [class.busy]="!doc.isAvailable">
+        {{ doc.isAvailable ? 'Available' : 'Unavailable' }}
+      </span>
+    </div>
+
+    <div class="meta">
+      <div class="meta-item">
+        <span class="meta-label">Consultation Fee</span>
+        <span class="meta-value">₹{{ doc.consultationFee }}</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Specialization</span>
+        <span class="meta-value">{{ doc.specialization }}</span>
+      </div>
+    </div>
+
+    @if (doc.bio) {
+      <div class="section">
+        <h3>About</h3>
+        <p class="bio">{{ doc.bio }}</p>
+      </div>
+    }
+
+    @if (feedback(); as fb) {
+      <div class="banner" [class.success]="fb.type === 'success'" [class.error]="fb.type === 'error'">
+        <span>{{ fb.text }}</span>
+        @if (fb.type === 'success') {
+          <a routerLink="/appointments">View →</a>
+        }
+      </div>
+    }
+
+    <div class="section">
+      <h3>Available Slots</h3>
+
+      @if (doc.slots?.length) {
+        <div class="slots">
+          @for (s of doc.slots; track s.id) {
+            <div class="slot" [class.booked]="s.isBooked" [class.past]="slotState(s) === 'past'">
+
+              <span class="slot-date">{{ s.date }}</span>
+              <span class="slot-time">{{ s.startTime }} – {{ s.endTime }}</span>
+
+              @switch (slotState(s)) {
+                @case ('booked') {
+                  <span class="slot-tag booked-tag">Booked</span>
+                }
+                @case ('past') {
+                  <span class="slot-tag past-tag">Expired</span>
+                }
+                @default {
+                  @if (canBook(s)) {
+                    <button class="btn-book" (click)="openBooking(s)">
+                      + Book Appointment
+                    </button>
+                  } @else {
+                    <span class="slot-tag open-tag">Open</span>
+                  }
+                }
+              }
+
+            </div>
+          }
+        </div>
+
+        @if (!isPatient()) {
+          <p class="hint">Log in as a patient to book an appointment.</p>
+        }
+      } @else {
+        <p class="muted">No slots published yet.</p>
+      }
+    </div>
+
+  </div>
+
+  <!-- Booking notes modal -->
+  @if (bookingModalSlot(); as slot) {
+    <div class="modal-overlay" (click)="closeBooking()">
+      <div class="modal" (click)="$event.stopPropagation()">
+
+        <div class="modal-head">
+          <h3>Book Appointment</h3>
+          <button class="modal-x" (click)="closeBooking()" [disabled]="submitting()" aria-label="Close">✕</button>
+        </div>
+
+        <p class="modal-sub">
+          {{ doctor()?.fullName }} · {{ slot.date }} · {{ slot.startTime }} – {{ slot.endTime }}
+        </p>
+
+        <label for="booking-notes">Notes for the doctor <span class="opt">(optional)</span></label>
+        <textarea id="booking-notes"
+                  rows="4"
+                  maxlength="500"
+                  placeholder="Describe your symptoms or the reason for your visit…"
+                  [value]="notes()"
+                  (input)="notes.set($any($event.target).value)"
+                  [disabled]="submitting()"></textarea>
+        <div class="char-count">{{ notes().length }}/500</div>
+
+        @if (modalError()) {
+          <p class="modal-error">{{ modalError() }}</p>
+        }
+
+        <div class="modal-actions">
+          <button class="btn-ghost" (click)="closeBooking()" [disabled]="submitting()">Cancel</button>
+          <button class="btn-primary" (click)="confirmBooking()" [disabled]="submitting()">
+            {{ submitting() ? 'Booking…' : 'Confirm Booking' }}
+          </button>
+        </div>
+
+      </div>
+    </div>
+  }
+
+}

@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("ConsultationApi.Domain")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+7300264a7c95df838507e52f5b216417551c7060")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+02593d55a5873f6f01ca6599fe144e567f4dd87a")]
 [assembly: System.Reflection.AssemblyProductAttribute("ConsultationApi.Domain")]
 [assembly: System.Reflection.AssemblyTitleAttribute("ConsultationApi.Domain")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -1,4 +1,5 @@
 import { Component, inject, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { DoctorService } from '../../../../core/services/doctor.service';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { debounceTime } from 'rxjs';
@@ -16,6 +17,7 @@ export class DoctorListComponent implements OnInit {
   doctors: any[] = [];
   loading = false;
   private fb = inject(FormBuilder);
+  private router = inject(Router);
 
   specializations = [
     'Cardiology',
@@ -57,6 +59,7 @@ export class DoctorListComponent implements OnInit {
   }
 
   viewDoctor(id: string) {
-    window.location.href = `/doctors/${id}`;
+    // SPA navigation (no full page reload) so the details view loads smoothly.
+    this.router.navigate(['/doctors', id]);
   }
 }
