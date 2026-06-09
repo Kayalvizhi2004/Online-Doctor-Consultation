@@ -4,8 +4,11 @@
 
   <form [formGroup]="form" (ngSubmit)="book()" class="form-card">
 
-    <label>Slot ID</label>
-    <input type="text" formControlName="slotId" placeholder="Enter slot ID">
+    <label>Select Slot</label>
+    <select formControlName="slotId">
+      <option value="">-- Select a slot --</option>
+      <option *ngFor="let s of slots" [value]="s.id">{{ s.date | date:'mediumDate' }} — {{ s.startTime }} - {{ s.endTime }}</option>
+    </select>
 
     <div class="error" *ngIf="form.get('slotId')?.invalid && form.get('slotId')?.touched">
       Slot is required

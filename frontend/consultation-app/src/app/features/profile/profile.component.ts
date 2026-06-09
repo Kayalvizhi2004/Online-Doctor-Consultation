@@ -4,6 +4,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { ApiService } from '../../core/services/api.service';
 import { AuthService } from '../../core/services/auth.service';
 import { Router } from '@angular/router';
+import { DoctorService } from '../../core/services/doctor.service';
 
 @Component({
   selector: 'app-profile',
@@ -17,6 +18,7 @@ export class ProfileComponent implements OnInit {
   private api = inject(ApiService);
   private auth = inject(AuthService);
   private router = inject(Router);
+  private doctorService = inject(DoctorService);
 
   form: FormGroup;
   isLoading = false;
@@ -81,20 +83,41 @@ export class ProfileComponent implements OnInit {
 
     const payload = this.form.value;
 
-    this.api.put('/api/users/profile', payload).subscribe({
-      next: () => {
-        this.successMessage = 'Profile updated successfully!';
-        this.isSubmitting = false;
-        setTimeout(() => {
-          this.auth.me().subscribe();
-        }, 1000);
-      },
-      error: (err) => {
-        console.error('Failed to update profile', err);
-        this.errorMessage = err?.error?.message || 'Failed to update profile';
-        this.isSubmitting = false;
-      }
-    });
+    if (this.isDoctor()) {
+      // Use doctors profile endpoint
+      const doctorPayload = {
+        specialization: payload.specialization,
+        bio: payload.bio,
+        consultationFee: payload.consultationFee,
+        isAvailable: payload.isAvailable
+      };
+      this.doctorService.updateProfile(doctorPayload).subscribe({
+        next: () => {
+          this.successMessage = 'Profile updated successfully!';
+          this.isSubmitting = false;
+          setTimeout(() => this.auth.me().subscribe(), 800);
+        },
+        error: (err) => {
+          console.error('Failed to update profile', err);
+          this.errorMessage = err?.error?.message || 'Failed to update profile';
+          this.isSubmitting = false;
+        }
+      });
+    } else {
+      // Patient update via auth/me
+      this.api.put('/api/auth/me', payload).subscribe({
+        next: () => {
+          this.successMessage = 'Profile updated successfully!';
+          this.isSubmitting = false;
+          setTimeout(() => this.auth.me().subscribe(), 800);
+        },
+        error: (err) => {
+          console.error('Failed to update profile', err);
+          this.errorMessage = err?.error?.message || 'Failed to update profile';
+          this.isSubmitting = false;
+        }
+      });
+    }
   }
 
   toggleAvailability(): void {

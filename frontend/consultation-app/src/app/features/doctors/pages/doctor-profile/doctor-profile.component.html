@@ -1,20 +1,45 @@
 <div class="profile-hero">
   <div class="left">
-    <img class="avatar-lg" [src]="doctor?.avatarUrl || '/assets/avatar.png'" alt="Doctor avatar" />
+    <img class="avatar-lg" [src]="doctor?.avatarUrl || 'assets/default-avatar.svg'" alt="Doctor avatar" />
   </div>
   <div class="right">
     <h2>Dr. {{ doctor?.fullName }}</h2>
-    <div class="meta">{{ doctor?.specialization }} · {{ doctor?.experience }} yrs</div>
+    <div class="meta">
+      {{ doctor?.specialization }}
+      <span *ngIf="doctor?.experience">· {{ doctor?.experience }} yrs</span>
+    </div>
+    <div class="meta bio" *ngIf="doctor?.bio">{{ doctor?.bio }}</div>
+    <div class="meta availability">
+      <span [class.available]="doctor?.isAvailable" [class.not]="!doctor?.isAvailable">
+        {{ doctor?.isAvailable ? 'Available' : 'Not Available' }}
+      </span>
+    </div>
+    <div class="meta email">{{ doctor?.email || 'Email not provided' }}</div>
     <div class="actions">
       <div class="fee">₹{{ doctor?.consultationFee }}</div>
-      <button class="btn btn-primary" (click)="openBooking()">Book Appointment</button>
+      <button class="btn btn-primary" (click)="openBooking()" [disabled]="!(doctor?.slots?.length > 0)">Book Appointment</button>
     </div>
   </div>
 </div>
 
 <section class="slots">
   <h3>Available Slots</h3>
-  <slot-calendar [slots]="doctor?.availabilitySlots" (select)="bookSlot($event)"></slot-calendar>
+  <div *ngIf="doctor?.slots?.length > 0; else noSlots">
+    <slot-calendar [slots]="doctor?.slots" (select)="bookSlot($event)"></slot-calendar>
+
+    <div class="slot-list-plain">
+      <div *ngFor="let s of doctor?.slots" class="slot-row">
+        <div class="slot-date">{{ s.date | date:'mediumDate' }}</div>
+        <div class="slot-time">{{ s.startTime }} - {{ s.endTime }}</div>
+        <div class="slot-action">
+          <button class="btn btn-sm btn-primary" (click)="bookSlot(s)">Book</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <ng-template #noSlots>
+    <div class="empty">No upcoming available slots</div>
+  </ng-template>
 </section>
 
 <section class="reviews">

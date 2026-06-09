@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { AppointmentService } from '../../../core/services/appointment.service';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
@@ -10,7 +10,7 @@ import { Router } from '@angular/router';
   templateUrl: './doctor-dashboard.component.html',
   styleUrls: ['./doctor-dashboard.component.scss']
 })
-export class DoctorDashboardComponent implements OnInit {
+export class DoctorDashboardComponent implements OnInit, OnDestroy {
 
   appointments: any[] = [];
   pending: any[] = [];
@@ -21,22 +21,60 @@ export class DoctorDashboardComponent implements OnInit {
 
   constructor(private appointmentService: AppointmentService, private router: Router) {}
 
+  private refreshIntervalId: any;
+
   ngOnInit(): void {
     this.loadAppointments();
     // Refresh every 30 seconds
-    setInterval(() => this.loadAppointments(), 30000);
+    this.refreshIntervalId = setInterval(() => this.loadAppointments(), 30000);
+  }
+
+  ngOnDestroy(): void {
+    if (this.refreshIntervalId) {
+      clearInterval(this.refreshIntervalId);
+    }
   }
 
   loadAppointments(): void {
     this.appointmentService.getAll().subscribe({
       next: (res: any) => {
-        const list = Array.isArray(res) ? res : (res?.items ?? res?.Items ?? res?.data?.items ?? res?.Data?.Items ?? []);
+        console.debug('[DoctorDashboard] raw response', res);
+
+        // Try to extract item list from several possible shapes
+        let source: any = res;
+        if (!Array.isArray(source)) {
+          source = res?.data ?? res?.Data ?? res ?? null;
+        }
+
+        let list: any[] = [];
+
+        if (Array.isArray(source)) {
+          list = source;
+        } else if (source && (source.items || source.Items)) {
+          list = source.items ?? source.Items ?? [];
+        } else if (source && Array.isArray(source)) {
+          list = source;
+        }
+
+        // Normalize appointment fields (support PascalCase from backend)
+        list = (list || []).map((a: any) => ({
+          ...a,
+          status: (a.status || a.Status || '').toString(),
+          id: a.id || a.Id
+        }));
+
+        console.debug('[DoctorDashboard] normalized list', list.map((x: any) => ({ id: x.id, status: x.status })));
+
         this.appointments = list;
-        this.pending = list.filter((a: any) => a.status?.toLowerCase() === 'pending');
-        this.confirmed = list.filter((a: any) => a.status?.toLowerCase() === 'confirmed');
-        this.completed = list.filter((a: any) => a.status?.toLowerCase() === 'completed');
+        this.pending = list.filter((a: any) => (a.status || '').toLowerCase() === 'pending');
+        this.confirmed = list.filter((a: any) => (a.status || '').toLowerCase() === 'confirmed');
+        this.completed = list.filter((a: any) => (a.status || '').toLowerCase() === 'completed');
+
+        // Prefer server-provided total when available
+        const serverTotal = res?.totalCount ?? res?.TotalCount ?? res?.data?.totalCount ?? res?.Data?.TotalCount ?? list.length;
+
         this.stats = {
-          total: list.length,
+          total: serverTotal || list.length,
           pending: this.pending.length,
           confirmed: this.confirmed.length,
           completed: this.completed.length
@@ -48,6 +86,7 @@ export class DoctorDashboardComponent implements OnInit {
         this.pending = [];
         this.confirmed = [];
         this.completed = [];
+        this.stats = { total: 0, pending: 0, confirmed: 0, completed: 0 };
       }
     });
   }

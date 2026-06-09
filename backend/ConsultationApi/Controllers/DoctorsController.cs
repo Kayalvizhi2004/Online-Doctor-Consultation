@@ -79,6 +79,13 @@ public class DoctorController : ControllerBase
         if (!TryGetUserId(out var doctorId))
             return Unauthorized(ApiResponse<string>.Failure("Unauthorized", 401));
 
+        if (!ModelState.IsValid)
+        {
+            var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
+            var msg = string.Join("; ", errors);
+            return BadRequest(ApiResponse<string>.Failure(msg, 400));
+        }
+
         var result = await _doctorService.UpdateProfileAsync(doctorId, request);
 
         return Ok(result);
@@ -130,5 +137,23 @@ public class DoctorController : ControllerBase
         var result = await _doctorService.ToggleAvailabilityAsync(doctorId, request.IsAvailable);
 
         return Ok(result);
+    }
+
+    // GET: api/doctors/availability
+    [HttpGet("availability")]
+    [Authorize(Policy = "RequireDoctor")]
+    [ProducesResponseType(
+        typeof(ApiResponse<IEnumerable<AvailabilitySlotDto>>), 200)]
+    public async Task<IActionResult> GetMyAvailability()
+    {
+        if (!TryGetUserId(out var doctorId))
+            return Unauthorized(ApiResponse<string>.Failure("Unauthorized", 401));
+
+        var result = await _doctorService.GetDoctorByIdAsync(doctorId);
+
+        if (result == null || result.Data == null)
+            return Ok(ApiResponse<IEnumerable<AvailabilitySlotDto>>.SuccessResponse(Array.Empty<AvailabilitySlotDto>()));
+
+        return Ok(ApiResponse<IEnumerable<AvailabilitySlotDto>>.SuccessResponse(result.Data.Slots));
     }
 }

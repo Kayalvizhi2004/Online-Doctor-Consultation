@@ -77,4 +77,18 @@ public class AuthController : ControllerBase
 
         return Ok(result);
     }
+
+    // PUT: api/auth/me
+    [HttpPut("me")]
+    [Authorize]
+    [ProducesResponseType(typeof(ApiResponse<string>), 200)]
+    public async Task<IActionResult> UpdateMe([FromBody] ConsultationApi.Application.DTOs.Auth.UpdateUserProfileDto dto)
+    {
+        var userId = Guid.Parse(User.FindFirst("sub")?.Value ??
+            User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value!);
+
+        var result = await _authService.UpdateCurrentUserAsync(userId, dto);
+
+        return StatusCode(result.StatusCode, result);
+    }
 }

@@ -4,7 +4,7 @@
   <aside class="sidebar" [class.collapsed]="!isSidebarOpen">
     <div class="sidebar-header">
       <a class="profile-link" routerLink="/profile">
-        <img [src]="user?.photoUrl || 'assests/default-avatar.jpg'" alt="Avatar" class="sidebar-avatar">
+        <img [src]="user?.photoUrl || 'assets/default-avatar.svg'" alt="Avatar" class="sidebar-avatar">
         <div class="sidebar-user">
           <div class="name">{{ user?.fullName?.split(' ')?.[0] || 'User' }}</div>
           <div class="role">{{ role }}</div>

@@ -84,7 +84,7 @@ export class ListComponent implements OnInit {
       alert('Invalid appointment');
       return;
     }
-    this.router.navigate(['/consultation', sessionId]);
+    this.router.navigate(['/chat', sessionId]);
   }
 
   getStatusColor(status: string): string {

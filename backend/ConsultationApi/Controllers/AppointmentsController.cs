@@ -19,6 +19,19 @@ public class AppointmentController : ControllerBase
         _appointmentService = appointmentService;
     }
 
+    private bool TryGetUserId(out Guid userId)
+    {
+        userId = Guid.Empty;
+        var sub = User.FindFirst("sub")?.Value;
+        if (string.IsNullOrEmpty(sub))
+            sub = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+        if (string.IsNullOrEmpty(sub))
+            return false;
+
+        return Guid.TryParse(sub, out userId);
+    }
+
     //---------------------------------------------------
     // POST /api/appointments
     // Patient books appointment
@@ -50,8 +63,8 @@ public class AppointmentController : ControllerBase
         [FromQuery] int pageNumber = 1,
         [FromQuery] int pageSize = 10)
     {
-        var userId = Guid.Parse(User.FindFirst("sub")?.Value ??
-            User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value!);
+        if (!TryGetUserId(out var userId))
+            return Unauthorized(ApiResponse<string>.Failure("Unauthorized", 401));
 
         var role = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value ??
             User.FindFirst("role")?.Value ?? string.Empty;
@@ -78,8 +91,8 @@ public class AppointmentController : ControllerBase
     public async Task<IActionResult> GetAppointmentById(
         Guid id)
     {
-        var userId = Guid.Parse(User.FindFirst("sub")?.Value ??
-            User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value!);
+        if (!TryGetUserId(out var userId))
+            return Unauthorized(ApiResponse<string>.Failure("Unauthorized", 401));
 
         var response =
             await _appointmentService.GetAppointmentAsync(id, userId);

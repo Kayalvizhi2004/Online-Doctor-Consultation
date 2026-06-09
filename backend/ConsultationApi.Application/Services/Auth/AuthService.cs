@@ -252,4 +252,30 @@ public class AuthService : IAuthService
             }
         };
     }
+
+    public async Task<ApiResponse<string>> UpdateCurrentUserAsync(Guid userId, UpdateUserProfileDto dto)
+    {
+        var user = await _users.GetByIdAsync(userId);
+        if (user == null)
+        {
+            return new ApiResponse<string>
+            {
+                Success = false,
+                Message = "User not found",
+                StatusCode = 404
+            };
+        }
+
+        user.FullName = dto.FullName ?? user.FullName;
+        user.Phone = dto.Phone ?? user.Phone;
+        // Optional fields - stored as free text on User entity for now
+        // Save changes
+        await _users.SaveChangesAsync();
+
+        return new ApiResponse<string>
+        {
+            Success = true,
+            Message = "Profile updated"
+        };
+    }
 }

@@ -112,7 +112,7 @@ export class AuthService {
       role: u.role || u.Role,
       createdAt: u.createdAt || u.CreatedAt,
       // Use locally stored photo if available
-      photoUrl: localStorage.getItem('photoUrl') || 'assests/default-avatar.jpg'
+      photoUrl: localStorage.getItem('photoUrl') || 'assets/default-avatar.svg'
     };
   }
 }

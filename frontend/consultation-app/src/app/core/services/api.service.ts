@@ -57,6 +57,11 @@ export class ApiService {
   }
 
   private handleApiResponse<T>(res: ApiResponse<T>): T {
+    // Handle null/NoContent responses (HTTP 204) safely
+    if (res == null) {
+      return (null as unknown) as T;
+    }
+
     // If backend returns the ApiResponse wrapper (success / data), use it.
     const maybe = res as any;
     if (maybe && (maybe.hasOwnProperty('success') || maybe.hasOwnProperty('Success') || maybe.hasOwnProperty('Data') || maybe.hasOwnProperty('data'))) {

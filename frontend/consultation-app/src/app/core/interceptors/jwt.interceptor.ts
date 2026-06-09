@@ -15,6 +15,7 @@ export class JwtInterceptor implements HttpInterceptor {
   intercept(req: HttpRequest<any>, next: HttpHandler) {
 
     const token = this.auth.getToken();
+    console.debug('[JwtInterceptor] token present:', !!token);
 
     if (token) {
       req = req.clone({

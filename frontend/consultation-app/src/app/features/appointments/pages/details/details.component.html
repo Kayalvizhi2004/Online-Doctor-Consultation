@@ -8,4 +8,21 @@
   <button (click)="appointment.status === 'Pending' && null">
     Action Placeholder
   </button>
+
+  <section *ngIf="appointment.status === 'Completed'">
+    <h3>Leave a Review</h3>
+    <div>
+      <label>Rating</label>
+      <select [formControl]="reviewForm.controls['rating']">
+        <option *ngFor="let r of [5,4,3,2,1]" [value]="r">{{r}}</option>
+      </select>
+    </div>
+    <div>
+      <label>Comment</label>
+      <textarea [formControl]="reviewForm.controls['comment']" rows="4"></textarea>
+    </div>
+    <div>
+      <button (click)="submitReview()">Submit Review</button>
+    </div>
+  </section>
 </div>

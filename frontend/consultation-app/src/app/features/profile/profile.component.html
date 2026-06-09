@@ -46,12 +46,13 @@
           <div class="form-group">
             <label for="email">Email Address *</label>
             <input 
-              type="email" 
-              formControlName="email" 
-              id="email"
-              class="form-control"
-              placeholder="Enter your email"
-            />
+                type="email" 
+                formControlName="email" 
+                id="email"
+                class="form-control"
+                placeholder="Enter your email"
+                readonly
+              />
             <p *ngIf="getFieldError('email')" class="field-error">
               {{ getFieldError('email') }}
             </p>

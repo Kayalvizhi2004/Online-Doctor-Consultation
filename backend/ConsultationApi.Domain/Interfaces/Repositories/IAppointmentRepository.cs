@@ -19,6 +19,11 @@ public interface IAppointmentRepository
             int page,
             int pageSize);
 
+    Task<int> GetAppointmentsCountAsync(
+        Guid userId,
+        string role,
+        string? status);
+
     Task UpdateAsync(
         Appointment appointment);
 

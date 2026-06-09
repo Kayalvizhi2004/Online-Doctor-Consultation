@@ -121,6 +121,8 @@ public class AppointmentService : IAppointmentService
                 filter.Page,
                 filter.PageSize);
 
+        var total = await _appointments.GetAppointmentsCountAsync(userId, role, filter.Status);
+
         return new ApiResponse<
             PagedResponse<AppointmentDto>>
         {
@@ -129,7 +131,8 @@ public class AppointmentService : IAppointmentService
             {
                 Items = _mapper.Map<
                     IEnumerable<AppointmentDto>>(
-                        appointments)
+                        appointments),
+                TotalCount = total
             }
         };
     }

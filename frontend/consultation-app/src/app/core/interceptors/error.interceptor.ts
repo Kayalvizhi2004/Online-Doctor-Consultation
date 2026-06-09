@@ -20,6 +20,8 @@ export class ErrorInterceptor implements HttpInterceptor {
     return next.handle(req).pipe(
       catchError((error: HttpErrorResponse) => {
 
+        console.debug('[ErrorInterceptor] HTTP error', error.status, error.url);
+
         if (error.status === 401) {
           // unauthorized - logout and redirect to login
           try { this.auth.logout(); } catch {}

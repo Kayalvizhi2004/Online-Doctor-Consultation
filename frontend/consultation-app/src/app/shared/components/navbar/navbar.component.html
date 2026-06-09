@@ -34,7 +34,7 @@
       <div class="user-menu">
         <div class="profile-preview">
           <div class="avatar-wrapper" routerLink="/profile">
-            <img [src]="user?.photoUrl || 'assests/default-avatar.jpg'" class="nav-avatar" alt="Avatar">
+            <img [src]="user?.photoUrl || 'assets/default-avatar.svg'" class="nav-avatar" alt="Avatar">
           </div>
           <a class="profile-name desktop-only" routerLink="/profile">{{ user?.fullName?.split(' ')?.[0] || 'User' }}</a>
         </div>

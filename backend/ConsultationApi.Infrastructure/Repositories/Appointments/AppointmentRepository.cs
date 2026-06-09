@@ -93,6 +93,33 @@ public class AppointmentRepository
             .ToListAsync();
     }
 
+    public async Task<int> GetAppointmentsCountAsync(
+        Guid userId,
+        string role,
+        string? status)
+    {
+        var query =
+            _context.Appointments
+                .AsQueryable();
+
+        if (role == "Patient")
+        {
+            query = query.Where(x => x.PatientId == userId);
+        }
+
+        if (role == "Doctor")
+        {
+            query = query.Where(x => x.DoctorId == userId);
+        }
+
+        if (!string.IsNullOrWhiteSpace(status))
+        {
+            query = query.Where(x => x.Status.ToString() == status);
+        }
+
+        return await query.CountAsync();
+    }
+
     public async Task UpdateAsync(
         Appointment appointment)
     {

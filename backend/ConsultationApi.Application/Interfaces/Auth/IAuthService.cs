@@ -16,4 +16,6 @@ public interface IAuthService
 
     Task<ApiResponse<UserProfileDto>> GetCurrentUserAsync(
         Guid userId);
+
+    Task<ApiResponse<string>> UpdateCurrentUserAsync(Guid userId, UpdateUserProfileDto dto);
 }

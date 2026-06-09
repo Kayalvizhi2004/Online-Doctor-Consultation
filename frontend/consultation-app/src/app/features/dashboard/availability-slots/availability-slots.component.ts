@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { HttpClient } from '@angular/common/http';
 import { ApiService } from '../../../core/services/api.service';
+import { DoctorService } from '../../../core/services/doctor.service';
 
 interface Slot {
   id: string;
@@ -31,7 +31,7 @@ export class AvailabilitySlotsComponent implements OnInit {
 
   daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
-  constructor(private fb: FormBuilder, private http: HttpClient, private api: ApiService) {
+  constructor(private fb: FormBuilder, private api: ApiService, private doctorService: DoctorService) {
     this.form = this.fb.group({
       dayOfWeek: ['Monday', Validators.required],
       startTime: ['09:00', Validators.required],
@@ -46,9 +46,19 @@ export class AvailabilitySlotsComponent implements OnInit {
 
   loadSlots(): void {
     this.isLoading = true;
-    this.api.get<any>('/api/doctors/availability').subscribe({
+    this.doctorService.getAvailability().subscribe({
       next: (res: any) => {
-        this.slots = Array.isArray(res) ? res : (res?.items ?? res?.Items ?? res?.data?.items ?? res?.Data ?? []);
+        const data = res?.data ?? res?.Data ?? res ?? [];
+        const items = Array.isArray(data) ? data : (data?.items ?? data?.Items ?? []);
+        this.slots = items.map((s: any) => ({
+          id: s.id || s.Id,
+          dayOfWeek: new Date(s.date || s.Date).toLocaleDateString(undefined, { weekday: 'long' }),
+          startTime: (s.startTime || s.StartTime || '').toString().slice(0,5),
+          endTime: (s.endTime || s.EndTime || '').toString().slice(0,5),
+          isAvailable: !(s.isBooked || s.IsBooked),
+          bookedCount: (s.isBooked || s.IsBooked) ? 1 : 0,
+          capacity: 1
+        }));
         this.isLoading = false;
       },
       error: (err: any) => {
@@ -65,33 +75,48 @@ export class AvailabilitySlotsComponent implements OnInit {
     }
 
     this.isSubmitting = true;
-    const payload = this.form.value;
+    const formVal = this.form.value;
+    const dateStr = this.nextDateForWeekday(formVal.dayOfWeek);
+    const payload = {
+      Date: dateStr,
+      StartTime: `${formVal.startTime}:00`,
+      EndTime: `${formVal.endTime}:00`
+    };
 
     if (this.editingSlotId) {
-      // Update existing slot
-      this.api.put<any>(`/api/doctors/availability/${this.editingSlotId}`, payload).subscribe({
+      // replace existing slot by deleting then creating new
+      this.doctorService.deleteSlot(this.editingSlotId).subscribe({
         next: () => {
-          alert('Slot updated successfully');
-          this.loadSlots();
-          this.resetForm();
-          this.isSubmitting = false;
+          this.doctorService.addSlots(payload).subscribe({
+            next: () => {
+              alert('Slot updated successfully');
+              this.loadSlots();
+              this.resetForm();
+              this.isSubmitting = false;
+            },
+            error: (err: any) => {
+              console.error('Failed to create replacement slot', err);
+              alert('Failed to update slot');
+              this.isSubmitting = false;
+            }
+          });
         },
-        error: (err : any) => {
-          console.error('Failed to update slot', err);
+        error: (err: any) => {
+          console.error('Failed to delete slot while updating', err);
           alert('Failed to update slot');
           this.isSubmitting = false;
         }
       });
     } else {
       // Create new slot
-      this.api.post<any>('/api/doctors/availability', payload).subscribe({
+      this.doctorService.addSlots(payload).subscribe({
         next: () => {
           alert('Slot created successfully');
           this.loadSlots();
           this.resetForm();
           this.isSubmitting = false;
         },
-        error: (err : any) => {
+        error: (err: any) => {
           console.error('Failed to create slot', err);
           alert('Failed to create slot');
           this.isSubmitting = false;
@@ -113,12 +138,12 @@ export class AvailabilitySlotsComponent implements OnInit {
   deleteSlot(slotId: string): void {
     if (!confirm('Are you sure you want to delete this slot?')) return;
 
-    this.api.delete<any>(`/api/doctors/availability/${slotId}`).subscribe({
+    this.doctorService.deleteSlot(slotId).subscribe({
       next: () => {
         alert('Slot deleted successfully');
         this.loadSlots();
       },
-      error: (err : any) => {
+      error: (err: any) => {
         console.error('Failed to delete slot', err);
         alert('Failed to delete slot');
       }
@@ -136,14 +161,26 @@ export class AvailabilitySlotsComponent implements OnInit {
   }
 
   toggleSlotStatus(slotId: string, currentStatus: boolean): void {
-    this.api.patch<any>(`/api/doctors/availability/${slotId}/toggle`, { isAvailable: !currentStatus }).subscribe({
+    this.doctorService.toggleAvailability({ IsAvailable: !currentStatus }).subscribe({
       next: () => {
         this.loadSlots();
       },
-      error: (err : any) => {
-        console.error('Failed to toggle slot status', err);
+      error: (err: any) => {
+        console.error('Failed to toggle availability', err);
       }
     });
+  }
+
+  private nextDateForWeekday(dayName: string): string {
+    const dayMap: { [key: string]: number } = {
+      'Sunday': 0, 'Monday': 1, 'Tuesday': 2, 'Wednesday': 3,
+      'Thursday': 4, 'Friday': 5, 'Saturday': 6
+    };
+    const target = dayMap[dayName];
+    const now = new Date();
+    const diff = (target + 7 - now.getDay()) % 7 || 7; // next occurrence (not today)
+    const next = new Date(now.getFullYear(), now.getMonth(), now.getDate() + diff);
+    return next.toISOString().split('T')[0];
   }
 
   getSlotsByDay(day: string): Slot[] {

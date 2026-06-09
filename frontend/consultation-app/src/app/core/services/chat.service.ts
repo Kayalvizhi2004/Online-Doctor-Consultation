@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { ApiService } from './api.service';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
+import { SignalRService } from './signalr.service';
 
 @Injectable({ providedIn: 'root' })
 export class ChatService {
@@ -15,8 +16,9 @@ export class ChatService {
   public unreadCount$ = this.unreadCountSubject.asObservable();
 
   private currentSessionId: string | null = null;
+  private hubConnected = false;
 
-  constructor(private api: ApiService) {}
+  constructor(private api: ApiService, private signalR: SignalRService) {}
 
   // HTTP-backed methods
   getMessages(sessionId: string) {
@@ -46,14 +48,30 @@ export class ChatService {
 
   // Lightweight realtime stubs (no external SignalR dependency)
   initSignalR(_token?: string) {
-    // No-op for now. In a real app, initialize SignalR connection here.
-    return;
+    // Initialize SignalR connection and wire up message events.
+    this.signalR.startConnection()
+      .then(() => {
+        this.hubConnected = true;
+        this.signalR.onMessage((msg: any) => {
+          const current = this.messagesSubject.getValue();
+          this.messagesSubject.next([...current, msg]);
+          // Refresh unread count when receiving message
+          this.getUnreadTotal().subscribe();
+        });
+      })
+      .catch((err: any) => {
+        console.warn('SignalR connection failed, falling back to REST', err);
+        this.hubConnected = false;
+      });
   }
 
   joinSession(sessionId: string) {
     this.currentSessionId = sessionId;
     // Load initial messages and push to subject
     this.getMessages(sessionId).subscribe((msgs: any) => this.messagesSubject.next(msgs || []));
+    if (this.hubConnected) {
+      this.signalR.joinSession(sessionId).catch(() => {});
+    }
   }
 
   leaveSession(_sessionId: string) {
@@ -62,12 +80,23 @@ export class ChatService {
   }
 
   sendRealtimeMessage(sessionId: string, text: string, senderId: string): Observable<any> {
-    const payload = { text, senderId, sentAt: new Date().toISOString(), messageType: 'text' };
-    // Optimistically push to local messages stream
+    const payload = { message: text, messageType: 'text', sentAt: new Date().toISOString() };
+    // If hub connected, use SignalR invoke and optimistically add
+    if (this.hubConnected) {
+      const current = this.messagesSubject.getValue();
+      this.messagesSubject.next([...current, { ...payload, senderId }]);
+      return new Observable((observer) => {
+        this.signalR.sendMessage(sessionId, text)
+          .then(() => { observer.next(null); observer.complete(); })
+          .catch((err: any) => { observer.error(err); });
+      });
+    }
+
+    // Fallback to REST
+    const restPayload = { Message: text, MessageType: 'text' };
     const current = this.messagesSubject.getValue();
-    this.messagesSubject.next([...current, payload]);
-    // Also persist via API
-    return this.sendMessage(sessionId, payload);
+    this.messagesSubject.next([...current, { ...payload, senderId }]);
+    return this.sendMessage(sessionId, restPayload);
   }
 
   sendImageMessage(sessionId: string, base64: string, senderId: string): Observable<any> {

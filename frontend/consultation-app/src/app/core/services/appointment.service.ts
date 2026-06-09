@@ -7,7 +7,12 @@ export class AppointmentService {
   private readonly api = inject(ApiService);
 
   book(data: any): Observable<any> {
-    return this.api.post<any>('/api/appointments', data);
+    const payload = {
+      DoctorId: data.doctorId || data.DoctorId || data.doctor || data.Doctor,
+      SlotId: data.slotId || data.SlotId || data.slot || data.Slot,
+      Notes: data.notes || data.Notes || ''
+    };
+    return this.api.post<any>('/api/appointments', payload);
   }
 
   getAll(status?: string): Observable<any[]> {
@@ -33,5 +38,9 @@ export class AppointmentService {
 
   endSession(id: string): Observable<any> {
     return this.api.post<any>(`/api/appointments/${id}/session/end`, {});
+  }
+
+  review(appointmentId: string, data: any): Observable<any> {
+    return this.api.post<any>(`/api/appointments/${appointmentId}/review`, data);
   }
 }
