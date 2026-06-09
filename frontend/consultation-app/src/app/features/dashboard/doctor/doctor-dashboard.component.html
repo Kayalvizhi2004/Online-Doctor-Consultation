@@ -1,56 +1,152 @@
-<div class="dashboard-shell">
-  <aside class="sidebar">
-    <ul>
-      <li><a routerLink="./overview">Overview</a></li>
-      <li><a routerLink="./slots">Slots</a></li>
-      <li><a routerLink="./appointments">Appointments</a></li>
-      <li><a routerLink="./reviews">Reviews</a></li>
-      <li><a routerLink="./profile">Profile</a></li>
-    </ul>
-  </aside>
-
-  <main class="main">
-    <div class="topbar">
-      <div class="title">Doctor Dashboard</div>
-      <div class="actions"><button class="btn btn-outline">New Slot</button></div>
+<div class="dashboard-container">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div>
+      <h1>Doctor Dashboard</h1>
+      <p class="subtitle">Manage appointments, consultations and schedule</p>
     </div>
-
-    <section class="content"><ng-content></ng-content></section>
-  </main>
-</div>
-<div class="dashboard">
-
-  <h2>Doctor Dashboard</h2>
-
-  <div class="grid">
-
-    <div class="card">
-      <h3>Total Appointments</h3>
-      <p>{{appointments.length}}</p>
-    </div>
-
-    <div class="card highlight">
-      <h3>Pending</h3>
-      <p>{{pending.length}}</p>
-    </div>
-
+    <a routerLink="/slots" class="btn btn-primary">+ Create Slot</a>
   </div>
 
-  <div class="section">
-
-    <h3>Appointments</h3>
-
-    <div *ngFor="let a of appointments" class="item">
-
-      <p><b>Patient:</b> {{a.patientName}}</p>
-      <p><b>Status:</b> {{a.status}}</p>
-
-      <button (click)="confirm(a.id)">Confirm</button>
-      <button (click)="startSession(a.id)">Start</button>
-      <button (click)="endSession(a.id)">End</button>
-
+  <!-- Stats Cards -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon total">📊</div>
+      <div class="stat-content">
+        <p class="stat-label">Total Appointments</p>
+        <h3 class="stat-value">{{ stats.total }}</h3>
+      </div>
     </div>
 
+    <div class="stat-card">
+      <div class="stat-icon pending">⏳</div>
+      <div class="stat-content">
+        <p class="stat-label">Pending Confirmation</p>
+        <h3 class="stat-value">{{ stats.pending }}</h3>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon confirmed">✅</div>
+      <div class="stat-content">
+        <p class="stat-label">Confirmed</p>
+        <h3 class="stat-value">{{ stats.confirmed }}</h3>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon completed">🎉</div>
+      <div class="stat-content">
+        <p class="stat-label">Completed</p>
+        <h3 class="stat-value">{{ stats.completed }}</h3>
+      </div>
+    </div>
   </div>
 
+  <!-- Pending Appointments -->
+  <div class="section-container">
+    <div class="section-header">
+      <h2>Pending Appointments</h2>
+      <span class="badge">{{ pending.length }}</span>
+    </div>
+
+    <div *ngIf="pending.length === 0" class="empty-state">
+      <p>No pending appointments</p>
+    </div>
+
+    <table *ngIf="pending.length > 0" class="appointments-table">
+      <thead>
+        <tr>
+          <th>Patient Name</th>
+          <th>Appointment Date</th>
+          <th>Time</th>
+          <th>Reason</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let appt of pending">
+          <td class="patient-name">{{ appt.patientName }}</td>
+          <td>{{ appt.date | date: 'MMM dd, yyyy' }}</td>
+          <td>{{ appt.startTime }} - {{ appt.endTime }}</td>
+          <td class="reason">{{ appt.reason || 'General Consultation' }}</td>
+          <td class="actions">
+            <button class="btn btn-sm btn-primary" (click)="confirm(appt.id)">Confirm</button>
+            <button class="btn btn-sm btn-outline">Reject</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Confirmed Appointments -->
+  <div class="section-container">
+    <div class="section-header">
+      <h2>Upcoming Consultations</h2>
+      <span class="badge">{{ confirmed.length }}</span>
+    </div>
+
+    <div *ngIf="confirmed.length === 0" class="empty-state">
+      <p>No confirmed appointments</p>
+    </div>
+
+    <table *ngIf="confirmed.length > 0" class="appointments-table">
+      <thead>
+        <tr>
+          <th>Patient Name</th>
+          <th>Appointment Date</th>
+          <th>Time</th>
+          <th>Reason</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let appt of confirmed">
+          <td class="patient-name">{{ appt.patientName }}</td>
+          <td>{{ appt.date | date: 'MMM dd, yyyy' }}</td>
+          <td>{{ appt.startTime }} - {{ appt.endTime }}</td>
+          <td class="reason">{{ appt.reason || 'General Consultation' }}</td>
+          <td class="actions">
+            <button class="btn btn-sm btn-success" (click)="startSession(appt.id)">Start Session</button>
+            <button class="btn btn-sm btn-outline">Reschedule</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Completed Appointments -->
+  <div class="section-container">
+    <div class="section-header">
+      <h2>Completed Consultations</h2>
+      <span class="badge secondary">{{ completed.length }}</span>
+    </div>
+
+    <div *ngIf="completed.length === 0" class="empty-state">
+      <p>No completed appointments</p>
+    </div>
+
+    <table *ngIf="completed.length > 0" class="appointments-table">
+      <thead>
+        <tr>
+          <th>Patient Name</th>
+          <th>Appointment Date</th>
+          <th>Time</th>
+          <th>Reason</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let appt of completed">
+          <td class="patient-name">{{ appt.patientName }}</td>
+          <td>{{ appt.date | date: 'MMM dd, yyyy' }}</td>
+          <td>{{ appt.startTime }} - {{ appt.endTime }}</td>
+          <td class="reason">{{ appt.reason || 'General Consultation' }}</td>
+          <td class="actions">
+            <button class="btn btn-sm btn-link">View Summary</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 </div>

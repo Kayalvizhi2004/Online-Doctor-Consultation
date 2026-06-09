@@ -1,27 +1,113 @@
-<section class="appointments">
-  <div class="toolbar">
-    <select (change)="filterStatus($event)">
-      <option value="">All</option>
-      <option>Pending</option>
-      <option>Confirmed</option>
-      <option>Completed</option>
-      <option>Cancelled</option>
-    </select>
+<div class="appointments-container">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div>
+      <h1>My Appointments</h1>
+      <p class="subtitle">Manage your consultation appointments</p>
+    </div>
+    <button class="btn btn-primary" routerLink="/book-appointment">+ New Appointment</button>
   </div>
 
-  <ul class="appt-list">
-    <li *ngFor="let a of appointments">
-      <div class="left">
-        <div class="doctor">Dr. {{ a.doctorName }}</div>
-        <div class="slot">{{ a.date | date:'mediumDate' }} · {{ a.startTime }} - {{ a.endTime }}</div>
+  <!-- Filter Section -->
+  <div class="filter-section">
+    <div class="filter-group">
+      <label>Filter by Status:</label>
+      <select (change)="filterStatus($event)" class="filter-select">
+        <option value="">All Appointments</option>
+        <option value="Pending">Pending</option>
+        <option value="Confirmed">Confirmed</option>
+        <option value="Completed">Completed</option>
+        <option value="Cancelled">Cancelled</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="appointments.length === 0" class="empty-state">
+    <div class="empty-icon">📋</div>
+    <p class="empty-title">No Appointments</p>
+    <p class="empty-subtitle">You don't have any appointments scheduled yet</p>
+    <button class="btn btn-primary" routerLink="/book-appointment">Book Your First Appointment</button>
+  </div>
+
+  <!-- Appointments List -->
+  <div *ngIf="appointments.length > 0" class="appointments-list">
+    <div *ngFor="let appt of appointments" class="appointment-card" [class]="'status-' + (appt.status | lowercase)">
+      
+      <!-- Card Header with Status -->
+      <div class="card-header">
+        <div class="status-indicator" [style.background-color]="getStatusColor(appt.status)"></div>
+        <span class="status-badge" [style.background-color]="getStatusBg(appt.status)" [style.color]="getStatusColor(appt.status)">
+          {{ appt.status }}
+        </span>
+        <span class="card-time">{{ appt.date | date: 'MMM dd, yyyy' }}</span>
       </div>
-      <div class="right">
-        <span class="badge status-{{ a.status | lowercase }}">{{ a.status }}</span>
-        <div class="actions">
-          <button *ngIf="canCancel(a)" class="btn btn-outline" (click)="cancel(a.id)">Cancel</button>
-          <button *ngIf="canJoin(a)" class="btn btn-primary" (click)="join(a.sessionId)">Join</button>
+
+      <!-- Card Body -->
+      <div class="card-body">
+        <div class="doctor-section">
+          <div class="doctor-avatar">👨‍⚕️</div>
+          <div class="doctor-info">
+            <h3 class="doctor-name">Dr. {{ appt.doctorName }}</h3>
+            <p class="specialization">{{ appt.specialization || 'General Practitioner' }}</p>
+          </div>
+        </div>
+
+        <div class="appointment-details">
+          <div class="detail-item">
+            <span class="detail-icon">📅</span>
+            <span class="detail-text">{{ appt.date | date: 'EEEE, MMM dd, yyyy' }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-icon">⏰</span>
+            <span class="detail-text">{{ appt.startTime }} - {{ appt.endTime }}</span>
+          </div>
+          <div class="detail-item" *ngIf="appt.reason">
+            <span class="detail-icon">📝</span>
+            <span class="detail-text">{{ appt.reason }}</span>
+          </div>
+          <div class="detail-item" *ngIf="appt.consultationFee">
+            <span class="detail-icon">💰</span>
+            <span class="detail-text">₹{{ appt.consultationFee }}</span>
+          </div>
         </div>
       </div>
-    </li>
-  </ul>
-</section>
+
+      <!-- Card Footer with Actions -->
+      <div class="card-footer">
+        <div class="action-buttons">
+          <!-- Pending Actions -->
+          <ng-container *ngIf="appt.status?.toLowerCase() === 'pending'">
+            <button class="btn btn-sm btn-primary">Confirm</button>
+            <button class="btn btn-sm btn-outline">Reschedule</button>
+          </ng-container>
+
+          <!-- Confirmed Actions -->
+          <ng-container *ngIf="appt.status?.toLowerCase() === 'confirmed'">
+            <button class="btn btn-sm btn-success" (click)="join(appt.id)">
+              Start Consultation
+            </button>
+            <button class="btn btn-sm btn-outline" *ngIf="canCancel(appt)" (click)="cancel(appt.id)">
+              Cancel
+            </button>
+            <button class="btn btn-sm btn-outline" *ngIf="!canCancel(appt)">
+              Can't Cancel
+            </button>
+          </ng-container>
+
+          <!-- Completed Actions -->
+          <ng-container *ngIf="appt.status?.toLowerCase() === 'completed'">
+            <button class="btn btn-sm btn-link">View Summary</button>
+            <button class="btn btn-sm btn-link">Write Review</button>
+          </ng-container>
+
+          <!-- Cancelled Actions -->
+          <ng-container *ngIf="appt.status?.toLowerCase() === 'cancelled'">
+            <button class="btn btn-sm btn-primary">Book Again</button>
+          </ng-container>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+

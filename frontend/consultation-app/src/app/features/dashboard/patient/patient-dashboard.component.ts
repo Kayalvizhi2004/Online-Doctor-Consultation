@@ -34,15 +34,35 @@ export class PatientDashboardComponent implements OnInit {
   }
 
   loadAppointments(): void {
-    this.appointmentService.getAll().subscribe((res: any) => {
-      this.appointments = res;
+    this.appointmentService.getAll().subscribe({
+      next: (res: any) => {
+        if (Array.isArray(res)) {
+          this.appointments = res;
+        } else if (res && Array.isArray(res.data)) {
+          this.appointments = res.data;
+        } else {
+          this.appointments = [];
+        }
+      },
+      error: (err) => {
+        console.error('Failed to load appointments', err);
+        this.appointments = [];
+      }
     });
   }
 
   loadNotifications(): void {
-    this.notificationService.getAll().subscribe((res: any) => {
-      this.notifications = res;
-      this.unreadCount = res.filter((n: any) => !n.isRead).length;
+    this.notificationService.getAll().subscribe({
+      next: (res: any) => {
+        const list = Array.isArray(res) ? res : (res && Array.isArray(res.data) ? res.data : []);
+        this.notifications = list;
+        this.unreadCount = list.filter((n: any) => !n.isRead).length;
+      },
+      error: (err) => {
+        console.error('Failed to load notifications', err);
+        this.notifications = [];
+        this.unreadCount = 0;
+      }
     });
   }
 }

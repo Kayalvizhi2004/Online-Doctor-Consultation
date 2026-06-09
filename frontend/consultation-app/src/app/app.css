@@ -515,11 +515,16 @@ html, body {
 /* Sidebar */
 .sidebar {
   width: 250px;
-  background: #ffffff;
-  border-right: 1px solid #e2e8f0;
+  background: linear-gradient(180deg,#ffffff 0%, #f7fbff 100%);
+  border-right: 1px solid #e6eef6;
   overflow-y: auto;
-  padding: 1.5rem 0;
-  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.04);
+  padding: 1rem 0;
+  box-shadow: 2px 0 12px rgba(2,6,23,0.04);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: transform 320ms ease, width 320ms ease;
+  min-height: 100vh;
 }
 
 .sidebar nav {
@@ -529,26 +534,76 @@ html, body {
 }
 
 .sidebar a {
-  color: #475569;
+  color: #334155;
   text-decoration: none;
   padding: 12px 1.5rem;
   border-left: 3px solid transparent;
-  transition: all 0.3s ease;
-  font-weight: 500;
+  transition: all 0.25s ease;
+  font-weight: 600;
   font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
 }
 
 .sidebar a:hover {
-  background: #f1f5f9;
+  background: rgba(3,105,161,0.04);
   color: #0369a1;
   border-left-color: #0369a1;
 }
 
 .sidebar a.active {
-  background: #f0f4f8;
+  background: #eef8ff;
   color: #0369a1;
   border-left-color: #0369a1;
-  font-weight: 600;
+  font-weight: 700;
+}
+
+/* Sidebar header (avatar + name) */
+.sidebar-header {
+  padding: 1rem 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.sidebar-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #e6f0fb;
+}
+
+.sidebar-user .name { font-weight: 700; color: #0f172a; }
+.sidebar-user .role { font-size: 0.85rem; color: #64748b; }
+
+/* Ensure footer sticks to bottom */
+.sidebar-footer { padding: 1rem 1.25rem; display: flex; flex-direction: column; gap: 0.5rem; }
+
+/* Collapsed / toggled states are handled in dashboard layout stylesheet to avoid conflicts. */
+/* Main offset when sidebar is present */
+.layout:not(.sidebar-collapsed) .main { margin-left: 250px; transition: margin 320ms ease; }
+
+/* Mobile: show sidebar as top overlay when opened; collapse vertically */
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    height: auto;
+    transform: translateY(-100%);
+    z-index: 1300;
+    border-right: none;
+    box-shadow: 0 8px 24px rgba(2,6,23,0.12);
+  }
+
+  .layout.sidebar-collapsed .sidebar { transform: translateY(-100%); }
+  .layout:not(.sidebar-collapsed) .sidebar { transform: translateY(0); }
+
+  .mobile-close { position: absolute; top: 10px; right: 12px; background: transparent; border: none; font-size: 20px; }
 }
 
 /* Content Area */
@@ -605,7 +660,7 @@ html, body {
   }
 
   .sidebar {
-    display: none;
+    /* keep sidebar visible on small screens — dashboard layout styles control overlay */
   }
 
   .layout {

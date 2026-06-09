@@ -1,0 +1,205 @@
+<div class="profile-container">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div>
+      <h1>My Profile</h1>
+      <p class="subtitle">Manage your profile information</p>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-state">
+    <p>Loading profile...</p>
+  </div>
+
+  <!-- Profile Form -->
+  <div *ngIf="!isLoading" class="profile-form-wrapper">
+    <!-- Success/Error Messages -->
+    <div *ngIf="successMessage" class="alert alert-success">
+      ✓ {{ successMessage }}
+    </div>
+    <div *ngIf="errorMessage" class="alert alert-error">
+      ✗ {{ errorMessage }}
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="submit()" class="profile-form">
+      
+      <!-- Common Fields (All Users) -->
+      <div class="form-section">
+        <h2>Personal Information</h2>
+        
+        <div class="form-group">
+          <label for="fullName">Full Name *</label>
+          <input 
+            type="text" 
+            formControlName="fullName" 
+            id="fullName"
+            class="form-control"
+            placeholder="Enter your full name"
+          />
+          <p *ngIf="getFieldError('fullName')" class="field-error">
+            {{ getFieldError('fullName') }}
+          </p>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="email">Email Address *</label>
+            <input 
+              type="email" 
+              formControlName="email" 
+              id="email"
+              class="form-control"
+              placeholder="Enter your email"
+            />
+            <p *ngIf="getFieldError('email')" class="field-error">
+              {{ getFieldError('email') }}
+            </p>
+          </div>
+
+          <div class="form-group">
+            <label for="phone">Phone Number *</label>
+            <input 
+              type="tel" 
+              formControlName="phone" 
+              id="phone"
+              class="form-control"
+              placeholder="Enter your phone number"
+            />
+            <p *ngIf="getFieldError('phone')" class="field-error">
+              {{ getFieldError('phone') }}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Doctor-Specific Fields -->
+      <div *ngIf="isDoctor()" class="form-section">
+        <h2>Professional Information</h2>
+
+        <div class="form-group">
+          <label for="specialization">Specialization</label>
+          <input 
+            type="text" 
+            formControlName="specialization" 
+            id="specialization"
+            class="form-control"
+            placeholder="e.g., Cardiology, General Practice"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="bio">Professional Bio</label>
+          <textarea 
+            formControlName="bio" 
+            id="bio"
+            class="form-control textarea"
+            placeholder="Write a brief bio about yourself and your expertise"
+            rows="4"
+          ></textarea>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="consultationFee">Consultation Fee (₹) *</label>
+            <input 
+              type="number" 
+              formControlName="consultationFee" 
+              id="consultationFee"
+              class="form-control"
+              placeholder="0"
+              min="0"
+            />
+            <p *ngIf="getFieldError('consultationFee')" class="field-error">
+              {{ getFieldError('consultationFee') }}
+            </p>
+          </div>
+
+          <div class="form-group">
+            <label for="isAvailable">Availability Status</label>
+            <div class="toggle-group">
+              <button 
+                type="button"
+                class="toggle-btn"
+                [class.active]="form.get('isAvailable')?.value"
+                (click)="toggleAvailability()"
+              >
+                <span class="toggle-indicator"></span>
+                <span class="toggle-label">
+                  {{ form.get('isAvailable')?.value ? 'Available' : 'Unavailable' }}
+                </span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Patient-Specific Fields -->
+      <div *ngIf="isPatient()" class="form-section">
+        <h2>Additional Information</h2>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="dateOfBirth">Date of Birth</label>
+            <input 
+              type="date" 
+              formControlName="dateOfBirth" 
+              id="dateOfBirth"
+              class="form-control"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="gender">Gender</label>
+            <select formControlName="gender" id="gender" class="form-control">
+              <option value="">Select Gender</option>
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="address">Address</label>
+          <textarea 
+            formControlName="address" 
+            id="address"
+            class="form-control textarea"
+            placeholder="Enter your address"
+            rows="3"
+          ></textarea>
+        </div>
+      </div>
+
+      <!-- Form Actions -->
+      <div class="form-actions">
+        <button 
+          type="submit" 
+          class="btn btn-primary"
+          [disabled]="isSubmitting || !form.valid"
+        >
+          {{ isSubmitting ? 'Saving...' : 'Save Changes' }}
+        </button>
+        <button 
+          type="button" 
+          class="btn btn-outline"
+          (click)="loadProfile()"
+        >
+          Discard Changes
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Info Card -->
+  <div class="info-card">
+    <h3>💡 Important Information</h3>
+    <ul>
+      <li>Your profile information is visible to other users</li>
+      <li>Keep your contact information up to date for important notifications</li>
+      <li *ngIf="isDoctor()">Your consultation fee and availability status affect patient bookings</li>
+      <li>All changes are saved immediately to the database</li>
+    </ul>
+  </div>
+</div>

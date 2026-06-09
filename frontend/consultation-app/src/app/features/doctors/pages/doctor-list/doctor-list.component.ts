@@ -9,7 +9,7 @@ import { CommonModule } from '@angular/common';
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './doctor-list.component.html',
-  styleUrls: ['./doctor-list.component.css']
+  styleUrls: ['./doctor-list.component.scss']
 })
 export class DoctorListComponent implements OnInit {
 
@@ -48,7 +48,7 @@ export class DoctorListComponent implements OnInit {
       .subscribe({
         next: (res: any) => {
           // ApiService unwraps { data } so we may receive a paged response or an array
-          this.doctors = res?.items ?? (Array.isArray(res) ? res : []);
+          this.doctors = res?.items ?? res?.Items ?? res?.data?.items ?? res?.Data?.Items ?? (Array.isArray(res) ? res : []);
           // defer loading flag update to avoid ExpressionChangedAfterItHasBeenCheckedError
           setTimeout(() => this.loading = false);
         },

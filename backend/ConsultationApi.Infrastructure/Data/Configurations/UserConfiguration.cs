@@ -42,7 +42,14 @@ public class UserConfiguration
 
         builder.Property(x => x.CreatedAt)
             .HasColumnName("created_at")
+            .HasDefaultValueSql("now()")
+            .ValueGeneratedOnAdd()
             .IsRequired();
+
+        builder.Property(x => x.UpdatedAt)
+            .HasColumnName("updated_at")
+            .HasDefaultValueSql("now()")
+            .ValueGeneratedOnAddOrUpdate();
 
         builder.HasIndex(x => x.Email)
             .HasDatabaseName("ix_users_email")

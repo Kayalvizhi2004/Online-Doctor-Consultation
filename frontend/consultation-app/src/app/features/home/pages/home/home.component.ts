@@ -54,7 +54,7 @@ export class HomeComponent implements OnInit {
     const { search, specialization } = this.searchForm.value;
     this.doctorService.getDoctors({ search, specialization }).subscribe({
       next: (res: any) => {
-        this.doctors = res?.items ?? (Array.isArray(res) ? res : []);
+        this.doctors = res?.items ?? res?.Items ?? res?.data?.items ?? res?.Data?.Items ?? (Array.isArray(res) ? res : []);
         this.loading = false;
       },
       error: () => this.loading = false

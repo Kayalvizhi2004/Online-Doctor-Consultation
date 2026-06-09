@@ -1,17 +1,29 @@
 <nav class="app-nav">
   <div class="nav-left">
+    <!-- Sidebar Toggle Button -->
+    <button class="menu-toggle" (click)="toggleSidebar()" aria-label="Toggle Sidebar">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line>
+      </svg>
+    </button>
     <a class="logo" routerLink="/home">MediConsult</a>
-    <div class="search-inline" role="search">
-      <input aria-label="Search doctors" placeholder="Search doctors, specializations..." />
-      <button class="btn btn-ghost">Search</button>
-    </div>
   </div>
 
   <div class="nav-right">
-    <button class="icon-btn" aria-label="Notifications" title="Notifications">
-      <i class="bell" aria-hidden="true"></i>
-      <span class="badge" *ngIf="unreadCount &gt; 0">{{ unreadCount }}</span>
+    <!-- Realtime Google-Style Notification Icon -->
+    <button class="notification-btn notification-container" aria-label="Notifications" routerLink="/messages">
+      <svg class="nav-icon" viewBox="0 0 24 24" width="24" height="24">
+        <path fill="currentColor" d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/>
+      </svg>
+      <span class="badge red-badge" *ngIf="unreadCount > 0">
+        {{ unreadCount > 9 ? '9+' : unreadCount }}
+      </span>
     </button>
+
+    <div class="search-inline" role="search">
+      <input aria-label="Search doctors" placeholder="Search doctors, specializations..." />
+      <button class="btn btn-ghost search-btn">Search</button>
+    </div>
 
     <ng-container *ngIf="!isAuthenticated">
       <a class="btn btn-outline" routerLink="/auth/login">Login</a>
@@ -20,10 +32,15 @@
 
     <ng-container *ngIf="isAuthenticated">
       <div class="user-menu">
-        <button class="avatar-btn">{{ user?.fullName?.split(' ')?.[0] || user?.email?.charAt(0) || 'U' }}</button>
+        <div class="profile-preview">
+          <div class="avatar-wrapper" routerLink="/profile">
+            <img [src]="user?.photoUrl || 'assests/default-avatar.jpg'" class="nav-avatar" alt="Avatar">
+          </div>
+          <a class="profile-name desktop-only" routerLink="/profile">{{ user?.fullName?.split(' ')?.[0] || 'User' }}</a>
+        </div>
         <ul class="dropdown">
-          <li><a routerLink="/dashboard">Dashboard</a></li>
-          <li><a (click)="logout()">Logout</a></li>
+          <li><a routerLink="/dashboard">My Dashboard</a></li>
+          <li><a (click)="logout()" class="logout-link">Logout</a></li>
         </ul>
       </div>
     </ng-container>

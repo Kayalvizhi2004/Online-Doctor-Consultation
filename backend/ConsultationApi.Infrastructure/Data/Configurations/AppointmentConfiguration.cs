@@ -37,6 +37,11 @@ public class AppointmentConfiguration
             .HasColumnName("created_at")
             .HasDefaultValueSql("now()");
 
+        builder.Property(x => x.UpdatedAt)
+            .HasColumnName("updated_at")
+            .HasDefaultValueSql("now()")
+            .ValueGeneratedOnAddOrUpdate();
+
         builder.HasIndex(x => x.PatientId)
             .HasDatabaseName(
                 "ix_appointments_patient_id");

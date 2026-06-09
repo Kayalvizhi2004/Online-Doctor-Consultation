@@ -30,10 +30,21 @@ public class ChatMessageConfiguration
 
         builder.Property(x => x.SentAt)
             .HasColumnName("sent_at")
-            .HasDefaultValueSql("now()");
+            .HasDefaultValueSql("now()")
+            .ValueGeneratedOnAdd();
 
         builder.Property(x => x.IsRead)
             .HasColumnName("is_read");
+
+        builder.Property(x => x.CreatedAt)
+            .HasColumnName("created_at")
+            .HasDefaultValueSql("now()")
+            .ValueGeneratedOnAdd();
+
+        builder.Property(x => x.UpdatedAt)
+            .HasColumnName("updated_at")
+            .HasDefaultValueSql("now()")
+            .ValueGeneratedOnAddOrUpdate();
 
         builder.HasOne(x => x.Session)
             .WithMany()

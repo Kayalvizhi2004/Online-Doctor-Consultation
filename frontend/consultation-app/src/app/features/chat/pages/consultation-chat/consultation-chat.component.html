@@ -1,13 +1,129 @@
-<div class="chat-shell">
-  <div class="chat-header">{{ sessionTitle }} <span class="status">{{ status }}</span></div>
-  <div class="chat-body" #scrollHost>
-    <div *ngFor="let m of messages" [ngClass]="{ 'mine': m.senderId===me }" class="chat-bubble">
-      <div class="text">{{ m.message }}</div>
-      <div class="meta">{{ m.sentAt | timeAgo }}</div>
+<div class="chat-container">
+  <!-- Session Header -->
+  <div class="chat-header">
+    <div class="header-info">
+      <h2>{{ sessionTitle }}</h2>
+      <span class="status-indicator" [class.active]="status === 'Active'" [class.ended]="status === 'Ended'" [class.waiting]="status === 'Waiting'">
+        {{ status === 'Active' ? '🟢' : (status === 'Ended' ? '🔴' : '🟡') }} {{ status }}
+      </span>
+    </div>
+    <button class="btn btn-danger btn-sm" (click)="endSession()" [disabled]="status === 'Ended'">
+      🔴 End Session
+    </button>
+  </div>
+
+  <!-- Messages Container -->
+  <div class="chat-body" #scrollContainer>
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="loading-state">
+      <p>Loading messages...</p>
+    </div>
+
+    <!-- Messages -->
+    <div *ngFor="let message of messages" [ngClass]="{ 'message-group-mine': isMessageFromMe(message), 'message-group-theirs': !isMessageFromMe(message) }" class="message-group">
+      <!-- Text Message -->
+      <div *ngIf="message.messageType === 'text'" class="chat-bubble" [ngClass]="{ 'mine': isMessageFromMe(message) }">
+        <div class="text">{{ message.message }}</div>
+        <div class="meta">{{ message.sentAt | timeAgo }}</div>
+      </div>
+
+      <!-- Image Message -->
+      <div *ngIf="message.messageType === 'image'" class="chat-bubble image-bubble" [ngClass]="{ 'mine': isMessageFromMe(message) }">
+        <img [src]="message.content" alt="Shared image" class="message-image" />
+        <div class="meta">{{ message.sentAt | timeAgo }}</div>
+      </div>
+
+      <!-- GIF Message -->
+      <div *ngIf="message.messageType === 'gif'" class="chat-bubble gif-bubble" [ngClass]="{ 'mine': isMessageFromMe(message) }">
+        <img [src]="message.content" alt="Shared GIF" class="message-gif" />
+        <div class="meta">{{ message.sentAt | timeAgo }}</div>
+      </div>
+    </div>
+
+    <!-- Typing Indicator -->
+    <div *ngIf="typingUsers.length > 0" class="typing-indicator">
+      <p>{{ typingUsers.join(', ') }} {{ typingUsers.length === 1 ? 'is' : 'are' }} typing...</p>
+      <div class="typing-dots">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
     </div>
   </div>
-  <div class="chat-input">
-    <input [(ngModel)]="draft" (keydown.enter)="send()" placeholder="Write a message..." />
-    <button class="btn btn-primary" (click)="send()">Send</button>
+
+  <!-- Image Preview Modal -->
+  <div *ngIf="showImagePreview" class="image-preview-modal">
+    <div class="modal-overlay" (click)="cancelImagePreview()"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Preview Image</h3>
+        <button class="btn-close" (click)="cancelImagePreview()">✕</button>
+      </div>
+      <img *ngIf="previewImageUrl" [src]="previewImageUrl" alt="Preview" class="preview-image" />
+      <div class="modal-footer">
+        <button class="btn btn-outline" (click)="cancelImagePreview()">Cancel</button>
+        <button class="btn btn-primary" (click)="sendImage()" [disabled]="isSubmitting">
+          {{ isSubmitting ? 'Sending...' : 'Send Image' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- GIF Picker Placeholder -->
+  <div *ngIf="showGifPicker" class="gif-picker-modal">
+    <div class="modal-overlay" (click)="showGifPicker = false"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Select GIF</h3>
+        <button class="btn-close" (click)="showGifPicker = false">✕</button>
+      </div>
+      <div class="gif-placeholder">
+        <p>🎬 GIF Picker</p>
+        <p class="subtitle">Connect to Giphy or search GIFs here</p>
+        <div class="gif-grid">
+          <div class="gif-item" (click)="insertGif('https://media.giphy.com/media/l0HlDtKPoYJhFtHUQ/giphy.gif')">
+            <div class="gif-placeholder-box">GIF 1</div>
+          </div>
+          <div class="gif-item" (click)="insertGif('https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif')">
+            <div class="gif-placeholder-box">GIF 2</div>
+          </div>
+          <div class="gif-item" (click)="insertGif('https://media.giphy.com/media/l0MYUGkxDwVFxToAE/giphy.gif')">
+            <div class="gif-placeholder-box">GIF 3</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Message Input Section -->
+  <div class="chat-input-section">
+    <div class="input-controls">
+      <button class="btn btn-icon" (click)="uploadImage()" title="Upload Image">
+        🖼️
+      </button>
+      <button class="btn btn-icon" (click)="showGifPicker = true" title="Select GIF">
+        🎬
+      </button>
+    </div>
+
+    <div class="input-wrapper">
+      <input 
+        [(ngModel)]="draft" 
+        (keydown.enter)="send()"
+        (keydown)="notifyTyping()"
+        (keyup)="notifyTyping()"
+        placeholder="Type a message..."
+        class="message-input"
+        [disabled]="status === 'Ended'"
+      />
+    </div>
+
+    <button 
+      class="btn btn-primary" 
+      (click)="send()"
+      [disabled]="!draft.trim() || isSubmitting || status === 'Ended'"
+    >
+      {{ isSubmitting ? '...' : '📤' }}
+    </button>
   </div>
 </div>

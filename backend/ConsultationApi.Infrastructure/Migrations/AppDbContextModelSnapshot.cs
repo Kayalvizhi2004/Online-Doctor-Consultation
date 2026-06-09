@@ -28,8 +28,10 @@ namespace ConsultationApi.Infrastructure.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at");
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
 
                     b.Property<Guid>("DoctorId")
                         .HasColumnType("uuid")
@@ -53,7 +55,10 @@ namespace ConsultationApi.Infrastructure.Migrations
                         .HasColumnName("status");
 
                     b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("now()");
 
                     b.HasKey("Id");
 
@@ -81,22 +86,30 @@ namespace ConsultationApi.Infrastructure.Migrations
                         .HasColumnName("appointment_id");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
 
                     b.Property<DateTime?>("EndedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("ended_at");
 
                     b.Property<DateTime>("StartedAt")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("started_at");
+                        .HasColumnName("started_at")
+                        .HasDefaultValueSql("now()");
 
                     b.Property<string>("Summary")
                         .HasColumnType("text")
                         .HasColumnName("summary");
 
                     b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("now()");
 
                     b.HasKey("Id");
 
@@ -112,7 +125,10 @@ namespace ConsultationApi.Infrastructure.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
 
                     b.Property<bool>("IsRead")
                         .HasColumnType("boolean")
@@ -128,15 +144,20 @@ namespace ConsultationApi.Infrastructure.Migrations
                         .HasColumnName("sender_id");
 
                     b.Property<DateTime>("SentAt")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("sent_at");
+                        .HasColumnName("sent_at")
+                        .HasDefaultValueSql("now()");
 
                     b.Property<Guid>("SessionId")
                         .HasColumnType("uuid")
                         .HasColumnName("session_id");
 
                     b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("now()");
 
                     b.HasKey("Id");
 
@@ -153,7 +174,10 @@ namespace ConsultationApi.Infrastructure.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
 
                     b.Property<DateOnly>("Date")
                         .HasColumnType("date")
@@ -176,7 +200,10 @@ namespace ConsultationApi.Infrastructure.Migrations
                         .HasColumnName("start_time");
 
                     b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("now()");
 
                     b.HasKey("Id");
 
@@ -252,7 +279,10 @@ namespace ConsultationApi.Infrastructure.Migrations
                         .HasColumnName("consultation_fee");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
 
                     b.Property<bool>("IsAvailable")
                         .HasColumnType("boolean")
@@ -265,7 +295,10 @@ namespace ConsultationApi.Infrastructure.Migrations
                         .HasColumnName("specialization");
 
                     b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("now()");
 
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid")
@@ -284,7 +317,7 @@ namespace ConsultationApi.Infrastructure.Migrations
                             Id = new Guid("66666666-6666-6666-6666-666666666666"),
                             Bio = "Heart specialist",
                             ConsultationFee = 500m,
-                            CreatedAt = new DateTime(2026, 6, 7, 2, 43, 56, 586, DateTimeKind.Utc).AddTicks(8231),
+                            CreatedAt = new DateTime(2026, 6, 9, 1, 58, 51, 609, DateTimeKind.Utc).AddTicks(7085),
                             IsAvailable = true,
                             Specialization = "Cardiology",
                             UserId = new Guid("33333333-3333-3333-3333-333333333333")
@@ -294,7 +327,7 @@ namespace ConsultationApi.Infrastructure.Migrations
                             Id = new Guid("77777777-7777-7777-7777-777777777777"),
                             Bio = "Skin specialist",
                             ConsultationFee = 400m,
-                            CreatedAt = new DateTime(2026, 6, 7, 2, 43, 56, 586, DateTimeKind.Utc).AddTicks(8237),
+                            CreatedAt = new DateTime(2026, 6, 9, 1, 58, 51, 609, DateTimeKind.Utc).AddTicks(7089),
                             IsAvailable = true,
                             Specialization = "Dermatology",
                             UserId = new Guid("44444444-4444-4444-4444-444444444444")
@@ -304,7 +337,7 @@ namespace ConsultationApi.Infrastructure.Migrations
                             Id = new Guid("88888888-8888-8888-8888-888888888888"),
                             Bio = "Senior cardiologist",
                             ConsultationFee = 700m,
-                            CreatedAt = new DateTime(2026, 6, 7, 2, 43, 56, 586, DateTimeKind.Utc).AddTicks(8240),
+                            CreatedAt = new DateTime(2026, 6, 9, 1, 58, 51, 609, DateTimeKind.Utc).AddTicks(7092),
                             IsAvailable = true,
                             Specialization = "Cardiology",
                             UserId = new Guid("55555555-5555-5555-5555-555555555555")
@@ -317,8 +350,10 @@ namespace ConsultationApi.Infrastructure.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at");
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
 
                     b.Property<bool>("IsRead")
                         .HasColumnType("boolean")
@@ -340,7 +375,10 @@ namespace ConsultationApi.Infrastructure.Migrations
                         .HasColumnName("type");
 
                     b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("now()");
 
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid")
@@ -365,8 +403,10 @@ namespace ConsultationApi.Infrastructure.Migrations
                         .HasColumnName("comment");
 
                     b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at");
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
 
                     b.Property<Guid>("PatientId")
                         .HasColumnType("uuid")
@@ -377,7 +417,10 @@ namespace ConsultationApi.Infrastructure.Migrations
                         .HasColumnName("rating");
 
                     b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("now()");
 
                     b.HasKey("Id");
 
@@ -438,8 +481,10 @@ namespace ConsultationApi.Infrastructure.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at");
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
 
                     b.Property<string>("Email")
                         .IsRequired()
@@ -470,7 +515,10 @@ namespace ConsultationApi.Infrastructure.Migrations
                         .HasColumnName("role");
 
                     b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("now()");
 
                     b.HasKey("Id");
 
@@ -484,50 +532,50 @@ namespace ConsultationApi.Infrastructure.Migrations
                         new
                         {
                             Id = new Guid("11111111-1111-1111-1111-111111111111"),
-                            CreatedAt = new DateTime(2026, 6, 7, 2, 43, 55, 794, DateTimeKind.Utc).AddTicks(8407),
+                            CreatedAt = new DateTime(2026, 6, 9, 1, 58, 50, 845, DateTimeKind.Utc).AddTicks(1393),
                             Email = "patient1@test.com",
                             FullName = "John Patient",
-                            PasswordHash = "$2a$11$sJH5SwZo2zlJsZ8qTOvNFOktz03FV/L8tpil9R9UuVtinLPD7sqL6",
+                            PasswordHash = "$2a$11$cHBGQprjK2dK2IB4M5xVuuUySaDbvW.TefTjKHZ/bJFv8lSK0jS0S",
                             Phone = "9000000001",
                             Role = "Patient"
                         },
                         new
                         {
                             Id = new Guid("22222222-2222-2222-2222-222222222222"),
-                            CreatedAt = new DateTime(2026, 6, 7, 2, 43, 55, 995, DateTimeKind.Utc).AddTicks(3832),
+                            CreatedAt = new DateTime(2026, 6, 9, 1, 58, 51, 31, DateTimeKind.Utc).AddTicks(8728),
                             Email = "patient2@test.com",
                             FullName = "Mary Patient",
-                            PasswordHash = "$2a$11$.6CewTf9N9t4JPLk13dqWeWa6ceZ31BkQde5lcmHzzcQqhMA4w9wi",
+                            PasswordHash = "$2a$11$UWyNSQyj3B8NvHxbLd2RZuRC1CES/7Ddz/Mw3W/YwifLs.3zecPEK",
                             Phone = "9000000002",
                             Role = "Patient"
                         },
                         new
                         {
                             Id = new Guid("33333333-3333-3333-3333-333333333333"),
-                            CreatedAt = new DateTime(2026, 6, 7, 2, 43, 56, 196, DateTimeKind.Utc).AddTicks(3660),
+                            CreatedAt = new DateTime(2026, 6, 9, 1, 58, 51, 228, DateTimeKind.Utc).AddTicks(8546),
                             Email = "doctor1@test.com",
                             FullName = "Dr Arun Kumar",
-                            PasswordHash = "$2a$11$UOGuIqqm85hKRtmUO4c7O.q8z0vy.JbhM7S.t19Ai6tXVuLYJN7Xm",
+                            PasswordHash = "$2a$11$wF4j07vcXWh/MLuDN/ktJuLtNmkmFLcbWgIMtdto7qjle5bNabMI.",
                             Phone = "9000000003",
                             Role = "Doctor"
                         },
                         new
                         {
                             Id = new Guid("44444444-4444-4444-4444-444444444444"),
-                            CreatedAt = new DateTime(2026, 6, 7, 2, 43, 56, 388, DateTimeKind.Utc).AddTicks(6031),
+                            CreatedAt = new DateTime(2026, 6, 9, 1, 58, 51, 424, DateTimeKind.Utc).AddTicks(9692),
                             Email = "doctor2@test.com",
                             FullName = "Dr Priya Sharma",
-                            PasswordHash = "$2a$11$OhCIjGMevcb86erAGyL/Muo1rkhz.5GmfEYym/yXJkuFZicAmoezm",
+                            PasswordHash = "$2a$11$GeZsSB30QIPFh25ZkeUuu.L8KDjAjMY6CEF48NoyHpQGd6B5xJ2U2",
                             Phone = "9000000004",
                             Role = "Doctor"
                         },
                         new
                         {
                             Id = new Guid("55555555-5555-5555-5555-555555555555"),
-                            CreatedAt = new DateTime(2026, 6, 7, 2, 43, 56, 586, DateTimeKind.Utc).AddTicks(6952),
+                            CreatedAt = new DateTime(2026, 6, 9, 1, 58, 51, 609, DateTimeKind.Utc).AddTicks(5658),
                             Email = "doctor3@test.com",
                             FullName = "Dr Rajesh Singh",
-                            PasswordHash = "$2a$11$5rOg7fq7ZkVfRhlvJay2YeRBQ4zqWpGDPawnZbsrXmuKKBIPvt1La",
+                            PasswordHash = "$2a$11$utORswrYLQfTQcK5FkOPXuiPNj3he86TIywtZuNafAwIGdUNKSWu6",
                             Phone = "9000000005",
                             Role = "Doctor"
                         });

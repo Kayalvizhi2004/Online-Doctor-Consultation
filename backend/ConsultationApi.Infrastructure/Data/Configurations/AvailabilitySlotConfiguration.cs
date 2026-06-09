@@ -32,10 +32,15 @@ public class AvailabilitySlotConfiguration
         builder.Property(x => x.IsBooked)
             .HasColumnName("is_booked");
 
-        builder.Property<DateTime>("CreatedAt")
+        builder.Property(x => x.CreatedAt)
             .HasColumnName("created_at")
             .HasDefaultValueSql("now()")
-            .IsRequired();
+            .ValueGeneratedOnAdd(); // Tells EF not to send its own default (MinValue)
+
+        builder.Property(x => x.UpdatedAt)
+            .HasColumnName("updated_at")
+            .HasDefaultValueSql("now()")
+            .ValueGeneratedOnAddOrUpdate();
 
         builder.HasOne(x => x.Doctor)
             .WithMany(x => x.AvailabilitySlots)

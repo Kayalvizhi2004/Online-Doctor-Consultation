@@ -1,36 +1,107 @@
-<div class="container">
-
-  <div class="header">
-    <h2>Notifications</h2>
-
-    <button (click)="markAll()" class="btn-clear">
-      Mark All Read
+<div class="notifications-container">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div>
+      <h1>Notifications</h1>
+      <p class="subtitle">Stay updated with your appointments and messages</p>
+    </div>
+    <button 
+      class="btn btn-primary"
+      (click)="markAllRead()"
+      [disabled]="unreadCount === 0"
+    >
+      ✓ Mark All Read
     </button>
   </div>
 
-  <div class="badge">
-    Unread: {{ unreadCount }}
+  <!-- Unread Badge -->
+  <div *ngIf="unreadCount > 0" class="unread-badge">
+    <span class="badge-dot"></span>
+    <strong>{{ unreadCount }}</strong> unread notification{{ unreadCount !== 1 ? 's' : '' }}
   </div>
 
-  <div class="list">
+  <!-- Filter Tabs -->
+  <div class="filter-tabs">
+    <button 
+      class="tab-btn"
+      [class.active]="filterType === 'all'"
+      (click)="setFilter('all')"
+    >
+      All Notifications
+    </button>
+    <button 
+      class="tab-btn"
+      [class.active]="filterType === 'unread'"
+      (click)="setFilter('unread')"
+    >
+      Unread ({{ unreadCount }})
+    </button>
+  </div>
 
-    <div class="card"
-         *ngFor="let n of notifications"
-         [class.unread]="!n.isRead">
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-state">
+    <p>Loading notifications...</p>
+  </div>
 
-      <div class="content">
-        <h4>{{ n.title }}</h4>
-        <p>{{ n.message }}</p>
-        <small>{{ n.createdAt | date:'short' }}</small>
+  <!-- Empty State -->
+  <div *ngIf="!isLoading && getFilteredNotifications().length === 0" class="empty-state">
+    <div class="empty-icon">🔔</div>
+    <p class="empty-title">No Notifications</p>
+    <p class="empty-subtitle">{{ filterType === 'unread' ? 'All caught up!' : 'You don\'t have any notifications yet' }}</p>
+  </div>
+
+  <!-- Notifications List -->
+  <div *ngIf="!isLoading && getFilteredNotifications().length > 0" class="notifications-list">
+    <div *ngFor="let notification of getFilteredNotifications()" 
+         class="notification-card"
+         [class.unread]="!notification.isRead"
+         [class]="'type-' + getNotificationType(notification)">
+      
+      <!-- Notification Content -->
+      <div class="notification-content">
+        <!-- Icon & Status -->
+        <div class="notification-icon">
+          <span class="icon-emoji">{{ getNotificationIcon(getNotificationType(notification)) }}</span>
+          <span *ngIf="!notification.isRead" class="unread-dot"></span>
+        </div>
+
+        <!-- Message Details -->
+        <div class="notification-details">
+          <h3 class="notification-title">{{ notification.title }}</h3>
+          <p class="notification-message">{{ notification.message }}</p>
+          <p class="notification-time">{{ notification.createdAt || notification.createdDate | date: 'MMM dd, yyyy · hh:mm a' }}</p>
+        </div>
       </div>
 
-      <button *ngIf="!n.isRead"
-              (click)="markRead(n.id)">
-        Mark Read
-      </button>
-
+      <!-- Actions -->
+      <div class="notification-actions">
+        <button 
+          *ngIf="!notification.isRead"
+          class="btn btn-sm btn-outline"
+          (click)="markRead(notification.id)"
+          title="Mark as read"
+        >
+          Mark Read
+        </button>
+        <button 
+          class="btn btn-sm btn-danger"
+          (click)="deleteNotification(notification.id)"
+          title="Delete notification"
+        >
+          Delete
+        </button>
+      </div>
     </div>
-
   </div>
 
+  <!-- Info Card -->
+  <div *ngIf="!isLoading" class="info-card">
+    <h3>💡 About Notifications</h3>
+    <ul>
+      <li>Receive real-time updates about appointments, messages, and system alerts</li>
+      <li>Mark notifications as read to keep track of what you've seen</li>
+      <li>Delete notifications you no longer need</li>
+      <li>Check this page regularly for important updates</li>
+    </ul>
+  </div>
 </div>

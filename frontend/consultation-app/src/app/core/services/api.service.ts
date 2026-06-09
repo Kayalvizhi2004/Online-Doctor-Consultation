@@ -57,16 +57,21 @@ export class ApiService {
   }
 
   private handleApiResponse<T>(res: ApiResponse<T>): T {
-    // Handle both camelCase and PascalCase from Backend
-    const isSuccess = res.success || (res as any).Success;
-    const data = res.data || (res as any).Data;
-    const message = res.message || (res as any).Message;
+    // If backend returns the ApiResponse wrapper (success / data), use it.
+    const maybe = res as any;
+    if (maybe && (maybe.hasOwnProperty('success') || maybe.hasOwnProperty('Success') || maybe.hasOwnProperty('Data') || maybe.hasOwnProperty('data'))) {
+      const isSuccess = maybe.success || maybe.Success;
+      const data = maybe.data !== undefined ? maybe.data : (maybe.Data !== undefined ? maybe.Data : undefined);
+      const message = maybe.message || maybe.Message;
 
-    if (isSuccess) {
-      // Return data if exists, otherwise empty object to prevent null pointer errors
-      return (data !== undefined ? data : {}) as T;
-    } else {
-      throw new Error(message || 'An unknown error occurred');
+      if (isSuccess || isSuccess === undefined) {
+        return (data !== undefined ? data : ({} as T)) as T;
+      } else {
+        throw new Error(message || 'An unknown error occurred');
+      }
     }
+
+    // Not an ApiResponse wrapper — return raw payload (arrays or plain objects)
+    return (res as unknown) as T;
   }
 }

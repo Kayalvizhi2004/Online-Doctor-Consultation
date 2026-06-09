@@ -31,6 +31,12 @@ public class ReviewConfiguration
 
         builder.Property(x => x.CreatedAt)
             .HasColumnName("created_at")
-            .HasDefaultValueSql("now()");
+            .HasDefaultValueSql("now()")
+            .ValueGeneratedOnAdd();
+
+        builder.Property(x => x.UpdatedAt)
+            .HasColumnName("updated_at")
+            .HasDefaultValueSql("now()")
+            .ValueGeneratedOnAddOrUpdate();
     }
 }

@@ -8,7 +8,7 @@ import { environment } from '../../../../../environments/environment';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './reports.component.html',
-  styleUrls: ['./reports.component.css']
+  styleUrls: ['./reports.component.scss']
 })
 export class ReportsComponent implements OnInit {
 

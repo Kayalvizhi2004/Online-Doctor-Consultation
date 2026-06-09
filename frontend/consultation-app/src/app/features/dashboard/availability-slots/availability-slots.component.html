@@ -1,0 +1,155 @@
+<div class="slots-container">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div>
+      <h1>Availability & Slots</h1>
+      <p class="subtitle">Manage your consultation time slots</p>
+    </div>
+  </div>
+
+  <div class="content-grid">
+    <!-- Form Section -->
+    <div class="form-section">
+      <h2>{{ editingSlotId ? 'Edit Slot' : 'Create New Slot' }}</h2>
+      
+      <form [formGroup]="form" (ngSubmit)="createSlot()" class="slot-form">
+        <div class="form-group">
+          <label for="dayOfWeek">Day of Week</label>
+          <select formControlName="dayOfWeek" id="dayOfWeek" class="form-control">
+            <option *ngFor="let day of daysOfWeek" [value]="day">{{ day }}</option>
+          </select>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="startTime">Start Time</label>
+            <input 
+              type="time" 
+              formControlName="startTime" 
+              id="startTime"
+              class="form-control"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="endTime">End Time</label>
+            <input 
+              type="time" 
+              formControlName="endTime" 
+              id="endTime"
+              class="form-control"
+            />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="capacity">Patient Capacity</label>
+          <input 
+            type="number" 
+            formControlName="capacity" 
+            id="capacity"
+            class="form-control"
+            min="1"
+          />
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary" [disabled]="isSubmitting">
+            {{ isSubmitting ? 'Saving...' : (editingSlotId ? 'Update Slot' : 'Create Slot') }}
+          </button>
+          <button 
+            type="button" 
+            class="btn btn-outline" 
+            (click)="resetForm()"
+            *ngIf="editingSlotId"
+          >
+            Cancel Edit
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Slots Display Section -->
+    <div class="slots-section">
+      <h2>Current Schedule</h2>
+
+      <div *ngIf="isLoading" class="loading-state">
+        <p>Loading your slots...</p>
+      </div>
+
+      <div *ngIf="!isLoading && slots.length === 0" class="empty-state">
+        <p>No slots created yet</p>
+        <p class="subtitle">Create your first availability slot above</p>
+      </div>
+
+      <div *ngIf="!isLoading && slots.length > 0" class="slots-by-day">
+        <ng-container *ngFor="let day of daysOfWeek">
+          <div *ngIf="getSlotsByDay(day).length > 0" class="day-section">
+            <h3 class="day-title">{{ day }}</h3>
+          
+          <div class="slots-list">
+            <div *ngFor="let slot of getSlotsByDay(day)" class="slot-item" [class.unavailable]="!slot.isAvailable" [class.past]="isSlotPast(slot)">
+              
+              <!-- Color Indicator Bar -->
+              <div class="slot-status-bar" [style.background-color]="getSlotStatusColor(slot)"></div>
+              
+              <div class="slot-info">
+                <p class="slot-time">
+                  <strong>{{ slot.startTime }}</strong> - <strong>{{ slot.endTime }}</strong>
+                </p>
+                <p class="slot-capacity">
+                  Booked: <strong>{{ slot.bookedCount }}/{{ slot.capacity }}</strong>
+                </p>
+              </div>
+
+              <div class="slot-status">
+                <span class="status-badge" [class.active]="slot.isAvailable" [class.inactive]="!slot.isAvailable" [class.past]="isSlotPast(slot)">
+                  <span *ngIf="isSlotPast(slot)">⏰ Past</span>
+                  <span *ngIf="!isSlotPast(slot) && slot.isAvailable">✓ Available</span>
+                  <span *ngIf="!isSlotPast(slot) && !slot.isAvailable">✗ Disabled</span>
+                </span>
+              </div>
+
+              <div class="slot-actions">
+                <button 
+                  class="btn btn-sm btn-outline" 
+                  (click)="editSlot(slot)"
+                  [disabled]="isSlotPast(slot)"
+                >
+                  Edit
+                </button>
+                <button 
+                  class="btn btn-sm btn-outline" 
+                  (click)="toggleSlotStatus(slot.id, slot.isAvailable)"
+                  [disabled]="isSlotPast(slot)"
+                >
+                  {{ slot.isAvailable ? 'Disable' : 'Enable' }}
+                </button>
+                <button 
+                  class="btn btn-sm btn-danger" 
+                  (click)="deleteSlot(slot.id)"
+                  [disabled]="isSlotPast(slot)"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        </ng-container>
+      </div>
+    </div>
+  </div>
+
+  <!-- Info Card -->
+  <div class="info-card">
+    <h3>💡 Tips for Managing Slots</h3>
+    <ul>
+      <li>Create slots for the days and times you're available for consultations</li>
+      <li>Set appropriate consultation duration (typically 15-60 minutes)</li>
+      <li>Disable slots when you're unavailable to prevent bookings</li>
+      <li>Increase capacity to allow multiple consultations at the same time</li>
+      <li>Edit existing slots to adjust your availability</li>
+    </ul>
+  </div>
+</div>

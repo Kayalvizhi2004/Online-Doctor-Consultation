@@ -5,7 +5,8 @@ import { CommonModule } from '@angular/common';
   selector: 'app-modal',
   standalone: true,
   imports: [CommonModule],
-  templateUrl: './modal.component.html'
+  templateUrl: './modal.component.html',
+  styleUrls: ['./modal.component.scss']
 })
 export class ModalComponent {
 

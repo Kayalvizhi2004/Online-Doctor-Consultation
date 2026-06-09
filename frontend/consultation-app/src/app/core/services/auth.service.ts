@@ -110,7 +110,9 @@ export class AuthService {
       email: u.email || u.Email,
       phone: u.phone || u.Phone,
       role: u.role || u.Role,
-      createdAt: u.createdAt || u.CreatedAt
+      createdAt: u.createdAt || u.CreatedAt,
+      // Use locally stored photo if available
+      photoUrl: localStorage.getItem('photoUrl') || 'assests/default-avatar.jpg'
     };
   }
 }

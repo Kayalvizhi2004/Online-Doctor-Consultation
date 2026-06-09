@@ -5,6 +5,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { SlotCalendarComponent } from '../../../../shared/components/slot-calendar/slot-calendar.component';
 import { RatingStarsComponent } from '../../../../shared/components/rating-stars/rating-stars.component';
+import { AuthService } from '../../../../core/services/auth.service';
 
 @Component({
   selector: 'app-doctor-profile',
@@ -17,6 +18,7 @@ export class DoctorProfileComponent implements OnInit {
   private fb = inject(FormBuilder);
   private doctorService = inject(DoctorService);
   private route = inject(ActivatedRoute);
+  private auth = inject(AuthService);
 
   doctor: any = null;
 
@@ -44,7 +46,13 @@ export class DoctorProfileComponent implements OnInit {
 
   submit() {
     this.doctorService.updateProfile(this.profileForm.value)
-      .subscribe();
+      .subscribe({
+        next: (res: any) => {
+          // refresh authenticated user info so navbar and sidebar update
+          this.auth.me().subscribe();
+        },
+        error: (err) => console.error('Failed to update profile', err)
+      });
   }
 
   bookSlot(slot: any) {

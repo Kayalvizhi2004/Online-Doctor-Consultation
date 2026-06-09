@@ -23,7 +23,8 @@ public class ConsultationSessionConfiguration
 
         builder.Property(x => x.StartedAt)
             .HasColumnName("started_at")
-            .HasDefaultValueSql("now()");
+            .HasDefaultValueSql("now()")
+            .ValueGeneratedOnAdd();
 
         builder.Property(x => x.EndedAt)
             .HasColumnName("ended_at");
@@ -31,6 +32,16 @@ public class ConsultationSessionConfiguration
         builder.Property(x => x.Summary)
             .HasColumnName("summary")
             .HasColumnType("text");
+
+        builder.Property(x => x.CreatedAt)
+            .HasColumnName("created_at")
+            .HasDefaultValueSql("now()")
+            .ValueGeneratedOnAdd();
+
+        builder.Property(x => x.UpdatedAt)
+            .HasColumnName("updated_at")
+            .HasDefaultValueSql("now()")
+            .ValueGeneratedOnAddOrUpdate();
 
         builder.HasOne(x => x.Appointment)
             .WithOne(x => x.ConsultationSession)

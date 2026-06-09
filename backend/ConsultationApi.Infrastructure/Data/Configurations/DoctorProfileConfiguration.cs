@@ -36,6 +36,16 @@ public class DoctorProfileConfiguration
         builder.Property(x => x.IsAvailable)
             .HasColumnName("is_available");
 
+        builder.Property(x => x.CreatedAt)
+            .HasColumnName("created_at")
+            .HasDefaultValueSql("now()")
+            .ValueGeneratedOnAdd();
+
+        builder.Property(x => x.UpdatedAt)
+            .HasColumnName("updated_at")
+            .HasDefaultValueSql("now()")
+            .ValueGeneratedOnAddOrUpdate();
+
         builder.HasOne(x => x.User)
             .WithOne(x => x.DoctorProfile)
             .HasForeignKey<DoctorProfile>(
