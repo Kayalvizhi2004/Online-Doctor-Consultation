@@ -118,6 +118,10 @@ public class MappingProfile : Profile
                 dest => dest.DoctorId,
                 opt => opt.MapFrom(src => src.DoctorId))
             .ForMember(
+                dest => dest.SessionId,
+                opt => opt.MapFrom(src =>
+                    src.ConsultationSession != null ? (Guid?)src.ConsultationSession.Id : null))
+            .ForMember(
                 dest => dest.Status,
                 opt => opt.MapFrom(src =>
                     src.Status.ToString()));

@@ -1,5 +1,4 @@
 <div class="chat-history-container">
-  <!-- Page Header -->
   <div class="page-header">
     <div>
       <h1>Consultation History</h1>
@@ -7,193 +6,111 @@
     </div>
   </div>
 
-  <!-- Search Bar -->
+  <!-- Search -->
   <div class="search-section">
     <div class="search-box">
-      <input
-        type="text"
-        [(ngModel)]="searchQuery"
-        placeholder="Search by patient or doctor name..."
-        class="search-input"
-      />
+      <input type="text" [(ngModel)]="searchQuery"
+             placeholder="Search by name…" class="search-input" />
       <span class="search-icon">🔍</span>
     </div>
-    <p class="search-results" *ngIf="searchQuery">
-      Found {{ getFilteredSessions().length }} session(s)
-    </p>
+    <p class="search-results" *ngIf="searchQuery">Found {{ filtered().length }} session(s)</p>
   </div>
 
-  <!-- Loading State -->
-  <div *ngIf="isLoading" class="loading-state">
-    <p>Loading chat history...</p>
-  </div>
+  <!-- Loading -->
+  <div *ngIf="loading()" class="loading-state"><p>Loading chat history…</p></div>
 
-  <!-- Empty State -->
-  <div *ngIf="!isLoading && sessions.length === 0" class="empty-state">
+  <!-- Empty -->
+  <div *ngIf="!loading() && sessions().length === 0" class="empty-state">
     <div class="empty-icon">💬</div>
     <p class="empty-title">No Chat History</p>
-    <p class="empty-subtitle">Your completed consultation sessions will appear here</p>
+    <p class="empty-subtitle">Your consultation sessions will appear here once they have started</p>
   </div>
 
-  <!-- Sessions Grid -->
-  <div *ngIf="!isLoading && getFilteredSessions().length > 0" class="sessions-grid">
-    <div *ngFor="let session of getFilteredSessions()" class="session-card">
-      
-      <!-- Card Header -->
+  <!-- Sessions -->
+  <div *ngIf="!loading() && filtered().length > 0" class="sessions-grid">
+    <div *ngFor="let s of filtered()" class="session-card">
       <div class="card-header">
         <div class="session-header-info">
-          <div class="participant-avatar">
-            <span *ngIf="!session.patientImage">{{ session.patientName.charAt(0).toUpperCase() }}</span>
-            <img *ngIf="session.patientImage" [src]="session.patientImage" [alt]="session.patientName" />
-          </div>
+          <div class="participant-avatar">{{ (party(s) || '?').charAt(0).toUpperCase() }}</div>
           <div class="header-details">
-            <h3 class="participant-name">{{ session.patientName }}</h3>
-            <p class="session-date">{{ session.appointmentDate | date: 'MMM dd, yyyy' }}</p>
+            <h3 class="participant-name">{{ party(s) }}</h3>
+            <p class="session-date">{{ partyLabel(s) }} · {{ s.date | date: 'MMM dd, yyyy' }}</p>
           </div>
         </div>
-        <span class="session-badge">Completed</span>
+        <span class="session-badge"
+              [class.completed]="(s.status || '').toLowerCase() === 'completed'"
+              [class.active]="(s.status || '').toLowerCase() === 'inprogress'">
+          {{ (s.status || '').toLowerCase() === 'inprogress' ? 'In Progress' : 'Completed' }}
+        </span>
       </div>
 
-      <!-- Session Details -->
       <div class="card-body">
         <div class="session-info-grid">
-          <div class="info-item">
-            <span class="info-icon">👨‍⚕️</span>
-            <div class="info-content">
-              <p class="info-label">Doctor</p>
-              <p class="info-value">{{ session.doctorName }}</p>
-            </div>
-          </div>
-
-          <div class="info-item">
-            <span class="info-icon">⏱️</span>
-            <div class="info-content">
-              <p class="info-label">Duration</p>
-              <p class="info-value">{{ getDurationDisplay(session.duration) }}</p>
-            </div>
-          </div>
-
-          <div class="info-item">
-            <span class="info-icon">💬</span>
-            <div class="info-content">
-              <p class="info-label">Messages</p>
-              <p class="info-value">{{ session.messageCount }}</p>
-            </div>
-          </div>
-
           <div class="info-item">
             <span class="info-icon">⏰</span>
             <div class="info-content">
               <p class="info-label">Time</p>
-              <p class="info-value">{{ session.startTime }} - {{ session.endTime }}</p>
+              <p class="info-value">{{ s.startTime }} - {{ s.endTime }}</p>
+            </div>
+          </div>
+          <div class="info-item" *ngIf="s.notes">
+            <span class="info-icon">📝</span>
+            <div class="info-content">
+              <p class="info-label">Notes</p>
+              <p class="info-value">{{ s.notes }}</p>
             </div>
           </div>
         </div>
-
-        <!-- Session Summary -->
-        <div *ngIf="session.summary" class="session-summary">
-          <p class="summary-label">Session Notes</p>
-          <p class="summary-text">{{ session.summary }}</p>
-        </div>
       </div>
 
-      <!-- Card Footer -->
       <div class="card-footer">
-        <button class="btn btn-sm btn-primary" (click)="viewSessionMessages(session)">
-          📖 View Messages
-        </button>
-        <button class="btn btn-sm btn-outline" (click)="downloadTranscript(session.sessionId)">
-          📥 Download
-        </button>
-        <button class="btn btn-sm btn-outline" (click)="exportSession(session.sessionId)">
-          💾 Export
-        </button>
+        <button class="btn btn-sm btn-primary" (click)="view(s)">📖 View Messages</button>
       </div>
     </div>
   </div>
 
+  <!-- No search results -->
+  <div *ngIf="!loading() && sessions().length > 0 && filtered().length === 0" class="empty-state">
+    <p>No sessions match your search</p>
+  </div>
+
   <!-- Transcript Modal -->
-  <div *ngIf="showTranscriptModal" class="transcript-modal">
-    <div class="modal-overlay" (click)="closeTranscriptModal()"></div>
+  <div *ngIf="selected() as sel" class="transcript-modal">
+    <div class="modal-overlay" (click)="close()"></div>
     <div class="modal-content large">
       <div class="modal-header">
         <div class="header-info">
           <h2>Chat Transcript</h2>
-          <p class="subtitle" *ngIf="selectedSession">
-            {{ selectedSession.patientName }} & {{ selectedSession.doctorName }}
-          </p>
+          <p class="subtitle">{{ party(sel) }} · {{ sel.date | date: 'MMM dd, yyyy' }}</p>
         </div>
-        <button class="btn-close" (click)="closeTranscriptModal()">✕</button>
+        <button class="btn-close" (click)="close()">✕</button>
       </div>
 
-      <!-- Session Summary -->
-      <div class="session-summary" *ngIf="selectedSession">
-        <div class="summary-row">
-          <span class="label">📅 Date:</span>
-          <span class="value">{{ selectedSession.appointmentDate | date: 'MMM dd, yyyy' }}</span>
-        </div>
-        <div class="summary-row">
-          <span class="label">⏱️ Duration:</span>
-          <span class="value">{{ getDurationDisplay(selectedSession.duration) }}</span>
-        </div>
-        <div class="summary-row">
-          <span class="label">💬 Messages:</span>
-          <span class="value">{{ selectedSession.messageCount }}</span>
-        </div>
-      </div>
-
-      <!-- Messages List -->
       <div class="transcript-messages">
-        <div *ngIf="transcriptLoading" class="loading-state">
-          <p>Loading messages...</p>
+        <div *ngIf="transcriptLoading()" class="loading-state"><p>Loading messages…</p></div>
+        <div *ngIf="!transcriptLoading() && transcript().length === 0" class="empty-state">
+          <p>No messages were exchanged in this session.</p>
         </div>
 
-        <div *ngIf="!transcriptLoading && transcriptMessages.length === 0" class="empty-state">
-          <p>No messages in this session</p>
-        </div>
-
-        <div *ngFor="let message of transcriptMessages" [ngClass]="{ 'message-sent': message.senderId !== selectedSession?.patientName, 'message-received': message.senderId === selectedSession?.patientName }" class="transcript-message">
+        <div *ngFor="let m of transcript()"
+             class="transcript-message"
+             [ngClass]="{ 'message-sent': isMine(m), 'message-received': !isMine(m) }">
           <div class="message-header">
-            <strong>{{ message.senderName || message.senderId }}</strong>
-            <span class="message-time">{{ message.sentAt | date: 'HH:mm' }}</span>
+            <strong>{{ m.senderName || (isMine(m) ? 'You' : 'Them') }}</strong>
+            <span class="message-time">{{ m.sentAt | date: 'MMM dd, HH:mm' }}</span>
           </div>
           <div class="message-content">
-            <p *ngIf="!message.messageType || message.messageType === 'text'">{{ message.message || message.text }}</p>
-            <img *ngIf="message.messageType === 'image'" [src]="message.content" alt="Shared image" class="message-image-thumb" />
-            <img *ngIf="message.messageType === 'gif'" [src]="message.content" alt="Shared GIF" class="message-gif-thumb" />
+            <p>{{ m.message }}</p>
           </div>
         </div>
       </div>
 
       <div class="modal-footer">
-        <button class="btn btn-outline" (click)="downloadTranscript(selectedSession?.sessionId!)">
+        <button class="btn btn-outline" (click)="download(sel)" [disabled]="transcript().length === 0">
           📥 Download Transcript
         </button>
-        <button class="btn btn-outline" (click)="exportSession(selectedSession?.sessionId!)">
-          💾 Export as JSON
-        </button>
-        <button class="btn btn-primary" (click)="closeTranscriptModal()">
-          Close
-        </button>
+        <button class="btn btn-primary" (click)="close()">Close</button>
       </div>
     </div>
-  </div>
-
-  <!-- No Results State -->
-  <div *ngIf="!isLoading && sessions.length > 0 && getFilteredSessions().length === 0" class="empty-state">
-    <p>No sessions match your search</p>
-    <p class="subtitle">Try a different search term</p>
-  </div>
-
-  <!-- Info Card -->
-  <div *ngIf="!isLoading && sessions.length > 0" class="info-card">
-    <h3>💡 About Chat History</h3>
-    <ul>
-      <li>View all your completed consultation sessions</li>
-      <li>Download session transcripts for your records</li>
-      <li>Export session data in JSON format</li>
-      <li>Search sessions by patient or doctor name</li>
-      <li>Keep track of past consultations and notes</li>
-    </ul>
   </div>
 </div>

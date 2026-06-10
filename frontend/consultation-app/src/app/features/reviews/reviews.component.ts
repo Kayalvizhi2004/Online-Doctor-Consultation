@@ -1,153 +1,136 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { ApiService } from '../../core/services/api.service';
-
-interface Review {
-  id: string;
-  patientName: string;
-  patientImage?: string;
-  rating: number;
-  reviewText: string;
-  consultationDate: string;
-  createdDate: string;
-}
+import { AuthService } from '../../core/services/auth.service';
+import { AppointmentService } from '../../core/services/appointment.service';
 
 @Component({
   selector: 'app-reviews',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './reviews.component.html',
   styleUrls: ['./reviews.component.scss']
 })
 export class ReviewsComponent implements OnInit {
 
-  reviews: Review[] = [];
-  isLoading = false;
-  averageRating = 0;
-  totalReviews = 0;
-  ratingDistribution = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
-  
-  // Pagination
-  currentPage = 1;
-  itemsPerPage = 5;
-  totalPages = 1;
+  role = signal<string>('');
+  loading = signal<boolean>(true);
 
-  constructor(
-    private route: ActivatedRoute,
-    private api: ApiService
-  ) {}
+  // Doctor view
+  averageRating = signal<number>(0);
+  totalReviews = signal<number>(0);
+  reviews = signal<any[]>([]);
+
+  // Patient view
+  completed = signal<any[]>([]);
+  private reviewedIds = signal<Set<string>>(new Set<string>());
+
+  // Write-review modal (patient)
+  modalAppt = signal<any | null>(null);
+  rating = signal<number>(0);
+  comment = '';
+  submitting = signal<boolean>(false);
+  modalError = signal<string>('');
+
+  private route = inject(ActivatedRoute);
+  private api = inject(ApiService);
+  private auth = inject(AuthService);
+  private appt = inject(AppointmentService);
 
   ngOnInit(): void {
-    const doctorId = this.route.snapshot.paramMap.get('id');
-    if (doctorId) {
-      this.loadReviewsForDoctor(doctorId);
-      return;
-    }
+    this.auth.user$.subscribe(u => this.role.set(u?.role || ''));
 
-    // No doctor id in route — try to load current user and fetch their doctor reviews (for /my-reviews)
-    this.api.get<any>('/api/auth/me').subscribe({
-      next: (profile: any) => {
-        const id = profile?.id || profile?.Id;
-        const role = profile?.role || profile?.Role;
-        if (id && role && role.toLowerCase() === 'doctor') {
-          this.loadReviewsForDoctor(id);
-        } else {
-          // Not a doctor or no id — show empty state
-          this.reviews = [];
-          this.calculateStats();
-        }
+    const idParam = this.route.snapshot.paramMap.get('id');
+    if (idParam) { this.loadDoctorReviews(idParam); return; }   // public doctor reviews
+    if (this.isDoctor()) this.loadMyDoctorReviews();
+    else this.loadCompletedForPatient();
+  }
+
+  isDoctor(): boolean { return this.role() === 'Doctor'; }
+
+  // ---------- Doctor: received reviews + average ----------
+  loadMyDoctorReviews(): void {
+    this.loading.set(true);
+    this.api.get<any>('/api/doctors/me/reviews', { pageNumber: 1, pageSize: 100 }).subscribe({
+      next: (res) => { this.applyDoctorReviews(res); this.loading.set(false); },
+      error: () => { this.reviews.set([]); this.loading.set(false); }
+    });
+  }
+
+  loadDoctorReviews(id: string): void {
+    this.loading.set(true);
+    this.api.get<any>(`/api/doctors/${id}/reviews`, { pageNumber: 1, pageSize: 100 }).subscribe({
+      next: (res) => { this.applyDoctorReviews(res); this.loading.set(false); },
+      error: () => { this.reviews.set([]); this.loading.set(false); }
+    });
+  }
+
+  private applyDoctorReviews(res: any): void {
+    const d = res?.data ?? res?.Data ?? res ?? {};
+    const items = d.items ?? d.Items ?? [];
+    this.reviews.set((items || []).map((r: any) => ({
+      patientName: r.patientName ?? r.PatientName ?? 'Patient',
+      rating: r.rating ?? r.Rating ?? 0,
+      comment: r.comment ?? r.Comment ?? '',
+      createdAt: r.createdAt ?? r.CreatedAt
+    })));
+    this.averageRating.set(d.averageRating ?? d.AverageRating ?? 0);
+    this.totalReviews.set(d.totalReviews ?? d.TotalReviews ?? (items?.length ?? 0));
+  }
+
+  // ---------- Patient: completed consultations to review ----------
+  loadCompletedForPatient(): void {
+    this.loading.set(true);
+    this.appt.getAll().subscribe({
+      next: (res: any) => {
+        const list = Array.isArray(res) ? res : (res?.items ?? res?.Items ?? []);
+        this.completed.set((list || []).filter((a: any) => (a.status || '').toLowerCase() === 'completed'));
+        this.loading.set(false);
       },
-      error: (err) => {
-        console.error('Failed to load profile', err);
-        this.reviews = [];
-        this.calculateStats();
+      error: () => { this.completed.set([]); this.loading.set(false); }
+    });
+  }
+
+  isReviewed(a: any): boolean { return this.reviewedIds().has(a.id); }
+
+  openReview(a: any): void {
+    this.modalAppt.set(a);
+    this.rating.set(0);
+    this.comment = '';
+    this.modalError.set('');
+  }
+
+  closeReview(): void { if (!this.submitting()) this.modalAppt.set(null); }
+
+  setRating(n: number): void { this.rating.set(n); }
+
+  submitReview(): void {
+    const a = this.modalAppt();
+    if (!a) return;
+    if (this.rating() < 1) { this.modalError.set('Please select a star rating.'); return; }
+
+    this.submitting.set(true);
+    this.appt.review(a.id, { Rating: this.rating(), Comment: this.comment.trim() }).subscribe({
+      next: () => { this.markReviewed(a.id); this.submitting.set(false); this.modalAppt.set(null); },
+      error: (err: any) => {
+        this.submitting.set(false);
+        const msg = (err?.message || 'Failed to submit review').toString();
+        if (msg.toLowerCase().includes('already')) { this.markReviewed(a.id); this.modalAppt.set(null); }
+        else this.modalError.set(msg);
       }
     });
   }
 
-  loadReviewsForDoctor(doctorId: string): void {
-    this.isLoading = true;
-    this.api.get<any>(`/api/doctors/${doctorId}/reviews`, { pageNumber: 1, pageSize: 100 }).subscribe({
-      next: (res) => {
-        const list = Array.isArray(res) ? res : (res?.items ?? res?.data ?? res?.Data ?? []);
-        this.reviews = list.sort((a: any, b: any) => new Date(b.createdDate).getTime() - new Date(a.createdDate).getTime());
-        this.calculateStats();
-        this.isLoading = false;
-      },
-      error: (err) => {
-        console.error('Failed to load reviews', err);
-        this.isLoading = false;
-      }
-    });
+  private markReviewed(id: string): void {
+    const s = new Set(this.reviewedIds());
+    s.add(id);
+    this.reviewedIds.set(s);
   }
 
-  calculateStats(): void {
-    this.totalReviews = this.reviews.length;
-    
-    if (this.totalReviews === 0) {
-      this.averageRating = 0;
-      return;
-    }
-
-    const sum = this.reviews.reduce((acc, r) => acc + r.rating, 0);
-    this.averageRating = sum / this.totalReviews;
-
-    // Reset distribution
-    this.ratingDistribution = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
-
-    // Count ratings
-    this.reviews.forEach(r => {
-      const ratingKey = Math.round(r.rating) as keyof typeof this.ratingDistribution;
-      if (ratingKey in this.ratingDistribution) {
-        this.ratingDistribution[ratingKey]++;
-      }
-    });
-
-    this.updatePagination();
-  }
-
-  getRatingPercentage(rating: number): number {
-    if (this.totalReviews === 0) return 0;
-    return (this.ratingDistribution[rating as keyof typeof this.ratingDistribution] / this.totalReviews) * 100;
-  }
-
-  generateStars(rating: number): number[] {
-    return Array(5).fill(0).map((_, i) => i < Math.round(rating) ? 1 : 0);
-  }
-
-  getRatingColor(rating: number): string {
-    if (rating >= 4) return '#10b981';
-    if (rating >= 3) return '#f59e0b';
-    return '#ef4444';
-  }
-
-  getRatingCount(rating: number): number {
-    return this.ratingDistribution[rating as keyof typeof this.ratingDistribution] || 0;
-  }
-
-  getPaginatedReviews(): Review[] {
-    const start = (this.currentPage - 1) * this.itemsPerPage;
-    return this.reviews.slice(start, start + this.itemsPerPage);
-  }
-
-  goToPage(page: number): void {
-    if (page >= 1 && page <= this.totalPages) {
-      this.currentPage = page;
-      window.scrollTo(0, 0);
-    }
-  }
-
-  nextPage(): void {
-    this.goToPage(this.currentPage + 1);
-  }
-
-  prevPage(): void {
-    this.goToPage(this.currentPage - 1);
-  }
-
-  updatePagination(): void {
-    this.totalPages = Math.ceil(this.reviews.length / this.itemsPerPage);
-    this.currentPage = 1;
+  /** Star fill states for display: [true,true,false,...]. */
+  stars(n: number): boolean[] {
+    return [1, 2, 3, 4, 5].map(i => i <= Math.round(n));
   }
 }

@@ -1,26 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { HttpClient } from '@angular/common/http';
-import { Router } from '@angular/router';
 import { AppointmentService } from '../../../../core/services/appointment.service';
-import { ApiService } from '../../../../core/services/api.service';
-import { environment } from '../../../../../environments/environment';
-
-interface ChatSession {
-  id: string;
-  sessionId: string;
-  patientName: string;
-  doctorName: string;
-  patientImage?: string;
-  appointmentDate: string;
-  startTime: string;
-  endTime: string;
-  messageCount: number;
-  duration: string;
-  createdAt: string;
-  summary?: string;
-}
+import { ChatService } from '../../../../core/services/chat.service';
+import { AuthService } from '../../../../core/services/auth.service';
 
 @Component({
   selector: 'app-chat-history',
@@ -31,133 +14,116 @@ interface ChatSession {
 })
 export class ChatHistoryComponent implements OnInit {
 
-  sessions: ChatSession[] = [];
-  isLoading = false;
+  // Signals so the view renders when data arrives (zoneless app).
+  sessions = signal<any[]>([]);
+  loading = signal<boolean>(true);
   searchQuery = '';
-  selectedSession: ChatSession | null = null;
-  showTranscriptModal = false;
-  transcriptMessages: any[] = [];
-  transcriptLoading = false;
 
-  constructor(
-    private http: HttpClient,
-    private router: Router,
-    private appointmentService: AppointmentService,
-    private api: ApiService
-  ) {}
+  selected = signal<any | null>(null);
+  transcript = signal<any[]>([]);
+  transcriptLoading = signal<boolean>(false);
+
+  me = '';
+  role = signal<string>('');
+
+  private appt = inject(AppointmentService);
+  private chat = inject(ChatService);
+  private auth = inject(AuthService);
 
   ngOnInit(): void {
-    this.loadChatHistory();
+    this.auth.user$.subscribe(u => {
+      this.me = u?.id || this.subFromToken();
+      this.role.set(u?.role || '');
+    });
+    this.load();
   }
 
-  loadChatHistory(): void {
-    this.isLoading = true;
-    this.appointmentService.getAll().subscribe({
+  isDoctor(): boolean { return this.role() === 'Doctor'; }
+
+  load(): void {
+    this.loading.set(true);
+    this.appt.getAll().subscribe({
       next: (res: any) => {
         const list = Array.isArray(res) ? res : (res?.items ?? res?.Items ?? res?.data?.items ?? res?.Data?.Items ?? []);
-        // Map appointments to chat sessions (expect appointment has sessionId or id)
-        this.sessions = list.map((a: any) => ({
-          id: a.id || a.appointmentId || a.appointmentId,
-          sessionId: a.sessionId || a.id || a.appointmentId,
-          patientName: a.patientName || a.patient?.fullName || 'Patient',
-          doctorName: a.doctorName || a.doctor?.fullName || 'Doctor',
-          patientImage: a.patientImage || a.patient?.avatarUrl,
-          appointmentDate: a.date || a.appointmentDate || a.createdAt,
-          startTime: a.startTime || a.time,
-          endTime: a.endTime || a.end,
-          messageCount: a.messageCount || 0,
-          duration: a.duration || a.sessionDuration || '',
-          createdAt: a.createdAt || a.date
-        })).sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-        this.isLoading = false;
+        // Only appointments that actually have a consultation session (chat happened).
+        const withSession = (list || [])
+          .filter((a: any) => !!a.sessionId)
+          .sort((a: any, b: any) => new Date(b.createdAt || b.date).getTime() - new Date(a.createdAt || a.date).getTime());
+        this.sessions.set(withSession);
+        this.loading.set(false);
       },
-      error: (err) => {
-        console.error('Failed to load chat history', err);
-        this.isLoading = false;
-      }
+      error: () => { this.sessions.set([]); this.loading.set(false); }
     });
   }
 
-  getFilteredSessions(): ChatSession[] {
-    if (!this.searchQuery) return this.sessions;
-
-    const query = this.searchQuery.toLowerCase();
-    return this.sessions.filter(s =>
-      s.patientName.toLowerCase().includes(query) ||
-      s.doctorName.toLowerCase().includes(query)
+  filtered(): any[] {
+    const q = this.searchQuery.trim().toLowerCase();
+    const list = this.sessions();
+    if (!q) return list;
+    return list.filter((s: any) =>
+      (s.patientName || '').toLowerCase().includes(q) ||
+      (s.doctorName || '').toLowerCase().includes(q)
     );
   }
 
-  viewSessionMessages(session: ChatSession): void {
-    this.selectedSession = session;
-    this.loadTranscript(session.sessionId);
-    this.showTranscriptModal = true;
+  /** Other party (a doctor sees the patient; a patient sees the doctor). */
+  party(s: any): string {
+    return this.isDoctor() ? (s.patientName || 'Patient') : (s.doctorName || 'Doctor');
   }
 
-  loadTranscript(sessionId: string): void {
-    this.transcriptLoading = true;
-    this.api.get<any>(`/api/sessions/${sessionId}/messages`, { pageNumber: 1, pageSize: 200 }).subscribe({
+  partyLabel(s: any): string {
+    return this.isDoctor() ? 'Patient' : (s.specialization || 'Doctor');
+  }
+
+  view(s: any): void {
+    this.selected.set(s);
+    this.transcript.set([]);
+    this.transcriptLoading.set(true);
+    this.chat.getMessages(s.sessionId).subscribe({
       next: (res: any) => {
-        const list = Array.isArray(res) ? res : (res?.items ?? res?.data ?? res?.Data ?? []);
-        this.transcriptMessages = list;
-        this.transcriptLoading = false;
+        const list = Array.isArray(res) ? res : (res?.items ?? res?.Items ?? res?.data?.items ?? res?.Data?.Items ?? []);
+        this.transcript.set((list || []).map((m: any) => this.normalizeMsg(m)));
+        this.transcriptLoading.set(false);
       },
-      error: (err: any) => {
-        console.error('Failed to load transcript', err);
-        alert('Failed to load transcript');
-        this.transcriptLoading = false;
-      }
+      error: () => { this.transcript.set([]); this.transcriptLoading.set(false); }
     });
   }
 
-  closeTranscriptModal(): void {
-    this.showTranscriptModal = false;
-    this.selectedSession = null;
-    this.transcriptMessages = [];
+  close(): void {
+    this.selected.set(null);
+    this.transcript.set([]);
   }
 
-  getDurationDisplay(duration: string): string {
-    // Parse duration like "1h 30m" or convert from milliseconds
-    return duration || '--';
+  isMine(m: any): boolean {
+    return (m?.senderId || '') === this.me;
   }
 
-  downloadTranscript(sessionId: string): void {
-    // Use full backend URL to avoid dev-server proxy returning index.html
-    const url = `${environment.apiUrl}/api/sessions/${sessionId}/messages/transcript`;
-    this.http.get(url, { responseType: 'blob' as 'json' }).subscribe({
-      next: (blob: any) => {
-        const objectUrl = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = objectUrl;
-        link.download = `transcript-${sessionId}.txt`;
-        link.click();
-        window.URL.revokeObjectURL(objectUrl);
-      },
-      error: (err) => console.error('Failed to download transcript', err)
-    });
-  }
-
-  exportSession(sessionId: string): void {
-    const session = this.sessions.find(s => s.sessionId === sessionId);
-    if (!session) return;
-
-    const data = {
-      sessionId: session.sessionId,
-      patient: session.patientName,
-      doctor: session.doctorName,
-      date: session.appointmentDate,
-      duration: session.duration,
-      messages: session.messageCount,
-      timestamp: new Date().toISOString()
+  private normalizeMsg(m: any) {
+    return {
+      senderId: m.senderId ?? m.SenderId,
+      senderName: m.senderName ?? m.SenderName,
+      message: m.message ?? m.Message ?? m.content ?? '',
+      sentAt: m.sentAt ?? m.SentAt
     };
+  }
 
-    const json = JSON.stringify(data, null, 2);
-    const blob = new Blob([json], { type: 'application/json' });
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `session-${sessionId}.json`;
-    link.click();
-    window.URL.revokeObjectURL(url);
+  /** Build a .txt transcript client-side from the loaded messages (no backend endpoint needed). */
+  download(s: any): void {
+    const lines = this.transcript().map((m: any) =>
+      `[${m.sentAt ? new Date(m.sentAt).toLocaleString() : ''}] ${m.senderName || m.senderId}: ${m.message}`);
+    const header = `Consultation transcript\n${this.party(s)} · ${s.date || ''} ${s.startTime || ''}-${s.endTime || ''}\n\n`;
+    const blob = new Blob([header + lines.join('\n')], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `transcript-${s.sessionId}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  private subFromToken(): string {
+    try {
+      return JSON.parse(atob((localStorage.getItem('token') || '').split('.')[1])).sub || '';
+    } catch { return ''; }
   }
 }

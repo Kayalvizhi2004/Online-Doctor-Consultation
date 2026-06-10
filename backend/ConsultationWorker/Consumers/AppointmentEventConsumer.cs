@@ -101,6 +101,7 @@ public class AppointmentEventConsumer : BackgroundService
             "appointment.booked.queue",
             "appointment.confirmed.queue",
             "appointment.cancelled.queue",
+            "consultation.started.queue",
             "consultation.completed.queue"
         };
 
@@ -165,3 +166,4 @@ public class AppointmentEventConsumer : BackgroundService
         return base.StopAsync(cancellationToken);
     }
 }
+

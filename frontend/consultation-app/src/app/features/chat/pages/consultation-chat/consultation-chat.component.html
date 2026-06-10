@@ -2,128 +2,67 @@
   <!-- Session Header -->
   <div class="chat-header">
     <div class="header-info">
-      <h2>{{ sessionTitle }}</h2>
-      <span class="status-indicator" [class.active]="status === 'Active'" [class.ended]="status === 'Ended'" [class.waiting]="status === 'Waiting'">
-        {{ status === 'Active' ? '🟢' : (status === 'Ended' ? '🔴' : '🟡') }} {{ status }}
+      <h2>Consultation</h2>
+      <span class="status-indicator"
+            [class.active]="status() === 'Active'"
+            [class.ended]="status() === 'Ended'"
+            [class.waiting]="status() === 'Connecting'">
+        {{ status() === 'Active' ? '🟢 Live' : (status() === 'Ended' ? '🔴 Ended' : '🟡 Connecting…') }}
       </span>
     </div>
-    <button class="btn btn-danger btn-sm" (click)="endSession()" [disabled]="status === 'Ended'">
+
+    <!-- End Session: doctor only -->
+    <button *ngIf="isDoctor()" class="btn btn-danger btn-sm"
+            (click)="endSession()" [disabled]="status() === 'Ended'">
       🔴 End Session
     </button>
+    <span *ngIf="!isDoctor() && status() !== 'Ended'" class="patient-hint">
+      The doctor will end the session when finished
+    </span>
   </div>
 
-  <!-- Messages Container -->
+  <!-- Connection error -->
+  <div *ngIf="connError()" class="conn-error">
+    ⚠️ Couldn't connect to the live session. Please refresh the page.
+  </div>
+
+  <!-- Messages -->
   <div class="chat-body" #scrollContainer>
-    <!-- Loading State -->
-    <div *ngIf="isLoading" class="loading-state">
-      <p>Loading messages...</p>
+    <div *ngIf="messages().length === 0 && !connError()" class="empty-chat">
+      <p>No messages yet. Say hello 👋</p>
     </div>
 
-    <!-- Messages -->
-    <div *ngFor="let message of messages" [ngClass]="{ 'message-group-mine': isMessageFromMe(message), 'message-group-theirs': !isMessageFromMe(message) }" class="message-group">
-      <!-- Text Message -->
-      <div *ngIf="message.messageType === 'text'" class="chat-bubble" [ngClass]="{ 'mine': isMessageFromMe(message) }">
+    <div *ngFor="let message of messages()"
+         class="message-group"
+         [ngClass]="{ 'message-group-mine': isMine(message), 'message-group-theirs': !isMine(message) }">
+      <div class="chat-bubble" [ngClass]="{ 'mine': isMine(message) }">
+        <div class="sender" *ngIf="!isMine(message) && message.senderName">{{ message.senderName }}</div>
         <div class="text">{{ message.message }}</div>
         <div class="meta">{{ message.sentAt | timeAgo }}</div>
       </div>
-
-      <!-- Image Message -->
-      <div *ngIf="message.messageType === 'image'" class="chat-bubble image-bubble" [ngClass]="{ 'mine': isMessageFromMe(message) }">
-        <img [src]="message.content" alt="Shared image" class="message-image" />
-        <div class="meta">{{ message.sentAt | timeAgo }}</div>
-      </div>
-
-      <!-- GIF Message -->
-      <div *ngIf="message.messageType === 'gif'" class="chat-bubble gif-bubble" [ngClass]="{ 'mine': isMessageFromMe(message) }">
-        <img [src]="message.content" alt="Shared GIF" class="message-gif" />
-        <div class="meta">{{ message.sentAt | timeAgo }}</div>
-      </div>
-    </div>
-
-    <!-- Typing Indicator -->
-    <div *ngIf="typingUsers.length > 0" class="typing-indicator">
-      <p>{{ typingUsers.join(', ') }} {{ typingUsers.length === 1 ? 'is' : 'are' }} typing...</p>
-      <div class="typing-dots">
-        <span></span>
-        <span></span>
-        <span></span>
-      </div>
     </div>
   </div>
 
-  <!-- Image Preview Modal -->
-  <div *ngIf="showImagePreview" class="image-preview-modal">
-    <div class="modal-overlay" (click)="cancelImagePreview()"></div>
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3>Preview Image</h3>
-        <button class="btn-close" (click)="cancelImagePreview()">✕</button>
-      </div>
-      <img *ngIf="previewImageUrl" [src]="previewImageUrl" alt="Preview" class="preview-image" />
-      <div class="modal-footer">
-        <button class="btn btn-outline" (click)="cancelImagePreview()">Cancel</button>
-        <button class="btn btn-primary" (click)="sendImage()" [disabled]="isSubmitting">
-          {{ isSubmitting ? 'Sending...' : 'Send Image' }}
-        </button>
-      </div>
-    </div>
+  <!-- Ended banner -->
+  <div *ngIf="status() === 'Ended'" class="ended-banner">
+    This consultation has ended. Redirecting…
   </div>
 
-  <!-- GIF Picker Placeholder -->
-  <div *ngIf="showGifPicker" class="gif-picker-modal">
-    <div class="modal-overlay" (click)="showGifPicker = false"></div>
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3>Select GIF</h3>
-        <button class="btn-close" (click)="showGifPicker = false">✕</button>
-      </div>
-      <div class="gif-placeholder">
-        <p>🎬 GIF Picker</p>
-        <p class="subtitle">Connect to Giphy or search GIFs here</p>
-        <div class="gif-grid">
-          <div class="gif-item" (click)="insertGif('https://media.giphy.com/media/l0HlDtKPoYJhFtHUQ/giphy.gif')">
-            <div class="gif-placeholder-box">GIF 1</div>
-          </div>
-          <div class="gif-item" (click)="insertGif('https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif')">
-            <div class="gif-placeholder-box">GIF 2</div>
-          </div>
-          <div class="gif-item" (click)="insertGif('https://media.giphy.com/media/l0MYUGkxDwVFxToAE/giphy.gif')">
-            <div class="gif-placeholder-box">GIF 3</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Message Input Section -->
-  <div class="chat-input-section">
-    <div class="input-controls">
-      <button class="btn btn-icon" (click)="uploadImage()" title="Upload Image">
-        🖼️
-      </button>
-      <button class="btn btn-icon" (click)="showGifPicker = true" title="Select GIF">
-        🎬
-      </button>
-    </div>
-
+  <!-- Input -->
+  <div class="chat-input-section" *ngIf="status() !== 'Ended'">
     <div class="input-wrapper">
-      <input 
-        [(ngModel)]="draft" 
+      <input
+        [(ngModel)]="draft"
         (keydown.enter)="send()"
-        (keydown)="notifyTyping()"
-        (keyup)="notifyTyping()"
-        placeholder="Type a message..."
+        placeholder="Type a message…"
         class="message-input"
-        [disabled]="status === 'Ended'"
-      />
+        [disabled]="status() === 'Ended'" />
     </div>
-
-    <button 
-      class="btn btn-primary" 
-      (click)="send()"
-      [disabled]="!draft.trim() || isSubmitting || status === 'Ended'"
-    >
-      {{ isSubmitting ? '...' : '📤' }}
+    <button class="btn btn-primary"
+            (click)="send()"
+            [disabled]="!draft.trim() || isSubmitting() || status() === 'Ended'">
+      {{ isSubmitting() ? '…' : '📤 Send' }}
     </button>
   </div>
 </div>
+

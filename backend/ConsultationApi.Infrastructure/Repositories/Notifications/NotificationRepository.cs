@@ -7,77 +7,84 @@ using Microsoft.EntityFrameworkCore;
 namespace ConsultationApi.Infrastructure.Repositories.Notifications;
 
 public class NotificationRepository
-    : INotificationRepository
+ : INotificationRepository
 {
-    private readonly AppDbContext _context;
+ private readonly AppDbContext _context;
 
-    public NotificationRepository(
-        AppDbContext context)
-    {
-        _context = context;
-    }
+ public NotificationRepository(
+ AppDbContext context)
+ {
+ _context = context;
+ }
 
-    public async Task AddAsync(
-        Notification notification)
-    {
-        await _context.Notifications
-            .AddAsync(notification);
-    }
+ public async Task AddAsync(
+ Notification notification)
+ {
+ await _context.Notifications
+ .AddAsync(notification);
+ }
 
-    public async Task<List<Notification>>
-        GetByUserIdAsync(
-            Guid userId)
-    {
-        return await _context.Notifications
-            .Where(
-                x =>
-                    x.UserId ==
-                    userId)
-            .OrderByDescending(
-                x => x.CreatedAt)
-            .ToListAsync();
-    }
+ public async Task<List<Notification>>
+ GetByUserIdAsync(
+ Guid userId)
+ {
+ return await _context.Notifications
+ .Where(
+ x =>
+ x.UserId ==
+ userId)
+ .OrderByDescending(
+ x => x.CreatedAt)
+ .ToListAsync();
+ }
 
-    public async Task<
-        Notification?> GetByIdAsync(
-        Guid id)
-    {
-        return await _context.Notifications
-            .FirstOrDefaultAsync(
-                x => x.Id == id);
-    }
+ public async Task<
+ Notification?> GetByIdAsync(
+ Guid id)
+ {
+ return await _context.Notifications
+ .FirstOrDefaultAsync(
+ x => x.Id == id);
+ }
 
-    public async Task MarkAllReadAsync(
-        Guid userId)
-    {
-        var notifications =
-            await _context.Notifications
-                .Where(
-                    x =>
-                        x.UserId ==
-                        userId
-                        &&
-                        !x.IsRead)
-                .ToListAsync();
+ public async Task MarkAllReadAsync(
+ Guid userId)
+ {
+ var notifications =
+ await _context.Notifications
+ .Where(
+ x =>
+ x.UserId ==
+ userId
+ &&
+ !x.IsRead)
+ .ToListAsync();
 
-        foreach (var n
-            in notifications)
-        {
-            n.IsRead = true;
-        }
+ foreach (var n
+ in notifications)
+ {
+ n.IsRead = true;
+ }
 
-        await Task.CompletedTask;
-    }
+ await Task.CompletedTask;
+ }
 
-    public async Task UpdateAsync(
-        Notification notification)
-    {
-        _context.Notifications.Update(notification);
-        await Task.CompletedTask;
-    }
+ public async Task UpdateAsync(
+ Notification notification)
+ {
+ _context.Notifications.Update(notification);
+ await Task.CompletedTask;
+ }
 
-    public async Task SaveChangesAsync()
-    {
-        await _context.SaveChangesAsync();
-    }
+ public async Task DeleteAsync(
+ Notification notification)
+ {
+ _context.Notifications.Remove(notification);
+ await Task.CompletedTask;
+ }
+
+ public async Task SaveChangesAsync()
+ {
+ await _context.SaveChangesAsync();
+ }
 }

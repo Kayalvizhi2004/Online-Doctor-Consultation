@@ -12,15 +12,18 @@ public class ReviewService : IReviewService
 {
     private readonly IReviewRepository _reviews;
     private readonly IAppointmentRepository _appointments;
+    private readonly IDoctorRepository _doctors;
     private readonly IMapper _mapper;
 
     public ReviewService(
         IReviewRepository reviews,
         IAppointmentRepository appointments,
+        IDoctorRepository doctors,
         IMapper mapper)
     {
         _reviews = reviews;
         _appointments = appointments;
+        _doctors = doctors;
         _mapper = mapper;
     }
 
@@ -104,27 +107,46 @@ public class ReviewService : IReviewService
         };
     }
 
-    public async Task<
-        ApiResponse<PagedResponse<ReviewDto>>>
+    public async Task<ApiResponse<DoctorReviewsDto>>
         GetDoctorReviewsAsync(
             Guid doctorId,
             int page,
             int pageSize)
     {
         var reviews = await _reviews.GetDoctorReviewsAsync(doctorId, page, pageSize);
+        var (average, count) = await _reviews.GetDoctorRatingSummaryAsync(doctorId);
 
-        return new ApiResponse<
-            PagedResponse<ReviewDto>>
+        return new ApiResponse<DoctorReviewsDto>
         {
             Success = true,
-            Data = new PagedResponse<
-                ReviewDto>
+            Data = new DoctorReviewsDto
             {
-                Items =
-                    _mapper.Map<
-                        IEnumerable<ReviewDto>>(
-                            reviews)
+                AverageRating = Math.Round(average, 2),
+                TotalReviews = count,
+                Items = _mapper.Map<IEnumerable<ReviewDto>>(reviews)
             }
         };
     }
+
+    public async Task<ApiResponse<DoctorReviewsDto>>
+        GetMyReviewsAsync(
+            Guid doctorUserId,
+            int page,
+            int pageSize)
+    {
+        // The logged-in id is a user id; reviews are keyed by the doctor PROFILE id.
+        var profile = await _doctors.GetDoctorByUserIdAsync(doctorUserId);
+
+        if (profile == null)
+        {
+            return new ApiResponse<DoctorReviewsDto>
+            {
+                Success = true,
+                Data = new DoctorReviewsDto()
+            };
+        }
+
+        return await GetDoctorReviewsAsync(profile.Id, page, pageSize);
+    }
 }
+

@@ -1,3 +1,4 @@
+
 namespace ConsultationApi.Application.DTOs.Appointments;
 
 public class AppointmentDto
@@ -28,6 +29,9 @@ public class AppointmentDto
     public TimeOnly? StartTime { get; set; }
 
     public TimeOnly? EndTime { get; set; }
+
+    // Set once a consultation session has been started for this appointment.
+    public Guid? SessionId { get; set; }
 
     public DateTime CreatedAt { get; set; }
 }

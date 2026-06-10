@@ -14,7 +14,7 @@
       
       <div class="stat-content">
         <p class="stat-label">Total Appointments</p>
-        <h3 class="stat-value">{{ stats.total }}</h3>
+        <h3 class="stat-value">{{ stats().total }}</h3>
       </div>
     </div>
 
@@ -22,7 +22,7 @@
       
       <div class="stat-content">
         <p class="stat-label">Pending Confirmation</p>
-        <h3 class="stat-value">{{ stats.pending }}</h3>
+        <h3 class="stat-value">{{ stats().pending }}</h3>
       </div>
     </div>
 
@@ -30,7 +30,7 @@
       
       <div class="stat-content">
         <p class="stat-label">Confirmed</p>
-        <h3 class="stat-value">{{ stats.confirmed }}</h3>
+        <h3 class="stat-value">{{ stats().confirmed }}</h3>
       </div>
     </div>
 
@@ -38,7 +38,7 @@
       
       <div class="stat-content">
         <p class="stat-label">Completed</p>
-        <h3 class="stat-value">{{ stats.completed }}</h3>
+        <h3 class="stat-value">{{ stats().completed }}</h3>
       </div>
     </div>
   </div>
@@ -47,14 +47,14 @@
   <div class="section-container">
     <div class="section-header">
       <h2>Pending Appointments</h2>
-      <span class="badge">{{ pending.length }}</span>
+      <span class="badge">{{ pending().length }}</span>
     </div>
 
-    <div *ngIf="pending.length === 0" class="empty-state">
+    <div *ngIf="pending().length === 0" class="empty-state">
       <p>No pending appointments</p>
     </div>
 
-    <table *ngIf="pending.length > 0" class="appointments-table">
+    <table *ngIf="pending().length > 0" class="appointments-table">
       <thead>
         <tr>
           <th>Patient Name</th>
@@ -65,11 +65,11 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let appt of pending">
+        <tr *ngFor="let appt of pending()">
           <td class="patient-name">{{ appt.patientName }}</td>
           <td>{{ appt.date | date: 'MMM dd, yyyy' }}</td>
           <td>{{ appt.startTime }} - {{ appt.endTime }}</td>
-          <td class="reason">{{ appt.reason || 'General Consultation' }}</td>
+          <td class="reason">{{ appt.notes || 'General Consultation' }}</td>
           <td class="actions">
             <button class="btn btn-sm btn-primary" (click)="confirm(appt.id)">Confirm</button>
             <button class="btn btn-sm btn-outline">Reject</button>
@@ -83,14 +83,14 @@
   <div class="section-container">
     <div class="section-header">
       <h2>Upcoming Consultations</h2>
-      <span class="badge">{{ confirmed.length }}</span>
+      <span class="badge">{{ confirmed().length }}</span>
     </div>
 
-    <div *ngIf="confirmed.length === 0" class="empty-state">
+    <div *ngIf="confirmed().length === 0" class="empty-state">
       <p>No confirmed appointments</p>
     </div>
 
-    <table *ngIf="confirmed.length > 0" class="appointments-table">
+    <table *ngIf="confirmed().length > 0" class="appointments-table">
       <thead>
         <tr>
           <th>Patient Name</th>
@@ -101,11 +101,11 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let appt of confirmed">
+        <tr *ngFor="let appt of confirmed()">
           <td class="patient-name">{{ appt.patientName }}</td>
           <td>{{ appt.date | date: 'MMM dd, yyyy' }}</td>
           <td>{{ appt.startTime }} - {{ appt.endTime }}</td>
-          <td class="reason">{{ appt.reason || 'General Consultation' }}</td>
+          <td class="reason">{{ appt.notes || 'General Consultation' }}</td>
           <td class="actions">
             <button class="btn btn-sm btn-success" (click)="startSession(appt.id)">Start Session</button>
             <button class="btn btn-sm btn-outline">Reschedule</button>
@@ -119,14 +119,14 @@
   <div class="section-container">
     <div class="section-header">
       <h2>Completed Consultations</h2>
-      <span class="badge secondary">{{ completed.length }}</span>
+      <span class="badge secondary">{{ completed().length }}</span>
     </div>
 
-    <div *ngIf="completed.length === 0" class="empty-state">
+    <div *ngIf="completed().length === 0" class="empty-state">
       <p>No completed appointments</p>
     </div>
 
-    <table *ngIf="completed.length > 0" class="appointments-table">
+    <table *ngIf="completed().length > 0" class="appointments-table">
       <thead>
         <tr>
           <th>Patient Name</th>
@@ -137,11 +137,11 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let appt of completed">
+        <tr *ngFor="let appt of completed()">
           <td class="patient-name">{{ appt.patientName }}</td>
           <td>{{ appt.date | date: 'MMM dd, yyyy' }}</td>
           <td>{{ appt.startTime }} - {{ appt.endTime }}</td>
-          <td class="reason">{{ appt.reason || 'General Consultation' }}</td>
+          <td class="reason">{{ appt.notes || 'General Consultation' }}</td>
           <td class="actions">
             <button class="btn btn-sm btn-link">View Summary</button>
           </td>

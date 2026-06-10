@@ -31,6 +31,11 @@ public static class QueueBindings
 
         ConfigureQueue(
             channel,
+            "consultation.started.queue",
+            "consultation.started");
+
+        ConfigureQueue(
+            channel,
             "consultation.completed.queue",
             "consultation.completed");
     }

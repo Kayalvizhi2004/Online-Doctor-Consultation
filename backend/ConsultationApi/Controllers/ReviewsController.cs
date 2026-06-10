@@ -62,4 +62,30 @@ public class ReviewController : ControllerBase
             response.StatusCode,
             response);
     }
+
+    //----------------------------------------------------
+    // GET the logged-in doctor's own reviews (avg + list)
+    // GET /api/doctors/me/reviews
+    //----------------------------------------------------
+
+    [Authorize(Roles = "Doctor")]
+    [HttpGet("api/doctors/me/reviews")]
+    public async Task<IActionResult> GetMyReviews(
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 100)
+    {
+        var doctorUserId = Guid.Parse(User.FindFirst("sub")?.Value ??
+            User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value!);
+
+        var response =
+            await _reviewService
+                .GetMyReviewsAsync(
+                    doctorUserId,
+                    pageNumber,
+                    pageSize);
+
+        return StatusCode(
+            response.StatusCode,
+            response);
+    }
 }

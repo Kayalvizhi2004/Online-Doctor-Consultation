@@ -1,7 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { AppointmentService } from '../../../core/services/appointment.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-patient-dashboard',
@@ -12,15 +13,13 @@ import { CommonModule } from '@angular/common';
 })
 export class PatientDashboardComponent implements OnInit {
 
-  appointments: any[] = [];
-  notifications: any[] = [];
-  unreadCount = 0;
+  appointments = signal<any[]>([]);
+  unreadCount = signal<number>(0);
   user: any = null;
 
-  constructor(
-    private appointmentService: AppointmentService,
-    private notificationService: NotificationService
-  ) {}
+  private appointmentService = inject(AppointmentService);
+  private notificationService = inject(NotificationService);
+  private router = inject(Router);
 
   ngOnInit(): void {
     try { this.user = JSON.parse(localStorage.getItem('user') || 'null'); } catch { this.user = null; }
@@ -28,41 +27,33 @@ export class PatientDashboardComponent implements OnInit {
     this.loadNotifications();
   }
 
-  join(sessionId: string) {
-    if (!sessionId) return;
-    window.location.href = `/consultation/${sessionId}`;
+  /** A consultation is joinable once the doctor has started it. */
+  canJoin(a: any): boolean {
+    return !!a?.sessionId && (a.status || '').toLowerCase() === 'inprogress';
+  }
+
+  join(sessionId: string): void {
+    if (sessionId) this.router.navigate(['/chat', sessionId]);
   }
 
   loadAppointments(): void {
     this.appointmentService.getAll().subscribe({
       next: (res: any) => {
-        if (Array.isArray(res)) {
-          this.appointments = res;
-        } else if (res && Array.isArray(res.data)) {
-          this.appointments = res.data;
-        } else {
-          this.appointments = [];
-        }
+        const list = Array.isArray(res) ? res : (res?.items ?? res?.Items ?? res?.data?.items ?? res?.Data?.Items ?? []);
+        this.appointments.set(list || []);
       },
-      error: (err) => {
-        console.error('Failed to load appointments', err);
-        this.appointments = [];
-      }
+      error: () => this.appointments.set([])
     });
   }
 
   loadNotifications(): void {
     this.notificationService.getAll().subscribe({
       next: (res: any) => {
-        const list = Array.isArray(res) ? res : (res && Array.isArray(res.data) ? res.data : []);
-        this.notifications = list;
-        this.unreadCount = list.filter((n: any) => !n.isRead).length;
+        const list = Array.isArray(res) ? res : (res?.items ?? res?.data ?? res?.Data ?? []);
+        this.unreadCount.set((list || []).filter((n: any) => !(n.isRead ?? n.IsRead)).length);
       },
-      error: (err) => {
-        console.error('Failed to load notifications', err);
-        this.notifications = [];
-        this.unreadCount = 0;
-      }
+      error: () => this.unreadCount.set(0)
     });
   }
 }
+

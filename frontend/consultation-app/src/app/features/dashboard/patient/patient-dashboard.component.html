@@ -1,45 +1,38 @@
-<div class="patient-shell">
-  <div class="header">
-    <h2>Welcome, {{ user?.fullName }}</h2>
-    <div class="quick-search"><input placeholder="Search doctors..." /></div>
-  </div>
-
-  <section class="upcoming">
-    <h3>Upcoming Appointments</h3>
-    <div class="cards">
-      <div class="card" *ngFor="let a of appointments">
-        <div class="left">Dr. {{ a.doctorName }}</div>
-        <div class="right"><button class="btn btn-primary" (click)="join(a.sessionId)" *ngIf="a.canJoin">Join</button></div>
-      </div>
-    </div>
-  </section>
-</div>
 <div class="dashboard">
 
-  <h2>Patient Dashboard</h2>
+  <div class="header">
+    <h2>Welcome, {{ user?.fullName || 'Patient' }}</h2>
+  </div>
 
   <div class="grid">
-
     <div class="card">
       <h3>Appointments</h3>
-      <p>Total: {{appointments.length}}</p>
+      <p class="big">{{ appointments().length }}</p>
     </div>
 
     <div class="card highlight">
-      <h3>Notifications</h3>
-      <p>Unread: {{unreadCount}}</p>
+      <h3>Unread Notifications</h3>
+      <p class="big">{{ unreadCount() }}</p>
     </div>
-
   </div>
 
   <div class="section">
-    <h3>Upcoming Appointments</h3>
+    <h3>My Appointments</h3>
 
-    <div *ngFor="let a of appointments" class="item">
-      <p><b>Doctor:</b> {{a.doctorName}}</p>
-      <p><b>Status:</b> {{a.status}}</p>
+    <div *ngIf="appointments().length === 0" class="empty">
+      <p>No appointments yet.</p>
     </div>
 
+    <div *ngFor="let a of appointments()" class="item">
+      <div class="item-main">
+        <p class="item-doctor">{{ a.doctorName || 'Doctor' }}</p>
+        <p class="item-meta">{{ a.specialization }} · {{ a.date | date: 'MMM dd, yyyy' }} · {{ a.startTime }}</p>
+      </div>
+      <div class="item-side">
+        <span class="status-pill" [attr.data-status]="(a.status || '').toLowerCase()">{{ a.status }}</span>
+        <button class="btn btn-primary btn-sm" *ngIf="canJoin(a)" (click)="join(a.sessionId)">Join</button>
+      </div>
+    </div>
   </div>
 
 </div>

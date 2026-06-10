@@ -39,6 +39,7 @@ export class AppointmentService {
     return {
       id: a.id ?? a.Id,
       doctorId: a.doctorId ?? a.DoctorId,
+      sessionId: a.sessionId ?? a.SessionId,
       doctorName: a.doctorName ?? a.DoctorName,
       specialization: a.specialization ?? a.Specialization,
       patientName: a.patientName ?? a.PatientName,

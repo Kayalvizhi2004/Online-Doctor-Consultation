@@ -1,117 +1,81 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterModule } from '@angular/router';
+import { Router } from '@angular/router';
 import { AppointmentService } from '../../../core/services/appointment.service';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-consultation-sessions',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule],
   templateUrl: './consultation-sessions.component.html',
   styleUrls: ['./consultation-sessions.component.scss']
 })
-export class ConsultationSessionsComponent implements OnInit {
+export class ConsultationSessionsComponent implements OnInit, OnDestroy {
 
-  sessions: any[] = [];
-  upcomingSessions: any[] = [];
-  activeSessions: any[] = [];
-  isLoading = false;
+  role = signal<string>('');
+  active = signal<any[]>([]);    // InProgress (joinable now)
+  upcoming = signal<any[]>([]);  // Confirmed (doctor can Start)
+  loading = signal<boolean>(true);
+  starting = signal<string | null>(null);
 
-  constructor(
-    private appointmentService: AppointmentService,
-    private router: Router
-  ) {}
+  private appt = inject(AppointmentService);
+  private auth = inject(AuthService);
+  private router = inject(Router);
+  private pollId: any;
 
   ngOnInit(): void {
-    this.loadSessions();
-    setInterval(() => this.loadSessions(), 60000); // Refresh every minute
+    this.auth.user$.subscribe(u => this.role.set(u?.role || ''));
+    this.load();
+    this.pollId = setInterval(() => this.load(), 20000); // keep both sides in sync
   }
 
-  loadSessions(): void {
-    this.isLoading = true;
-    this.appointmentService.getAll().subscribe({
+  ngOnDestroy(): void {
+    if (this.pollId) clearInterval(this.pollId);
+  }
+
+  isDoctor(): boolean { return this.role() === 'Doctor'; }
+
+  load(): void {
+    this.loading.set(true);
+    this.appt.getAll().subscribe({
       next: (res: any) => {
-        const list = Array.isArray(res) ? res : (res?.items ?? res?.Items ?? res?.data?.items ?? res?.Data?.Items ?? []);
-        this.sessions = list;
-        
-        const now = new Date();
-        this.upcomingSessions = list.filter((s: any) => {
-          const sessionTime = new Date(s.date + ' ' + (s.startTime || '00:00'));
-          return sessionTime > now && (s.status?.toLowerCase() === 'confirmed');
-        }).sort((a: any, b: any) => {
-          const timeA = new Date(a.date + ' ' + (a.startTime || '00:00')).getTime();
-          const timeB = new Date(b.date + ' ' + (b.startTime || '00:00')).getTime();
-          return timeA - timeB;
-        });
-
-        this.activeSessions = list.filter((s: any) => s.status?.toLowerCase() === 'in_progress' || s.status?.toLowerCase() === 'inprogress');
-        this.isLoading = false;
+        const list = Array.isArray(res) ? res : (res?.items ?? res?.Items ?? []);
+        const by = (s: string) => list.filter((a: any) => (a.status || '').toLowerCase() === s);
+        this.active.set(by('inprogress'));
+        this.upcoming.set(by('confirmed'));
+        this.loading.set(false);
       },
-      error: (err: any) => {
-        console.error('Failed to load sessions', err);
-        this.sessions = [];
-        this.upcomingSessions = [];
-        this.activeSessions = [];
-        this.isLoading = false;
-      }
+      error: () => { this.active.set([]); this.upcoming.set([]); this.loading.set(false); }
     });
   }
 
-  startConsultation(sessionId: string): void {
-    this.appointmentService.startSession(sessionId).subscribe({
-      next: () => {
-        this.router.navigate(['/chat', sessionId]);
+  /** Doctor: start a confirmed appointment, then jump into its chat room. */
+  start(a: any): void {
+    if (this.starting()) return;
+    this.starting.set(a.id);
+    this.appt.startSession(a.id).subscribe({
+      next: (sessionId: any) => {
+        this.starting.set(null);
+        if (sessionId) this.router.navigate(['/chat', sessionId]);
+        else this.load();
       },
-      error: (err: any) => {
-        console.error('Failed to start session', err);
-        alert('Failed to start session. Please try again.');
-      }
+      error: (err: any) => { this.starting.set(null); alert(err?.message || 'Failed to start the session.'); }
     });
   }
 
-  endSession(sessionId: string): void {
-    if (!confirm('Are you sure you want to end this session?')) return;
-    
-    this.appointmentService.endSession(sessionId).subscribe({
-      next: () => {
-        alert('Session ended successfully');
-        this.loadSessions();
-      },
-      error: (err: any) => {
-        console.error('Failed to end session', err);
-        alert('Failed to end session. Please try again.');
-      }
-    });
+  /** Open the live chat for an already-started session (doctor or patient). */
+  open(a: any): void {
+    if (a.sessionId) this.router.navigate(['/chat', a.sessionId]);
+    else { alert('Session is not active yet.'); this.load(); }
   }
 
-  reschedule(sessionId: string): void {
-    this.router.navigate(['/appointments', sessionId, 'reschedule']);
+  /** The "other party" name to show on the card. */
+  partyName(a: any): string {
+    return this.isDoctor() ? (a.patientName || 'Patient') : (a.doctorName || 'Doctor');
   }
 
-  getTimeUntil(date: string, time: string): string {
-    const sessionTime = new Date(date + ' ' + (time || '00:00')).getTime();
-    const now = Date.now();
-    const diff = sessionTime - now;
-
-    if (diff < 0) return 'Overdue';
-    
-    const hours = Math.floor(diff / (1000 * 60 * 60));
-    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-
-    if (hours > 24) {
-      const days = Math.floor(hours / 24);
-      return `${days}d ${hours % 24}h`;
-    }
-
-    return `${hours}h ${minutes}m`;
-  }
-
-  canStartNow(date: string, time: string): boolean {
-    const sessionTime = new Date(date + ' ' + (time || '00:00')).getTime();
-    const now = Date.now();
-    const diff = sessionTime - now;
-    
-    // Can start 15 minutes before session time
-    return diff <= 15 * 60 * 1000 && diff > -60 * 60 * 1000;
+  partyLabel(a: any): string {
+    return this.isDoctor() ? 'Patient' : (a.specialization || 'Doctor');
   }
 }

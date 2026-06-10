@@ -10,8 +10,13 @@ public interface IReviewService
         Guid appointmentId,
         CreateReviewDto dto);
 
-    Task<ApiResponse<PagedResponse<ReviewDto>>> GetDoctorReviewsAsync(
+    Task<ApiResponse<DoctorReviewsDto>> GetDoctorReviewsAsync(
         Guid doctorId,
+        int page,
+        int pageSize);
+
+    Task<ApiResponse<DoctorReviewsDto>> GetMyReviewsAsync(
+        Guid doctorUserId,
         int page,
         int pageSize);
 }

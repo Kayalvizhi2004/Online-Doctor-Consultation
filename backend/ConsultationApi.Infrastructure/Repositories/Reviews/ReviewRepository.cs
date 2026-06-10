@@ -34,6 +34,9 @@ public class ReviewRepository
             .Include(
                 x =>
                     x.Appointment)
+            .Include(
+                x =>
+                    x.Patient)
             .Where(
                 x =>
                     x.Appointment != null &&
@@ -46,6 +49,24 @@ public class ReviewRepository
                 * pageSize)
             .Take(pageSize)
             .ToListAsync();
+    }
+
+    public async Task<(double Average, int Count)>
+        GetDoctorRatingSummaryAsync(
+            Guid doctorId)
+    {
+        var ratings = await _context.Reviews
+            .Where(
+                x =>
+                    x.Appointment != null &&
+                    x.Appointment.DoctorId == doctorId)
+            .Select(x => x.Rating)
+            .ToListAsync();
+
+        if (ratings.Count == 0)
+            return (0, 0);
+
+        return (ratings.Average(), ratings.Count);
     }
 
     public async Task SaveChangesAsync()

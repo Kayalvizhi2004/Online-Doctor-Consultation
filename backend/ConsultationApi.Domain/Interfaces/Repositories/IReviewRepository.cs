@@ -13,6 +13,10 @@ public interface IReviewRepository
             int page,
             int pageSize);
 
+    Task<(double Average, int Count)>
+        GetDoctorRatingSummaryAsync(
+            Guid doctorId);
+
     Task SaveChangesAsync();
 
     Task<bool> ExistsAsync(Guid appointmentId);

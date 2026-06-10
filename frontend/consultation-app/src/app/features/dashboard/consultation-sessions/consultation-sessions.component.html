@@ -1,126 +1,94 @@
 <div class="sessions-container">
-  <!-- Page Header -->
   <div class="page-header">
     <div>
-      <h1>Consultation Sessions</h1>
-      <p class="subtitle">Manage your upcoming consultations</p>
+      <h1>{{ isDoctor() ? 'Consultation Sessions' : 'Active Consultation' }}</h1>
+      <p class="subtitle">
+        {{ isDoctor() ? 'Start and manage your live consultations' : 'Join your live consultation when the doctor starts it' }}
+      </p>
     </div>
   </div>
 
-  <!-- Active Sessions Alert -->
-  <div *ngIf="activeSessions.length > 0" class="alert alert-info">
-    <strong>⚡ Active Sessions:</strong> You have {{ activeSessions.length }} session(s) in progress
-  </div>
-
-  <!-- Active Sessions -->
-  <div *ngIf="activeSessions.length > 0" class="section-container">
-    <div class="section-header">
-      <h2>Active Sessions</h2>
-      <span class="badge primary">{{ activeSessions.length }}</span>
-    </div>
-
-    <div class="sessions-grid">
-      <div *ngFor="let session of activeSessions" class="session-card active">
-        <div class="session-badge-container">
-          <span class="status-badge active">
-            <span class="pulse-dot"></span> In Progress
-          </span>
-          <span class="time-display">Now Active</span>
-        </div>
-        
-        <div class="session-body">
-          <div class="patient-section">
-            <div class="patient-avatar">{{ session.patientName.charAt(0).toUpperCase() }}</div>
-            <div>
-              <h3 class="patient-name">{{ session.patientName }}</h3>
-              <p class="session-date">📅 {{ session.date | date: 'MMM dd, yyyy' }}</p>
-            </div>
-          </div>
-          
-          <div class="session-details">
-            <p class="session-time">⏰ {{ session.startTime }} - {{ session.endTime }}</p>
-            <p class="session-reason" *ngIf="session.reason">📝 {{ session.reason }}</p>
-          </div>
-        </div>
-
-        <div class="session-actions">
-          <button class="btn btn-primary" routerLink="/chat/{{ session.id }}">
-            💬 Go to Chat
-          </button>
-          <button class="btn btn-danger" (click)="endSession(session.id)">
-            🔴 End Session
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Upcoming Sessions -->
+  <!-- Active (in progress) -->
   <div class="section-container">
     <div class="section-header">
-      <h2>Upcoming Sessions</h2>
-      <span class="badge">{{ upcomingSessions.length }}</span>
+      <h2>Live Now</h2>
+      <span class="badge primary">{{ active().length }}</span>
     </div>
 
-    <div *ngIf="isLoading" class="loading-state">
-      <p>Loading sessions...</p>
+    <div *ngIf="active().length === 0" class="empty-state">
+      <p>No consultations are live right now.</p>
     </div>
 
-    <div *ngIf="!isLoading && upcomingSessions.length === 0" class="empty-state">
-      <p>No upcoming consultations scheduled</p>
-    </div>
-
-    <div *ngIf="!isLoading && upcomingSessions.length > 0" class="sessions-grid">
-      <div *ngFor="let session of upcomingSessions" class="session-card" [class.ready]="canStartNow(session.date, session.startTime)">
+    <div *ngIf="active().length > 0" class="sessions-grid">
+      <div *ngFor="let s of active()" class="session-card active">
         <div class="session-badge-container">
-          <span class="status-badge confirmed">📅 Confirmed</span>
-          <span class="time-until" [class.urgent]="canStartNow(session.date, session.startTime)">
-            ⏱️ {{ getTimeUntil(session.date, session.startTime) }}
-          </span>
+          <span class="status-badge active"><span class="pulse-dot"></span> In Progress</span>
+          <span class="time-display">Live</span>
         </div>
-        
         <div class="session-body">
           <div class="patient-section">
-            <div class="patient-avatar">{{ session.patientName.charAt(0).toUpperCase() }}</div>
+            <div class="patient-avatar">{{ (partyName(s) || '?').charAt(0).toUpperCase() }}</div>
             <div>
-              <h3 class="patient-name">{{ session.patientName }}</h3>
-              <p class="session-date">📅 {{ session.date | date: 'MMM dd, yyyy' }}</p>
+              <h3 class="patient-name">{{ partyName(s) }}</h3>
+              <p class="session-date">{{ partyLabel(s) }} · {{ s.date | date: 'MMM dd, yyyy' }}</p>
             </div>
           </div>
-          
           <div class="session-details">
-            <p class="session-time">⏰ {{ session.startTime }} - {{ session.endTime }}</p>
-            <p class="session-reason" *ngIf="session.reason">📝 {{ session.reason }}</p>
-            <div class="session-notes" *ngIf="session.notes">
-              <p>💬 {{ session.notes }}</p>
-            </div>
+            <p class="session-time">⏰ {{ s.startTime }} - {{ s.endTime }}</p>
+            <p class="session-reason" *ngIf="s.notes">📝 {{ s.notes }}</p>
           </div>
         </div>
-
         <div class="session-actions">
-          <button 
-            class="btn btn-success" 
-            [disabled]="!canStartNow(session.date, session.startTime)"
-            (click)="startConsultation(session.id)"
-            [title]="canStartNow(session.date, session.startTime) ? 'Start consultation' : 'Can start 15 minutes before session time'">
-            ▶ Start Session
-          </button>
-          <button class="btn btn-outline" (click)="reschedule(session.id)">
-            📅 Reschedule
+          <button class="btn btn-primary" (click)="open(s)">
+            💬 {{ isDoctor() ? 'Open Chat' : 'Join Consultation' }}
           </button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Session Tips -->
-  <div class="info-card">
-    <h3>💡 Consultation Tips</h3>
-    <ul>
-      <li>Ensure stable internet connection before starting</li>
-      <li>Test your microphone and camera beforehand</li>
-      <li>Have patient medical history ready</li>
-      <li>Start the session 5 minutes before appointment time</li>
-    </ul>
+  <!-- Upcoming (confirmed) -->
+  <div class="section-container">
+    <div class="section-header">
+      <h2>{{ isDoctor() ? 'Ready to Start' : 'Upcoming' }}</h2>
+      <span class="badge">{{ upcoming().length }}</span>
+    </div>
+
+    <div *ngIf="loading()" class="loading-state"><p>Loading…</p></div>
+    <div *ngIf="!loading() && upcoming().length === 0" class="empty-state">
+      <p>No confirmed consultations yet.</p>
+    </div>
+
+    <div *ngIf="!loading() && upcoming().length > 0" class="sessions-grid">
+      <div *ngFor="let s of upcoming()" class="session-card">
+        <div class="session-badge-container">
+          <span class="status-badge confirmed">📅 Confirmed</span>
+        </div>
+        <div class="session-body">
+          <div class="patient-section">
+            <div class="patient-avatar">{{ (partyName(s) || '?').charAt(0).toUpperCase() }}</div>
+            <div>
+              <h3 class="patient-name">{{ partyName(s) }}</h3>
+              <p class="session-date">{{ partyLabel(s) }} · {{ s.date | date: 'MMM dd, yyyy' }}</p>
+            </div>
+          </div>
+          <div class="session-details">
+            <p class="session-time">⏰ {{ s.startTime }} - {{ s.endTime }}</p>
+            <p class="session-reason" *ngIf="s.notes">📝 {{ s.notes }}</p>
+          </div>
+        </div>
+        <div class="session-actions">
+          <!-- Doctor starts the session -->
+          <button *ngIf="isDoctor()" class="btn btn-success"
+                  [disabled]="starting() === s.id"
+                  (click)="start(s)">
+            {{ starting() === s.id ? 'Starting…' : '▶ Start Session' }}
+          </button>
+          <!-- Patient waits -->
+          <span *ngIf="!isDoctor()" class="waiting-hint">⏳ Waiting for the doctor to start</span>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
+

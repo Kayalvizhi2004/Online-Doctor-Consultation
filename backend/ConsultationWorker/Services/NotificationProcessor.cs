@@ -34,6 +34,7 @@ public class NotificationProcessor
             // Create a new scope for each message to ensure fresh DbContext
             using var scope = _provider.CreateScope();
             var notifications = scope.ServiceProvider.GetRequiredService<INotificationRepository>();
+            var doctors = scope.ServiceProvider.GetRequiredService<IDoctorRepository>();
 
             using var doc = JsonDocument.Parse(payload);
             var root = doc.RootElement;
@@ -72,18 +73,44 @@ public class NotificationProcessor
                     
                     if (doctorId.HasValue)
                     {
-                        var doctorNotif = new Notification
+                        // doctorId in the event is the doctor PROFILE id; notifications
+                        // target the doctor's USER id.
+                        var doctorUserId = await ResolveDoctorUserId(doctors, doctorId.Value);
+                        if (doctorUserId.HasValue)
+                        {
+                            await notifications.AddAsync(new Notification
+                            {
+                                Id = Guid.NewGuid(),
+                                UserId = doctorUserId.Value,
+                                Title = title,
+                                Message = message,
+                                Type = notificationType,
+                                IsRead = false,
+                                CreatedAt = DateTime.UtcNow
+                            });
+                            _logger.LogInformation("[NotificationProcessor] Added notification for doctor user {UserId}", doctorUserId);
+                        }
+                    }
+                    break;
+
+                case "consultation.started":
+                    // Patient gets: consultation has started, join now
+                    title = "Consultation Started";
+                    message = "Your consultation has started. Open it to join the chat.";
+
+                    if (patientId.HasValue)
+                    {
+                        await notifications.AddAsync(new Notification
                         {
                             Id = Guid.NewGuid(),
-                            UserId = doctorId.Value,
+                            UserId = patientId.Value,
                             Title = title,
                             Message = message,
                             Type = notificationType,
                             IsRead = false,
                             CreatedAt = DateTime.UtcNow
-                        };
-                        await notifications.AddAsync(doctorNotif);
-                        _logger.LogInformation("[NotificationProcessor] Added notification for doctor {DoctorId}", doctorId);
+                        });
+                        _logger.LogInformation("[NotificationProcessor] Added session-started notification for patient {PatientId}", patientId);
                     }
                     break;
 
@@ -134,18 +161,21 @@ public class NotificationProcessor
 
                     if (doctorId.HasValue)
                     {
-                        var doctorNotif = new Notification
+                        var doctorUserId = await ResolveDoctorUserId(doctors, doctorId.Value);
+                        if (doctorUserId.HasValue)
                         {
-                            Id = Guid.NewGuid(),
-                            UserId = doctorId.Value,
-                            Title = title,
-                            Message = message,
-                            Type = notificationType,
-                            IsRead = false,
-                            CreatedAt = DateTime.UtcNow
-                        };
-                        await notifications.AddAsync(doctorNotif);
-                        _logger.LogInformation("[NotificationProcessor] Added cancellation notification for doctor {DoctorId}", doctorId);
+                            await notifications.AddAsync(new Notification
+                            {
+                                Id = Guid.NewGuid(),
+                                UserId = doctorUserId.Value,
+                                Title = title,
+                                Message = message,
+                                Type = notificationType,
+                                IsRead = false,
+                                CreatedAt = DateTime.UtcNow
+                            });
+                            _logger.LogInformation("[NotificationProcessor] Added cancellation notification for doctor user {UserId}", doctorUserId);
+                        }
                     }
                     break;
 
@@ -199,4 +229,15 @@ public class NotificationProcessor
             throw; // Let the consumer handle this with DLQ
         }
     }
+
+    /// <summary>
+    /// Events carry the doctor PROFILE id; resolve it to the doctor's USER id
+    /// (notifications.user_id references users.id).
+    /// </summary>
+    private static async Task<Guid?> ResolveDoctorUserId(IDoctorRepository doctors, Guid doctorProfileId)
+    {
+        var profile = await doctors.GetDoctorByIdAsync(doctorProfileId);
+        return profile?.UserId;
+    }
 }
+

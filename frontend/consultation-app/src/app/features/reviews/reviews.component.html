@@ -1,117 +1,114 @@
-<div class="reviews-container">
-  <!-- Page Header -->
-  <div class="page-header">
-    <div>
-      <h1>Reviews & Ratings</h1>
-      <p class="subtitle">See what patients think about your consultations</p>
-    </div>
-  </div>
+<div class="reviews-page">
 
-  <!-- Loading State -->
-  <div *ngIf="isLoading" class="loading-state">
-    <p>Loading reviews...</p>
-  </div>
-
-  <!-- Reviews Content -->
-  <div *ngIf="!isLoading">
-    <!-- Rating Summary -->
-    <div class="rating-summary">
-      <div class="rating-card">
-        <div class="average-rating">
-          <div class="rating-number">{{ averageRating.toFixed(1) }}</div>
-          <div class="rating-stars">
-            <span *ngFor="let i of [1,2,3,4,5]" class="star" [class.filled]="i <= averageRating">★</span>
-          </div>
-          <p class="rating-count">{{ totalReviews }} {{ totalReviews === 1 ? 'review' : 'reviews' }}</p>
-        </div>
-
-        <!-- Rating Distribution -->
-        <div class="rating-distribution">
-          <div *ngFor="let rating of [5,4,3,2,1]" class="distribution-row">
-            <span class="rating-label">{{ rating }} ★</span>
-            <div class="distribution-bar">
-              <div class="bar-fill" [style.width.%]="getRatingPercentage(rating)" [style.background-color]="rating >= 4 ? '#10b981' : (rating >= 3 ? '#f59e0b' : '#ef4444')"></div>
-            </div>
-            <span class="rating-count-small">{{ getRatingCount(rating) }}</span>
-          </div>
-        </div>
-      </div>
+  <!-- ============ DOCTOR: received reviews + average ============ -->
+  <ng-container *ngIf="isDoctor()">
+    <div class="page-header">
+      <h1>Patient Reviews</h1>
+      <p class="subtitle">What your patients say about their consultations</p>
     </div>
 
-    <!-- Reviews List -->
-    <div class="reviews-section">
-      <div class="section-header">
-        <h2>Patient Reviews</h2>
+    <div *ngIf="loading()" class="state">Loading reviews…</div>
+
+    <ng-container *ngIf="!loading()">
+      <!-- Average summary -->
+      <div class="summary-card">
+        <div class="avg-block">
+          <div class="avg-number">{{ averageRating() ? (averageRating() | number:'1.1-1') : '—' }}</div>
+          <div class="avg-stars">
+            <span *ngFor="let on of stars(averageRating())" class="star" [class.on]="on">★</span>
+          </div>
+          <div class="avg-count">{{ totalReviews() }} review{{ totalReviews() === 1 ? '' : 's' }}</div>
+        </div>
       </div>
 
-      <div *ngIf="reviews.length === 0" class="empty-state">
-        <p>No reviews yet</p>
-        <p class="subtitle">Once patients complete consultations, they can leave reviews here</p>
+      <div *ngIf="reviews().length === 0" class="state empty">
+        No reviews yet. Reviews appear after patients rate their completed consultations.
       </div>
 
-      <div *ngIf="reviews.length > 0" class="reviews-list">
-        <div *ngFor="let review of getPaginatedReviews()" class="review-card">
-          
-          <!-- Review Header -->
-          <div class="review-header">
-            <div class="reviewer-info">
-              <div class="reviewer-avatar">
-                <span *ngIf="!review.patientImage">{{ review.patientName.charAt(0).toUpperCase() }}</span>
-                <img *ngIf="review.patientImage" [src]="review.patientImage" [alt]="review.patientName" />
-              </div>
-              <div class="reviewer-details">
-                <h3 class="reviewer-name">{{ review.patientName }}</h3>
-                <p class="review-date">{{ review.createdDate | date: 'MMM dd, yyyy' }}</p>
+      <!-- Each review separately -->
+      <div class="review-list">
+        <div *ngFor="let r of reviews()" class="review-card">
+          <div class="review-top">
+            <div class="reviewer">
+              <div class="reviewer-avatar">{{ (r.patientName || '?').charAt(0).toUpperCase() }}</div>
+              <div>
+                <div class="reviewer-name">{{ r.patientName }}</div>
+                <div class="review-date">{{ r.createdAt | date: 'MMM dd, yyyy' }}</div>
               </div>
             </div>
-
-            <!-- Rating Stars -->
-            <div class="review-rating">
-              <span *ngFor="let star of generateStars(review.rating)" class="star" [class.filled]="star === 1">★</span>
-              <span class="rating-value">{{ review.rating.toFixed(1) }}</span>
+            <div class="review-stars">
+              <span *ngFor="let on of stars(r.rating)" class="star sm" [class.on]="on">★</span>
             </div>
           </div>
+          <p class="review-comment" *ngIf="r.comment">{{ r.comment }}</p>
+        </div>
+      </div>
+    </ng-container>
+  </ng-container>
 
-          <!-- Consultation Info -->
-          <div class="consultation-info">
-            <p>
-              <strong>Consultation Date:</strong> {{ review.consultationDate | date: 'MMM dd, yyyy' }}
-            </p>
+  <!-- ============ PATIENT: write reviews for completed consultations ============ -->
+  <ng-container *ngIf="!isDoctor()">
+    <div class="page-header">
+      <h1>My Reviews</h1>
+      <p class="subtitle">Rate your completed consultations</p>
+    </div>
+
+    <div *ngIf="loading()" class="state">Loading…</div>
+
+    <div *ngIf="!loading() && completed().length === 0" class="state empty">
+      You have no completed consultations to review yet.
+    </div>
+
+    <div class="review-list" *ngIf="!loading() && completed().length > 0">
+      <div *ngFor="let a of completed()" class="review-card">
+        <div class="review-top">
+          <div class="reviewer">
+            <div class="reviewer-avatar">{{ (a.doctorName || '?').charAt(0).toUpperCase() }}</div>
+            <div>
+              <div class="reviewer-name">{{ a.doctorName }}</div>
+              <div class="review-date">{{ a.specialization }} · {{ a.date | date: 'MMM dd, yyyy' }}</div>
+            </div>
           </div>
-
-          <!-- Review Text -->
-          <div class="review-body">
-            <p class="review-text">{{ review.reviewText }}</p>
+          <div>
+            <span *ngIf="isReviewed(a)" class="reviewed-tag">✓ Reviewed</span>
+            <button *ngIf="!isReviewed(a)" class="btn btn-primary btn-sm" (click)="openReview(a)">
+              ★ Write Review
+            </button>
           </div>
+        </div>
+      </div>
+    </div>
 
+    <!-- Review modal -->
+    <div *ngIf="modalAppt() as a" class="modal-overlay" (click)="closeReview()">
+      <div class="modal" (click)="$event.stopPropagation()">
+        <div class="modal-head">
+          <h3>Rate your consultation</h3>
+          <button class="modal-x" (click)="closeReview()" [disabled]="submitting()">✕</button>
+        </div>
+        <p class="modal-sub">{{ a.doctorName }} · {{ a.date | date: 'MMM dd, yyyy' }}</p>
+
+        <div class="rating-picker">
+          <span *ngFor="let i of [1,2,3,4,5]"
+                class="star pick"
+                [class.on]="i <= rating()"
+                (click)="setRating(i)">★</span>
         </div>
 
-        <!-- Pagination -->
-        <div class="pagination-container" *ngIf="totalPages > 1">
-          <button class="btn btn-outline btn-sm" (click)="prevPage()" [disabled]="currentPage === 1">
-            ← Previous
-          </button>
-          
-          <div class="pagination-info">
-            <span>Page {{ currentPage }} of {{ totalPages }}</span>
-          </div>
-          
-          <button class="btn btn-outline btn-sm" (click)="nextPage()" [disabled]="currentPage === totalPages">
-            Next →
+        <textarea [(ngModel)]="comment" rows="4" maxlength="500"
+                  placeholder="Share your experience (optional)…" [disabled]="submitting()"></textarea>
+
+        <p *ngIf="modalError()" class="modal-error">{{ modalError() }}</p>
+
+        <div class="modal-actions">
+          <button class="btn btn-ghost" (click)="closeReview()" [disabled]="submitting()">Cancel</button>
+          <button class="btn btn-primary" (click)="submitReview()" [disabled]="submitting()">
+            {{ submitting() ? 'Submitting…' : 'Submit Review' }}
           </button>
         </div>
       </div>
     </div>
-  </div>
+  </ng-container>
 
-  <!-- Info Card -->
-  <div *ngIf="!isLoading" class="info-card">
-    <h3>💡 About Your Reviews</h3>
-    <ul>
-      <li>Reviews are based on consultations completed by patients</li>
-      <li>Your average rating helps patients choose doctors</li>
-      <li>Read feedback to improve your consultation quality</li>
-      <li>Maintain professionalism in all patient interactions</li>
-    </ul>
-  </div>
 </div>
+

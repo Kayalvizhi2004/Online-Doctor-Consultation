@@ -9,72 +9,93 @@ namespace ConsultationApi.Controllers;
 [Route("api/notifications")]
 public class NotificationController : ControllerBase
 {
-    private readonly INotificationService _notificationService;
+ private readonly INotificationService _notificationService;
 
-    public NotificationController(
-        INotificationService notificationService)
-    {
-        _notificationService = notificationService;
-    }
+ public NotificationController(
+ INotificationService notificationService)
+ {
+ _notificationService = notificationService;
+ }
 
-    //----------------------------------------------------
-    // GET notifications
-    // GET /api/notifications
-    //----------------------------------------------------
+ //----------------------------------------------------
+ // GET notifications
+ // GET /api/notifications
+ //----------------------------------------------------
 
-    [HttpGet]
-    public async Task<IActionResult> GetNotifications()
-    {
-        var userId = Guid.Parse(User.FindFirst("sub")?.Value ??
-            User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value!);
+ [HttpGet]
+ public async Task<IActionResult> GetNotifications()
+ {
+ var userId = Guid.Parse(User.FindFirst("sub")?.Value ??
+ User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value!);
 
-        var response =
-            await _notificationService
-                .GetNotificationsAsync(userId);
+ var response =
+ await _notificationService
+ .GetNotificationsAsync(userId);
 
-        return StatusCode(
-            response.StatusCode,
-            response);
-    }
+ return StatusCode(
+ response.StatusCode,
+ response);
+ }
 
-    //----------------------------------------------------
-    // PATCH read
-    // PATCH /api/notifications/{id}/read
-    //----------------------------------------------------
+ //----------------------------------------------------
+ // PATCH read
+ // PATCH /api/notifications/{id}/read
+ //----------------------------------------------------
 
-    [HttpPatch("{id:guid}/read")]
-    public async Task<IActionResult> MarkAsRead(
-        Guid id)
-    {
-        var userId = Guid.Parse(User.FindFirst("sub")?.Value ??
-            User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value!);
+ [HttpPatch("{id:guid}/read")]
+ public async Task<IActionResult> MarkAsRead(
+ Guid id)
+ {
+ var userId = Guid.Parse(User.FindFirst("sub")?.Value ??
+ User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value!);
 
-        var response =
-            await _notificationService
-                .MarkReadAsync(id, userId);
+ var response =
+ await _notificationService
+ .MarkReadAsync(id, userId);
 
-        return StatusCode(
-            response.StatusCode,
-            response);
-    }
+ return StatusCode(
+ response.StatusCode,
+ response);
+ }
 
-    //----------------------------------------------------
-    // PATCH read-all
-    // PATCH /api/notifications/read-all
-    //----------------------------------------------------
+ //----------------------------------------------------
+ // PATCH read-all
+ // PATCH /api/notifications/read-all
+ //----------------------------------------------------
 
-    [HttpPatch("read-all")]
-    public async Task<IActionResult> MarkAllAsRead()
-    {
-        var userId = Guid.Parse(User.FindFirst("sub")?.Value ??
-            User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value!);
+ [HttpPatch("read-all")]
+ public async Task<IActionResult> MarkAllAsRead()
+ {
+ var userId = Guid.Parse(User.FindFirst("sub")?.Value ??
+ User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value!);
 
-        var response =
-            await _notificationService
-                .MarkAllReadAsync(userId);
+ var response =
+ await _notificationService
+ .MarkAllReadAsync(userId);
 
-        return StatusCode(
-            response.StatusCode,
-            response);
-    }
+ return StatusCode(
+ response.StatusCode,
+ response);
+ }
+
+ //----------------------------------------------------
+ // DELETE notification
+ // DELETE /api/notifications/{id}
+ //----------------------------------------------------
+
+ [HttpDelete("{id:guid}")]
+ public async Task<IActionResult> Delete(
+ Guid id)
+ {
+ var userId = Guid.Parse(User.FindFirst("sub")?.Value ??
+ User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value!);
+
+ var response =
+ await _notificationService
+ .DeleteAsync(id, userId);
+
+ return StatusCode(
+ response.StatusCode,
+ response);
+ }
 }

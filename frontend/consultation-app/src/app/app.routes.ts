@@ -56,6 +56,18 @@ export const routes: Routes = [
           import('./features/chat/chat.routes').then(m => m.CHAT_ROUTES)
       },
       {
+        path: 'sessions',
+        loadComponent: () =>
+          import('./features/dashboard/consultation-sessions/consultation-sessions.component')
+            .then(m => m.ConsultationSessionsComponent)
+      },
+      {
+        path: 'active-session',
+        loadComponent: () =>
+          import('./features/dashboard/consultation-sessions/consultation-sessions.component')
+            .then(m => m.ConsultationSessionsComponent)
+      },
+      {
         path: 'slots',
         loadComponent: () => import('./features/dashboard/availability-slots/availability-slots.component').then(m => m.AvailabilitySlotsComponent)
       },
@@ -83,3 +95,11 @@ export const routes: Routes = [
 
   { path: '**', redirectTo: 'home' }
 ];
+
+
+
+
+
+
+
+

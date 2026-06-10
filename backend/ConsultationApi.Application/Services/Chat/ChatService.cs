@@ -28,9 +28,14 @@ public class ChatService : IChatService
     {
         var session = await _appointments.GetSessionByIdAsync(sessionId);
 
-        if (session == null) return false;
+        if (session?.Appointment == null) return false;
 
-        return session.Appointment.DoctorId == userId || session.Appointment.PatientId == userId;
+        // Doctor side must be matched through the profile's UserId (Appointment.DoctorId
+        // is the doctor PROFILE id, not the user id). PatientId is already a user id.
+        var isDoctor = session.Appointment.Doctor != null
+            && session.Appointment.Doctor.UserId == userId;
+
+        return isDoctor || session.Appointment.PatientId == userId;
     }
 
     public async Task<

@@ -5,24 +5,28 @@ namespace ConsultationApi.Application.Interfaces.Notifications;
 
 public interface INotificationService
 {
-    Task<ApiResponse<IEnumerable<NotificationDto>>> GetNotificationsAsync(
-        Guid userId);
+ Task<ApiResponse<IEnumerable<NotificationDto>>> GetNotificationsAsync(
+ Guid userId);
 
-    Task<ApiResponse<string>> MarkReadAsync(
-        Guid notificationId,
-        Guid userId);
+ Task<ApiResponse<string>> MarkReadAsync(
+ Guid notificationId,
+ Guid userId);
 
-    Task<ApiResponse<string>> MarkAllReadAsync(
-        Guid userId);
+ Task<ApiResponse<string>> MarkAllReadAsync(
+ Guid userId);
 
-    Task<ApiResponse<PagedResponse<NotificationDto>>>
-        GetNotificationsAsync(
-            int pageNumber,
-            int pageSize);
+ Task<ApiResponse<string>> DeleteAsync(
+ Guid notificationId,
+ Guid userId);
 
-    Task<ApiResponse<bool>>
-        MarkAsReadAsync(Guid notificationId);
+ Task<ApiResponse<PagedResponse<NotificationDto>>>
+ GetNotificationsAsync(
+ int pageNumber,
+ int pageSize);
 
-    Task<ApiResponse<bool>>
-        MarkAllAsReadAsync();
+ Task<ApiResponse<bool>>
+ MarkAsReadAsync(Guid notificationId);
+
+ Task<ApiResponse<bool>>
+ MarkAllAsReadAsync();
 }

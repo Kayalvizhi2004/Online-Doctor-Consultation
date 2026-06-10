@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { ApiService } from './api.service';
-import { BehaviorSubject, Observable, tap } from 'rxjs';
+import { BehaviorSubject, Observable, Subject, from, tap } from 'rxjs';
 import { SignalRService } from './signalr.service';
 
 @Injectable({ providedIn: 'root' })
@@ -9,123 +9,103 @@ export class ChatService {
   private messagesSubject = new BehaviorSubject<any[]>([]);
   public messages$: Observable<any[]> = this.messagesSubject.asObservable();
 
-  private typingUsersSubject = new BehaviorSubject<string[]>([]);
-  public typingUsers$: Observable<string[]> = this.typingUsersSubject.asObservable();
+  private sessionEndedSubject = new Subject<any>();
+  public sessionEnded$: Observable<any> = this.sessionEndedSubject.asObservable();
+
+  private connectedSubject = new BehaviorSubject<boolean>(false);
+  public connected$ = this.connectedSubject.asObservable();
 
   private unreadCountSubject = new BehaviorSubject<number>(0);
   public unreadCount$ = this.unreadCountSubject.asObservable();
 
   private currentSessionId: string | null = null;
-  private hubConnected = false;
 
   constructor(private api: ApiService, private signalR: SignalRService) {}
 
-  // HTTP-backed methods
-  getMessages(sessionId: string) {
-    return this.api.get(`/api/sessions/${sessionId}/messages`);
+  // ---- REST ----
+  getMessages(sessionId: string, pageSize: number = 200) {
+    return this.api.get(`/api/sessions/${sessionId}/messages`, { pageNumber: 1, pageSize });
   }
 
-  sendMessage(sessionId: string, data: any) {
-    return this.api.post(`/api/sessions/${sessionId}/messages`, data);
+  markRead(sessionId: string) {
+    return this.api.patch(`/api/sessions/${sessionId}/messages/read`, {});
   }
 
+  /** Used by the navbar badge — derives an unread count from notifications. */
   getUnreadTotal() {
-    // Backend exposes notifications; derive unread count from notifications
     return this.api.get<any[]>('/api/notifications').pipe(
       tap((res: any) => {
         const list = Array.isArray(res) ? res : (res?.items ?? res?.data ?? res?.Data ?? []);
-        const unread = (list || []).filter((n: any) => n.isRead === false || n.is_read === false || n.read === false).length;
+        const unread = (list || []).filter((n: any) => n.isRead === false || n.IsRead === false).length;
         this.unreadCountSubject.next(unread || 0);
       })
     );
   }
 
-  markRead(sessionId: string) {
-    return this.api.patch(`/api/sessions/${sessionId}/messages/read`, {}).pipe(
-      tap(() => this.getUnreadTotal().subscribe())
-    );
+  // ---- Normalize message shapes ----
+  // REST history is PascalCase (SenderId/Message/SentAt); live hub messages are
+  // camelCase (senderId/message/sentAt) and have no messageType.
+  private normalize(m: any): any {
+    if (!m) return m;
+    return {
+      id: m.id ?? m.Id,
+      senderId: m.senderId ?? m.SenderId,
+      senderName: m.senderName ?? m.SenderName,
+      message: m.message ?? m.Message ?? m.content ?? '',
+      content: m.content ?? m.Content,
+      messageType: m.messageType ?? m.MessageType ?? 'text',
+      sentAt: m.sentAt ?? m.SentAt ?? new Date().toISOString(),
+      isRead: m.isRead ?? m.IsRead ?? false
+    };
   }
 
-  // Lightweight realtime stubs (no external SignalR dependency)
-  initSignalR(_token?: string) {
-    // Initialize SignalR connection and wire up message events.
-    this.signalR.startConnection()
-      .then(() => {
-        this.hubConnected = true;
-        this.signalR.onMessage((msg: any) => {
-          const current = this.messagesSubject.getValue();
-          this.messagesSubject.next([...current, msg]);
-          // Refresh unread count when receiving message
-          this.getUnreadTotal().subscribe();
-        });
-      })
-      .catch((err: any) => {
-        console.warn('SignalR connection failed, falling back to REST', err);
-        this.hubConnected = false;
-      });
-  }
-
-  joinSession(sessionId: string) {
+  // ---- Realtime ----
+  async init(sessionId: string): Promise<void> {
     this.currentSessionId = sessionId;
-    // Load initial messages and push to subject
-    this.getMessages(sessionId).subscribe((msgs: any) => this.messagesSubject.next(msgs || []));
-    if (this.hubConnected) {
-      this.signalR.joinSession(sessionId).catch(() => {});
-    }
-  }
 
-  leaveSession(_sessionId: string) {
-    this.currentSessionId = null;
-    this.messagesSubject.next([]);
-  }
+    // Load history first.
+    this.getMessages(sessionId).subscribe((res: any) => {
+      const items = Array.isArray(res) ? res : (res?.items ?? res?.Items ?? res?.data?.items ?? res?.Data?.Items ?? []);
+      this.messagesSubject.next((items || []).map((m: any) => this.normalize(m)));
+    });
 
-  sendRealtimeMessage(sessionId: string, text: string, senderId: string): Observable<any> {
-    const payload = { message: text, messageType: 'text', sentAt: new Date().toISOString() };
-    // If hub connected, use SignalR invoke and optimistically add
-    if (this.hubConnected) {
-      const current = this.messagesSubject.getValue();
-      this.messagesSubject.next([...current, { ...payload, senderId }]);
-      return new Observable((observer) => {
-        this.signalR.sendMessage(sessionId, text)
-          .then(() => { observer.next(null); observer.complete(); })
-          .catch((err: any) => { observer.error(err); });
+    try {
+      await this.signalR.startConnection();
+      this.connectedSubject.next(true);
+
+      this.signalR.onMessage((msg: any) => {
+        const current = this.messagesSubject.getValue();
+        this.messagesSubject.next([...current, this.normalize(msg)]);
       });
-    }
 
-    // Fallback to REST
-    const restPayload = { Message: text, MessageType: 'text' };
-    const current = this.messagesSubject.getValue();
-    this.messagesSubject.next([...current, { ...payload, senderId }]);
-    return this.sendMessage(sessionId, restPayload);
-  }
+      this.signalR.onSessionEnded((payload: any) => {
+        this.sessionEndedSubject.next(payload);
+      });
 
-  sendImageMessage(sessionId: string, base64: string, senderId: string): Observable<any> {
-    const payload = { content: base64, senderId, sentAt: new Date().toISOString(), messageType: 'image' };
-    const current = this.messagesSubject.getValue();
-    this.messagesSubject.next([...current, payload]);
-    return this.sendMessage(sessionId, payload);
-  }
-
-  sendGifMessage(sessionId: string, gifUrl: string, senderId: string): Observable<any> {
-    const payload = { content: gifUrl, senderId, sentAt: new Date().toISOString(), messageType: 'gif' };
-    const current = this.messagesSubject.getValue();
-    this.messagesSubject.next([...current, payload]);
-    return this.sendMessage(sessionId, payload);
-  }
-
-  notifyTyping(sessionId: string, userId: string): void {
-    // Simulate typing indicator - in real app would use SignalR
-    const current = this.typingUsersSubject.getValue();
-    if (!current.includes(userId)) {
-      this.typingUsersSubject.next([...current, userId]);
-      setTimeout(() => {
-        const updated = this.typingUsersSubject.getValue().filter(u => u !== userId);
-        this.typingUsersSubject.next(updated);
-      }, 3000);
+      await this.signalR.joinSession(sessionId);
+    } catch (err) {
+      console.error('[chat] SignalR connection failed', err);
+      this.connectedSubject.next(false);
+      throw err;
     }
   }
 
-  endSession(sessionId: string): Observable<any> {
-    return this.api.post(`/api/sessions/${sessionId}/end`, {});
+  /** Send a live message. The server echoes it back via ReceiveMessage (incl. to us),
+   *  so we do NOT optimistically append here to avoid duplicates. */
+  sendMessage(sessionId: string, text: string): Observable<void> {
+    return from(Promise.resolve(this.signalR.sendMessage(sessionId, text)).then(() => undefined));
+  }
+
+  /** Doctor-only on the server. */
+  endSession(sessionId: string): Observable<void> {
+    return from(Promise.resolve(this.signalR.endSession(sessionId)).then(() => undefined));
+  }
+
+  leave(sessionId: string): void {
+    this.signalR.leaveSession(sessionId)?.catch(() => {});
+    this.signalR.stop()?.catch(() => {});
+    this.messagesSubject.next([]);
+    this.connectedSubject.next(false);
+    this.currentSessionId = null;
   }
 }

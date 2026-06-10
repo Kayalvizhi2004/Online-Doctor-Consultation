@@ -41,6 +41,7 @@ public class AppointmentRepository
                 x.ConsultationSession)
             .FirstOrDefaultAsync(
                 x => x.Id == id);
+        // GetByIdAsync already includes ConsultationSession.
     }
 
     public async Task<
@@ -58,6 +59,7 @@ public class AppointmentRepository
                 .Include(x => x.Doctor)
                     .ThenInclude(d => d!.User)
                 .Include(x => x.Slot)
+                .Include(x => x.ConsultationSession)
                 .AsQueryable();
 
         if (role == "Patient")
@@ -144,6 +146,9 @@ public class AppointmentRepository
         Guid appointmentId)
     {
         return await _context.ConsultationSessions
+            .Include(s => s.Appointment)
+                .ThenInclude(a => a!.Doctor)
+                    .ThenInclude(d => d!.User)
             .FirstOrDefaultAsync(s => s.AppointmentId == appointmentId);
     }
 
@@ -151,6 +156,9 @@ public class AppointmentRepository
         Guid sessionId)
     {
         return await _context.ConsultationSessions
+            .Include(s => s.Appointment)
+                .ThenInclude(a => a!.Doctor)
+                    .ThenInclude(d => d!.User)
             .FirstOrDefaultAsync(s => s.Id == sessionId);
     }
 
