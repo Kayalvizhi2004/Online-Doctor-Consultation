@@ -54,19 +54,18 @@ public class AuthService : IAuthService
                 PasswordHash =
                 _hasher.Hash(
                     request.Password),
-            Role = Enum.Parse<UserRole>(
-                request.Role),
+            Role = Enum.Parse<UserRole>(request.Role, true),
             CreatedAt = DateTime.UtcNow
         };
 
         // If registering a doctor, create an associated DoctorProfile
-        if (user.Role == Domain.Enums.UserRole.Doctor)
+        if (user.Role == UserRole.Doctor)
         {
             user.DoctorProfile = new DoctorProfile
             {
                 Id = Guid.NewGuid(),
                 UserId = user.Id,
-                Specialization = string.Empty,
+                Specialization = request.Specialization ?? string.Empty,
                 Bio = string.Empty,
                 ConsultationFee = 0m,
                 IsAvailable = false,

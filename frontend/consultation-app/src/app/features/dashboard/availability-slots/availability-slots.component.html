@@ -14,10 +14,8 @@
       
       <form [formGroup]="form" (ngSubmit)="createSlot()" class="slot-form">
         <div class="form-group">
-          <label for="dayOfWeek">Day of Week</label>
-          <select formControlName="dayOfWeek" id="dayOfWeek" class="form-control">
-            <option *ngFor="let day of daysOfWeek" [value]="day">{{ day }}</option>
-          </select>
+          <label for="date">Date</label>
+          <input type="date" formControlName="date" id="date" class="form-control" />
         </div>
 
         <div class="form-row">
@@ -83,19 +81,15 @@
       </div>
 
       <div *ngIf="!isLoading && slots.length > 0" class="slots-by-day">
-        <ng-container *ngFor="let day of daysOfWeek">
-          <div *ngIf="getSlotsByDay(day).length > 0" class="day-section">
-            <h3 class="day-title">{{ day }}</h3>
-          
           <div class="slots-list">
-            <div *ngFor="let slot of getSlotsByDay(day)" class="slot-item" [class.unavailable]="!slot.isAvailable" [class.past]="isSlotPast(slot)">
+            <div *ngFor="let slot of slots" class="slot-item">
               
               <!-- Color Indicator Bar -->
               <div class="slot-status-bar" [style.background-color]="getSlotStatusColor(slot)"></div>
               
               <div class="slot-info">
                 <p class="slot-time">
-                  <strong>{{ slot.startTime }}</strong> - <strong>{{ slot.endTime }}</strong>
+                  <strong>{{ slot.date | date:'mediumDate' }}</strong>: <strong>{{ slot.startTime }}</strong> - <strong>{{ slot.endTime }}</strong>
                 </p>
                 <p class="slot-capacity">
                   Booked: <strong>{{ slot.bookedCount }}/{{ slot.capacity }}</strong>
@@ -103,40 +97,21 @@
               </div>
 
               <div class="slot-status">
-                <span class="status-badge" [class.active]="slot.isAvailable" [class.inactive]="!slot.isAvailable" [class.past]="isSlotPast(slot)">
-                  <span *ngIf="isSlotPast(slot)">⏰ Past</span>
-                  <span *ngIf="!isSlotPast(slot) && slot.isAvailable">✓ Available</span>
-                  <span *ngIf="!isSlotPast(slot) && !slot.isAvailable">✗ Disabled</span>
+                <span class="status-badge active">
+                  <span>✓ Available</span>
                 </span>
               </div>
 
               <div class="slot-actions">
                 <button 
-                  class="btn btn-sm btn-outline" 
-                  (click)="editSlot(slot)"
-                  [disabled]="isSlotPast(slot)"
-                >
-                  Edit
-                </button>
-                <button 
-                  class="btn btn-sm btn-outline" 
-                  (click)="toggleSlotStatus(slot.id, slot.isAvailable)"
-                  [disabled]="isSlotPast(slot)"
-                >
-                  {{ slot.isAvailable ? 'Disable' : 'Enable' }}
-                </button>
-                <button 
                   class="btn btn-sm btn-danger" 
                   (click)="deleteSlot(slot.id)"
-                  [disabled]="isSlotPast(slot)"
                 >
                   Delete
                 </button>
               </div>
             </div>
           </div>
-        </div>
-        </ng-container>
       </div>
     </div>
   </div>

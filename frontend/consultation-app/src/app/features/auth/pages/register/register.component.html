@@ -3,33 +3,59 @@
     <h2>Create an account</h2>
     <p class="muted">Register as Patient or Doctor</p>
 
+    <!-- Display Error Message -->
+    <div class="error-banner" *ngIf="errorMessage" style="color: red; margin-bottom: 1rem;">
+      {{ errorMessage }}
+    </div>
+
     <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
       <label>Full name
-        <input formControlName="fullName" type="text" />
+        <input formControlName="fullName" type="text" placeholder="Enter your full name" />
+        <small class="error" *ngIf="registerForm.get('fullName')?.invalid && registerForm.get('fullName')?.touched">Full name is required (min 3 chars)</small>
       </label>
 
       <label>Email
-        <input formControlName="email" type="email" />
+        <input formControlName="email" type="email" placeholder="name@example.com" />
+        <small class="error" *ngIf="registerForm.get('email')?.invalid && registerForm.get('email')?.touched">A valid email is required</small>
+      </label>
+
+      <label>Phone
+        <input formControlName="phone" type="text" placeholder="10-digit number" />
+        <small class="error" *ngIf="registerForm.get('phone')?.invalid && registerForm.get('phone')?.touched">10-digit phone number is required</small>
       </label>
 
       <label>Password
-        <input formControlName="password" type="password" />
+        <input formControlName="password" type="password" placeholder="Create a password" />
         <small class="muted">Min 8 characters, include number & letter</small>
+        <small class="error" *ngIf="registerForm.get('password')?.invalid && registerForm.get('password')?.touched">Password must meet requirements</small>
+      </label>
+
+      <!-- Confirm Password Field -->
+      <label>Confirm Password
+        <input formControlName="confirmPassword" type="password" placeholder="Confirm password" />
+        <small class="error" *ngIf="registerForm.hasError('passwordMismatch') && registerForm.get('confirmPassword')?.touched">Passwords do not match</small>
       </label>
 
       <label>Role
-        <select formControlName="role">
+        <select formControlName="role" (change)="onRoleChange()">
           <option value="Patient">Patient</option>
           <option value="Doctor">Doctor</option>
         </select>
       </label>
 
-      <button class="btn btn-primary" [disabled]="registerForm.invalid || loading">
+      <!-- Specialization (Doctor only) -->
+      <label *ngIf="registerForm.get('role')?.value === 'Doctor'">Specialization
+        <input formControlName="specialization" type="text" placeholder="e.g. Cardiology" />
+        <small class="error" *ngIf="registerForm.get('specialization')?.invalid && registerForm.get('specialization')?.touched">Specialization is required for doctors</small>
+      </label>
+
+      <button class="btn btn-primary" [disabled]="loading">
         <span *ngIf="loading" class="spinner"></span>
         Register
       </button>
     </form>
 
-    <div class="auth-footer">Already have an account? <a routerLink="/auth/login">Login</a></div>
+    <div class="auth-footer">Already have an account? <a routerLink="/auth/login">Login</a>
+    </div>
   </div>
 </div>

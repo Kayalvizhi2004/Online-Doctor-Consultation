@@ -154,8 +154,9 @@ public class DoctorService : IDoctorService
 
         await _doctorRepo.SaveChangesAsync();
 
-        await _cache.RemoveByPatternAsync(
-            "doctors:");
+        // Invalidate specific profile and all lists to ensure data consistency
+        await _cache.RemoveAsync(CacheKeys.DoctorProfile(doctorId));
+        await _cache.RemoveByPatternAsync("doctors:list:*");
 
         return new ApiResponse<string>
         {

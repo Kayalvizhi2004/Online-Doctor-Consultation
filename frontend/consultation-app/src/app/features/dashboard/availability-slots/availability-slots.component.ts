@@ -6,7 +6,7 @@ import { DoctorService } from '../../../core/services/doctor.service';
 
 interface Slot {
   id: string;
-  dayOfWeek: string;
+  date: string;
   startTime: string;
   endTime: string;
   isAvailable: boolean;
@@ -29,11 +29,9 @@ export class AvailabilitySlotsComponent implements OnInit {
   isSubmitting = false;
   editingSlotId: string | null = null;
 
-  daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-
   constructor(private fb: FormBuilder, private api: ApiService, private doctorService: DoctorService) {
     this.form = this.fb.group({
-      dayOfWeek: ['Monday', Validators.required],
+      date: [new Date().toISOString().split('T')[0], Validators.required],
       startTime: ['09:00', Validators.required],
       endTime: ['10:00', Validators.required],
       capacity: [1, [Validators.required, Validators.min(1)]]
@@ -50,15 +48,22 @@ export class AvailabilitySlotsComponent implements OnInit {
       next: (res: any) => {
         const data = res?.data ?? res?.Data ?? res ?? [];
         const items = Array.isArray(data) ? data : (data?.items ?? data?.Items ?? []);
-        this.slots = items.map((s: any) => ({
-          id: s.id || s.Id,
-          dayOfWeek: new Date(s.date || s.Date).toLocaleDateString(undefined, { weekday: 'long' }),
-          startTime: (s.startTime || s.StartTime || '').toString().slice(0,5),
-          endTime: (s.endTime || s.EndTime || '').toString().slice(0,5),
-          isAvailable: !(s.isBooked || s.IsBooked),
-          bookedCount: (s.isBooked || s.IsBooked) ? 1 : 0,
-          capacity: 1
-        }));
+        
+        this.slots = items
+          .map((s: any) => ({
+            id: s.id || s.Id,
+            date: s.date || s.Date,
+            startTime: (s.startTime || s.StartTime || '').toString().slice(0, 5),
+            endTime: (s.endTime || s.EndTime || '').toString().slice(0, 5),
+            isAvailable: !(s.isBooked || s.IsBooked),
+            bookedCount: (s.isBooked || s.IsBooked) ? 1 : 0,
+            capacity: 1
+          }))
+          // Filter for unbooked (not yet booked) and upcoming (time not passed) slots
+          .filter((s: Slot) => s.isAvailable && !this.isSlotPast(s))
+          // Sort by date and time
+          .sort((a: Slot, b: Slot) => a.date.localeCompare(b.date) || a.startTime.localeCompare(b.startTime));
+
         this.isLoading = false;
       },
       error: (err: any) => {
@@ -76,9 +81,8 @@ export class AvailabilitySlotsComponent implements OnInit {
 
     this.isSubmitting = true;
     const formVal = this.form.value;
-    const dateStr = this.nextDateForWeekday(formVal.dayOfWeek);
     const payload = {
-      Date: dateStr,
+      Date: formVal.date,
       StartTime: `${formVal.startTime}:00`,
       EndTime: `${formVal.endTime}:00`
     };
@@ -128,7 +132,7 @@ export class AvailabilitySlotsComponent implements OnInit {
   editSlot(slot: Slot): void {
     this.editingSlotId = slot.id;
     this.form.patchValue({
-      dayOfWeek: slot.dayOfWeek,
+      date: slot.date.split('T')[0],
       startTime: slot.startTime,
       endTime: slot.endTime,
       capacity: slot.capacity
@@ -152,7 +156,7 @@ export class AvailabilitySlotsComponent implements OnInit {
 
   resetForm(): void {
     this.form.reset({
-      dayOfWeek: 'Monday',
+      date: new Date().toISOString().split('T')[0],
       startTime: '09:00',
       endTime: '10:00',
       capacity: 1
@@ -171,22 +175,6 @@ export class AvailabilitySlotsComponent implements OnInit {
     });
   }
 
-  private nextDateForWeekday(dayName: string): string {
-    const dayMap: { [key: string]: number } = {
-      'Sunday': 0, 'Monday': 1, 'Tuesday': 2, 'Wednesday': 3,
-      'Thursday': 4, 'Friday': 5, 'Saturday': 6
-    };
-    const target = dayMap[dayName];
-    const now = new Date();
-    const diff = (target + 7 - now.getDay()) % 7 || 7; // next occurrence (not today)
-    const next = new Date(now.getFullYear(), now.getMonth(), now.getDate() + diff);
-    return next.toISOString().split('T')[0];
-  }
-
-  getSlotsByDay(day: string): Slot[] {
-    return this.slots.filter(s => s.dayOfWeek === day);
-  }
-
   getSlotStatusColor(slot: Slot): string {
     if (this.isSlotPast(slot)) return '#999999'; // Gray for past slots
     if (slot.bookedCount === slot.capacity) return '#ef4444'; // Red for fully booked
@@ -196,18 +184,17 @@ export class AvailabilitySlotsComponent implements OnInit {
 
   isSlotPast(slot: Slot): boolean {
     const now = new Date();
-    const dayMap: { [key: string]: number } = {
-      'Sunday': 0, 'Monday': 1, 'Tuesday': 2, 'Wednesday': 3,
-      'Thursday': 4, 'Friday': 5, 'Saturday': 6
-    };
+    const slotDate = new Date(slot.date);
+    slotDate.setHours(0,0,0,0);
+    const today = new Date();
+    today.setHours(0,0,0,0);
+
+    if (slotDate < today) return true;
     
-    const slotDay = dayMap[slot.dayOfWeek];
-    const today = now.getDay();
     const currentTime = now.getHours() * 60 + now.getMinutes();
     const slotTime = parseInt(slot.startTime.split(':')[0]) * 60 + parseInt(slot.startTime.split(':')[1]);
-    
-    if (slotDay < today) return true; // Past day
-    if (slotDay === today && slotTime < currentTime) return true; // Past time today
+    if (slotDate.getTime() === today.getTime() && slotTime < currentTime) return true;
+
     return false;
   }
 }
