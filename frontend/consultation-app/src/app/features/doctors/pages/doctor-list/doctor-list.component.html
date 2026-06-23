@@ -1,39 +1,38 @@
 <div class="container">
 
-  <h2>Find Doctors</h2>
+ <h2>Find Doctors</h2>
 
-  <div class="filters" [formGroup]="filterForm">
-    <input formControlName="search" placeholder="Search doctor...">
+ <div class="filters" [formGroup]="filterForm">
+ <input formControlName="search" placeholder="Search doctor...">
 
-    <select formControlName="specialization">
-      <option value="">All Specializations</option>
-      <option *ngFor="let s of specializations" [value]="s">{{ s }}</option>
-    </select>
-  </div>
+ <select formControlName="specialization">
+ <option value="">All Specializations</option>
+ <option *ngFor="let s of specializations()" [value]="s">{{ s }}</option>
+ </select>
+ </div>
 
-  <div *ngIf="loading()">Loading...</div>
+ <div *ngIf="loading()">Loading...</div>
 
-  <div *ngIf="!loading() && doctors().length === 0" class="empty">
-    No doctors found.
-  </div>
+ <div *ngIf="!loading() && doctors().length === 0" class="empty">
+ No doctors found.
+ </div>
 
-  <div class="grid">
-    <div class="card" *ngFor="let doc of doctors()">
+ <div class="grid">
+ <div class="card" *ngFor="let doc of doctors()">
 
-      <h3>{{ doc.fullName }}</h3>
-      <p>{{ doc.specialization }}</p>
+ <h3>{{ doc.fullName }}</h3>
+ <p>{{ doc.specialization }}</p>
 
-      <p [class.available]="doc.isAvailable"
-         [class.not]="!doc.isAvailable">
-        {{ doc.isAvailable ? 'Available' : 'Not Available' }}
-      </p>
+ <p [class.available]="doc.isAvailable"
+ [class.not]="!doc.isAvailable">
+ {{ doc.isAvailable ? 'Available' : 'Not Available' }}
+ </p>
 
-      <button (click)="viewDoctor(doc.id)">
-        View Details
-      </button>
+ <button (click)="viewDoctor(doc.id)">
+ View Details
+ </button>
 
-    </div>
-  </div>
+ </div>
+ </div>
 
 </div>
-

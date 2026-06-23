@@ -11,149 +11,179 @@ namespace ConsultationApi.Controllers;
 [Route("api/doctors")]
 public class DoctorController : ControllerBase
 {
-    private readonly IDoctorService _doctorService;
+ private readonly IDoctorService _doctorService;
 
-    public DoctorController(
-        IDoctorService doctorService)
-    {
-        _doctorService = doctorService;
-    }
+ public DoctorController(
+ IDoctorService doctorService)
+ {
+ _doctorService = doctorService;
+ }
 
-    private bool TryGetUserId(out Guid userId)
-    {
-        userId = Guid.Empty;
+ private bool TryGetUserId(out Guid userId)
+ {
+ userId = Guid.Empty;
 
-        var sub = User.FindFirst("sub")?.Value;
-        if (string.IsNullOrEmpty(sub))
-            sub = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+ var sub = User.FindFirst("sub")?.Value;
+ if (string.IsNullOrEmpty(sub))
+ sub = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-        if (string.IsNullOrEmpty(sub))
-            return false;
+ if (string.IsNullOrEmpty(sub))
+ return false;
 
-        return Guid.TryParse(sub, out userId);
-    }
+ return Guid.TryParse(sub, out userId);
+ }
 
-    // GET: api/doctors
-    [HttpGet]
-    [AllowAnonymous]
-    [ProducesResponseType(
-        typeof(ApiResponse<IEnumerable<DoctorListDto>>), 200)]
-    public async Task<IActionResult> GetDoctors(
-        [FromQuery] string? specialization,
-        [FromQuery] DateOnly? availableDate)
-    {
-        var filter = new DoctorFilterDto
-        {
-            Specialization = specialization,
-            AvailableDate = availableDate
-        };
+ // GET: api/doctors
+ [HttpGet]
+ [AllowAnonymous]
+ [ProducesResponseType(
+ typeof(ApiResponse<IEnumerable<DoctorListDto>>), 200)]
+ public async Task<IActionResult> GetDoctors(
+ [FromQuery] string? search,
+ [FromQuery] string? specialization,
+ [FromQuery] DateOnly? availableDate)
+ {
+ var filter = new DoctorFilterDto
+ {
+ Search = search,
+ Specialization = specialization,
+ AvailableDate = availableDate
+ };
 
-        var result =
-            await _doctorService.GetDoctorsAsync(filter);
+ var result =
+ await _doctorService.GetDoctorsAsync(filter);
 
-        return Ok(result);
-    }
+ return Ok(result);
+ }
 
-    // GET: api/doctors/{id}
-    [HttpGet("{id:guid}")]
-    [AllowAnonymous]
-    [ProducesResponseType(
-        typeof(ApiResponse<DoctorDetailDto>), 200)]
-    public async Task<IActionResult> GetDoctorById(
-        Guid id)
-    {
-        var result =
-            await _doctorService.GetDoctorByIdAsync(id);
+ // GET: api/doctors/specializations
+ // Distinct specializations for the Find Doctors filter dropdown.
+ [HttpGet("specializations")]
+ [AllowAnonymous]
+ [ProducesResponseType(
+ typeof(ApiResponse<IEnumerable<string>>), 200)]
+ public async Task<IActionResult> GetSpecializations()
+ {
+ var result =
+ await _doctorService.GetSpecializationsAsync();
 
-        return Ok(result);
-    }
+ return StatusCode(result.StatusCode, result);
+ }
 
-    // PUT: api/doctors/profile
-    [HttpPut("profile")]
-    [Authorize(Policy = "RequireDoctor")]
-    [ProducesResponseType(
-        typeof(ApiResponse<string>), 200)]
-    public async Task<IActionResult> UpdateProfile(
-        [FromBody] DoctorProfileUpdateDto request)
-    {
-        if (!TryGetUserId(out var doctorId))
-            return Unauthorized(ApiResponse<string>.Failure("Unauthorized", 401));
+ // GET: api/doctors/{id}
+ [HttpGet("{id:guid}")]
+ [AllowAnonymous]
+ [ProducesResponseType(
+ typeof(ApiResponse<DoctorDetailDto>), 200)]
+ public async Task<IActionResult> GetDoctorById(
+ Guid id)
+ {
+ var result =
+ await _doctorService.GetDoctorByIdAsync(id);
 
-        if (!ModelState.IsValid)
-        {
-            var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
-            var msg = string.Join("; ", errors);
-            return BadRequest(ApiResponse<string>.Failure(msg, 400));
-        }
+ return Ok(result);
+ }
 
-        var result = await _doctorService.UpdateProfileAsync(doctorId, request);
+ // PUT: api/doctors/profile
+ [HttpPut("profile")]
+ [Authorize(Policy = "RequireDoctor")]
+ [ProducesResponseType(
+ typeof(ApiResponse<string>), 200)]
+ public async Task<IActionResult> UpdateProfile(
+ [FromBody] DoctorProfileUpdateDto request)
+ {
+ if (!TryGetUserId(out var doctorId))
+ return Unauthorized(ApiResponse<string>.Failure("Unauthorized", 401));
 
-        return Ok(result);
-    }
+ if (!ModelState.IsValid)
+ {
+ var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
+ var msg = string.Join("; ", errors);
+ return BadRequest(ApiResponse<string>.Failure(msg, 400));
+ }
 
-    // POST: api/doctors/slots
-    [HttpPost("slots")]
-    [Authorize(Policy = "RequireDoctor")]
-    [ProducesResponseType(
-        typeof(ApiResponse<string>), 200)]
-    public async Task<IActionResult> AddSlot(
-        [FromBody] CreateSlotDto request)
-    {
-        if (!TryGetUserId(out var doctorId))
-            return Unauthorized(ApiResponse<string>.Failure("Unauthorized", 401));
+ var result = await _doctorService.UpdateProfileAsync(doctorId, request);
 
-        var result = await _doctorService.AddSlotAsync(doctorId, request);
+ return Ok(result);
+ }
 
-        return Ok(result);
-    }
+ // POST: api/doctors/slots
+ [HttpPost("slots")]
+ [Authorize(Policy = "RequireDoctor")]
+ [ProducesResponseType(
+ typeof(ApiResponse<string>), 200)]
+ public async Task<IActionResult> AddSlot(
+ [FromBody] CreateSlotDto request)
+ {
+ if (!TryGetUserId(out var doctorId))
+ return Unauthorized(ApiResponse<string>.Failure("Unauthorized", 401));
 
-    // DELETE: api/doctors/slots/{slotId}
-    [HttpDelete("slots/{slotId:guid}")]
-    [Authorize(Policy = "RequireDoctor")]
-    [ProducesResponseType(
-        typeof(ApiResponse<string>), 200)]
-    public async Task<IActionResult> DeleteSlot(
-        Guid slotId)
-    {
-        if (!TryGetUserId(out var doctorId))
-            return Unauthorized(ApiResponse<string>.Failure("Unauthorized", 401));
-        var result = await _doctorService.RemoveSlotAsync(doctorId, slotId);
+ var result = await _doctorService.AddSlotAsync(doctorId, request);
 
-        return Ok(result);
-    }
+ return Ok(result);
+ }
 
-    // PATCH: api/doctors/availability
-    [HttpPatch("availability")]
-    [Authorize(Policy = "RequireDoctor")]
-    [ProducesResponseType(
-        typeof(ApiResponse<string>), 200)]
-    public async Task<IActionResult> ToggleAvailability(
-        [FromBody]
-        ToggleAvailabilityDto request)
-    {
-        if (!TryGetUserId(out var doctorId))
-            return Unauthorized(ApiResponse<string>.Failure("Unauthorized", 401));
+ // PUT: api/doctors/slots/{slotId}
+ [HttpPut("slots/{slotId:guid}")]
+ [Authorize(Policy = "RequireDoctor")]
+ [ProducesResponseType(
+ typeof(ApiResponse<string>), 200)]
+ public async Task<IActionResult> UpdateSlot(
+ Guid slotId,
+ [FromBody] CreateSlotDto request)
+ {
+ if (!TryGetUserId(out var doctorId))
+ return Unauthorized(ApiResponse<string>.Failure("Unauthorized", 401));
 
-        var result = await _doctorService.ToggleAvailabilityAsync(doctorId, request.IsAvailable);
+ var result = await _doctorService.UpdateSlotAsync(doctorId, slotId, request);
 
-        return Ok(result);
-    }
+ return StatusCode(result.StatusCode, result);
+ }
 
-    // GET: api/doctors/availability
-    [HttpGet("availability")]
-    [Authorize(Policy = "RequireDoctor")]
-    [ProducesResponseType(
-        typeof(ApiResponse<IEnumerable<AvailabilitySlotDto>>), 200)]
-    public async Task<IActionResult> GetMyAvailability()
-    {
-        if (!TryGetUserId(out var doctorId))
-            return Unauthorized(ApiResponse<string>.Failure("Unauthorized", 401));
+ // DELETE: api/doctors/slots/{slotId}
+ [HttpDelete("slots/{slotId:guid}")]
+ [Authorize(Policy = "RequireDoctor")]
+ [ProducesResponseType(
+ typeof(ApiResponse<string>), 200)]
+ public async Task<IActionResult> DeleteSlot(
+ Guid slotId)
+ {
+ if (!TryGetUserId(out var doctorId))
+ return Unauthorized(ApiResponse<string>.Failure("Unauthorized", 401));
+ var result = await _doctorService.RemoveSlotAsync(doctorId, slotId);
 
-        var result = await _doctorService.GetDoctorByIdAsync(doctorId);
+ return Ok(result);
+ }
 
-        if (result == null || result.Data == null)
-            return Ok(ApiResponse<IEnumerable<AvailabilitySlotDto>>.SuccessResponse(Array.Empty<AvailabilitySlotDto>()));
+ // PATCH: api/doctors/availability
+ [HttpPatch("availability")]
+ [Authorize(Policy = "RequireDoctor")]
+ [ProducesResponseType(
+ typeof(ApiResponse<string>), 200)]
+ public async Task<IActionResult> ToggleAvailability(
+ [FromBody]
+ ToggleAvailabilityDto request)
+ {
+ if (!TryGetUserId(out var doctorId))
+ return Unauthorized(ApiResponse<string>.Failure("Unauthorized", 401));
 
-        return Ok(ApiResponse<IEnumerable<AvailabilitySlotDto>>.SuccessResponse(result.Data.Slots));
-    }
+ var result = await _doctorService.ToggleAvailabilityAsync(doctorId, request.IsAvailable);
+
+ return Ok(result);
+ }
+
+ // GET: api/doctors/availability
+ [HttpGet("availability")]
+ [Authorize(Policy = "RequireDoctor")]
+ [ProducesResponseType(
+ typeof(ApiResponse<IEnumerable<AvailabilitySlotDto>>), 200)]
+ public async Task<IActionResult> GetMyAvailability()
+ {
+ if (!TryGetUserId(out var doctorId))
+ return Unauthorized(ApiResponse<string>.Failure("Unauthorized", 401));
+
+ var result = await _doctorService.GetMyAvailabilityAsync(doctorId);
+
+ return StatusCode(result.StatusCode, result);
+ }
 }

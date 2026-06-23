@@ -91,6 +91,16 @@ app.UseMiddleware<GlobalExceptionMiddleware>();
 
 app.UseHttpsRedirection();
 
+// Chat attachments are written to wwwroot/uploads at runtime; the folder may
+// not exist on a fresh checkout, and an explicit provider is required because
+// WebRootFileProvider is a NullFileProvider when wwwroot is absent at startup.
+var webRoot = Path.Combine(app.Environment.ContentRootPath, "wwwroot");
+Directory.CreateDirectory(webRoot);
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(webRoot)
+});
+
 app.UseCors("AngularPolicy");
 
 app.UseAuthentication();
@@ -117,3 +127,4 @@ app.MapHub<ConsultationHub>(
 app.Run();
 
 #endregion
+

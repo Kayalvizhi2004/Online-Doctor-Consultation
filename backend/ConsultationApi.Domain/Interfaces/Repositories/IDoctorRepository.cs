@@ -7,7 +7,11 @@ public interface IDoctorRepository
     Task<List<DoctorProfile>>
         GetDoctorsAsync(
             string? specialization,
-            DateOnly? date);
+            DateOnly? date,
+            string? search = null);
+
+    Task<List<string>>
+        GetSpecializationsAsync();
 
     Task<DoctorProfile?>
         GetDoctorByIdAsync(

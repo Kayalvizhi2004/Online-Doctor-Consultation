@@ -93,6 +93,8 @@ public class ChatService : IChatService
             SessionId = sessionId,
             SenderId = senderId,
             Message = dto.Message,
+            MessageType = dto.MessageType ?? "text",
+            AttachmentUrl = dto.AttachmentUrl,
             SentAt = DateTime.UtcNow,
             IsRead = false
         };

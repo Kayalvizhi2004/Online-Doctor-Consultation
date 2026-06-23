@@ -69,8 +69,15 @@ public static class AuthenticationExtension
                         {
                             var loggerFactory = context.HttpContext.RequestServices.GetService<Microsoft.Extensions.Logging.ILoggerFactory>();
                             var logger = loggerFactory?.CreateLogger("JwtAuth") ?? Microsoft.Extensions.Logging.LoggerFactory.Create(builder => { }).CreateLogger("JwtAuth");
-                            logger.LogInformation("JWT validated for {Sub}", context.Principal?.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub)?.Value);
-                        }
+                        //     foreach (var claim in context.Principal.Claims)
+                        //     {
+                        //         logger.LogInformation(
+                        //         "Claim: {Type} = {Value}",
+                        //         claim.Type,
+                        //         claim.Value);
+                        // }
+                            logger.LogInformation("JWT validated for {UserId}",context.Principal?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value);
+                            }
                         catch { }
 
                         return Task.CompletedTask;

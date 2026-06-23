@@ -34,4 +34,6 @@ public class AppointmentDto
     public Guid? SessionId { get; set; }
 
     public DateTime CreatedAt { get; set; }
+    // Whether the patient has already submitted a review for this appointment
+    public bool HasReview { get; set; } = false;
 }

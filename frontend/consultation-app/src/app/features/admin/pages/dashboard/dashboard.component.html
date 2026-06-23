@@ -1,0 +1,40 @@
+<div class="admin-page">
+  <div class="page-header">
+    <h2>Admin Dashboard</h2>
+    <p class="muted">Overview of system KPIs and recent activity</p>
+  </div>
+
+  <div *ngIf="loading" class="loading">Loading dashboard...</div>
+
+  <div class="kpi-grid" *ngIf="!loading">
+    <div class="kpi-card">
+      <div class="label">Total Users</div>
+      <div class="value">{{ kpis.totalUsers }}</div>
+    </div>
+    <div class="kpi-card">
+      <div class="label">Total Doctors</div>
+      <div class="value">{{ kpis.totalDoctors }}</div>
+    </div>
+    <div class="kpi-card">
+      <div class="label">Total Patients</div>
+      <div class="value">{{ kpis.totalPatients }}</div>
+    </div>
+    <div class="kpi-card">
+      <div class="label">Total Appointments</div>
+      <div class="value">{{ kpis.totalAppointments }}</div>
+    </div>
+    <div class="kpi-card">
+      <div class="label">Active Sessions</div>
+      <div class="value">{{ kpis.activeSessions }}</div>
+    </div>
+    <div class="kpi-card">
+      <div class="label">Avg Doctor Rating</div>
+      <div class="value">{{ kpis.avgDoctorRating | number:'1.1-2' }}</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h3>Recent Activities</h3>
+    <div class="card">No recent activity yet (demo).</div>
+  </div>
+</div>

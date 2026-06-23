@@ -10,6 +10,11 @@ public class ChatMessageDto
     public string Message { get; set; }
         = string.Empty;
 
+    public string MessageType { get; set; }
+        = "text";
+
+    public string? AttachmentUrl { get; set; }
+
     public DateTime SentAt { get; set; }
 
     public bool IsRead { get; set; }

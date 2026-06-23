@@ -35,9 +35,17 @@
     <div *ngFor="let message of messages()"
          class="message-group"
          [ngClass]="{ 'message-group-mine': isMine(message), 'message-group-theirs': !isMine(message) }">
-      <div class="chat-bubble" [ngClass]="{ 'mine': isMine(message) }">
+      <div class="chat-bubble"
+           [ngClass]="{ 'mine': isMine(message),
+                        'image-bubble': message.messageType === 'image',
+                        'gif-bubble': message.messageType === 'gif' }">
         <div class="sender" *ngIf="!isMine(message) && message.senderName">{{ message.senderName }}</div>
-        <div class="text">{{ message.message }}</div>
+        <a *ngIf="message.attachmentUrl" [href]="message.attachmentUrl" target="_blank" rel="noopener">
+          <img [src]="message.attachmentUrl"
+               [class]="message.messageType === 'gif' ? 'message-gif' : 'message-image'"
+               alt="attachment" loading="lazy" />
+        </a>
+        <div class="text" *ngIf="message.message">{{ message.message }}</div>
         <div class="meta">{{ message.sentAt | timeAgo }}</div>
       </div>
     </div>
@@ -50,6 +58,16 @@
 
   <!-- Input -->
   <div class="chat-input-section" *ngIf="status() !== 'Ended'">
+    <div class="input-controls">
+      <input #fileInput type="file" hidden
+             accept="image/jpeg,image/png,image/gif,image/webp"
+             (change)="onFileSelected($event)" />
+      <button class="btn-icon" type="button" title="Send an image or GIF"
+              (click)="attach()"
+              [disabled]="isUploading() || status() !== 'Active'">
+        {{ isUploading() ? '⏳' : '🖼️' }}
+      </button>
+    </div>
     <div class="input-wrapper">
       <input
         [(ngModel)]="draft"
@@ -65,4 +83,3 @@
     </button>
   </div>
 </div>
-

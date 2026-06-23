@@ -1,0 +1,35 @@
+.admin-table {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 12px;
+  box-shadow: 0 6px 18px rgba(16,24,40,0.06);
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  th, td {
+    padding: 12px 10px;
+    border-bottom: 1px solid #f1f5f9;
+    text-align: left;
+    font-size: 13px;
+    color: #334155;
+  }
+
+  thead th {
+    font-weight: 700;
+    color: #0f172a;
+    background: transparent;
+  }
+
+  .actions { width: 220px; }
+
+  .btn.small { padding: 6px 10px; margin-right: 6px; border-radius: 6px; }
+  .btn.small.outline { background: #666464; color: white; border: none; }
+  .btn.small.danger { background: #ef4444; color: white; border: none; }
+
+  .empty { padding: 28px; text-align: center; color: #64748b; }
+  .table-loading { padding: 24px; text-align: center; }
+}

@@ -33,8 +33,14 @@ export class SignalRService {
     return this.hub?.invoke('LeaveSession', sessionId);
   }
 
-  sendMessage(sessionId: string, message: string) {
-    return this.hub?.invoke('SendMessage', sessionId, message);
+  sendMessage(sessionId: string, message: string, messageType?: string, attachmentUrl?: string) {
+    // Allow sending optional metadata (type/attachment) — backend may accept these.
+    // Keep signature flexible for older backends that only accept (sessionId, message).
+    if (!this.hub) return undefined;
+    if (messageType === undefined && attachmentUrl === undefined) {
+      return this.hub.invoke('SendMessage', sessionId, message);
+    }
+    return this.hub.invoke('SendMessage', sessionId, message, messageType, attachmentUrl);
   }
 
   /** Doctor-only on the server; broadcasts SessionEnded to the room. */

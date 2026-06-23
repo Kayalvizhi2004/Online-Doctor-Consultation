@@ -1,0 +1,7 @@
+.admin-page { padding: 20px; }
+.notif-list { display: grid; gap: 12px; margin-top: 12px; }
+.notif-card { background: white; border: 1px solid #e2e8f0; padding: 12px; border-radius: 10px; box-shadow: 0 8px 24px rgba(16,24,40,0.04); }
+.notif-card.unread { border-left: 4px solid #2563eb; }
+.notif-head { display:flex; justify-content:space-between; align-items:center; }
+.notif-body { margin-top: 8px; color: #475569; }
+.notif-actions { margin-top: 8px; display:flex; gap: 8px; }

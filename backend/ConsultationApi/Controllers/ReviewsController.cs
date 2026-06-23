@@ -40,6 +40,27 @@ public class ReviewController : ControllerBase
     }
 
     //----------------------------------------------------
+    // GET the logged-in patient's reviewed appointment ids
+    // GET /api/reviews/mine
+    //----------------------------------------------------
+
+    [Authorize(Roles = "Patient")]
+    [HttpGet("api/reviews/mine")]
+    public async Task<IActionResult> GetMyReviewedAppointmentIds()
+    {
+        var patientId = Guid.Parse(User.FindFirst("sub")?.Value ??
+            User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value!);
+
+        var response =
+            await _reviewService
+                .GetReviewedAppointmentIdsAsync(patientId);
+
+        return StatusCode(
+            response.StatusCode,
+            response);
+    }
+
+    //----------------------------------------------------
     // GET doctor reviews
     // GET /api/doctors/{id}/reviews
     //----------------------------------------------------
@@ -89,3 +110,4 @@ public class ReviewController : ControllerBase
             response);
     }
 }
+

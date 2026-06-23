@@ -1,0 +1,9 @@
+<div class="admin-page">
+  <div class="page-header">
+    <h2>Doctors</h2>
+    <p class="muted">Manage doctors, specializations and availability.</p>
+  </div>
+
+  <app-admin-table [columns]="columns" [rows]="doctors" [loading]="loading"
+    (view)="view($event)" (edit)="edit($event)" (delete)="delete($event)"></app-admin-table>
+</div>

@@ -28,6 +28,14 @@ public class ChatMessageConfiguration
             .HasColumnName("message")
             .IsRequired();
 
+        builder.Property(x => x.MessageType)
+            .HasColumnName("message_type")
+            .IsRequired()
+            .HasDefaultValue("text");
+
+        builder.Property(x => x.AttachmentUrl)
+            .HasColumnName("attachment_url");
+
         builder.Property(x => x.SentAt)
             .HasColumnName("sent_at")
             .HasDefaultValueSql("now()")

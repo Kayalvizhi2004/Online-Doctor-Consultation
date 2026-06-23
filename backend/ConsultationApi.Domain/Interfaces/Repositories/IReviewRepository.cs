@@ -20,4 +20,8 @@ public interface IReviewRepository
     Task SaveChangesAsync();
 
     Task<bool> ExistsAsync(Guid appointmentId);
+
+    Task<List<Guid>> GetReviewedAppointmentIdsAsync(Guid patientId);
 }
+
+

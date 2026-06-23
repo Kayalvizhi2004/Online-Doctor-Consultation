@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
 import { ApiService } from './api.service';
-import { BehaviorSubject, Observable, Subject, from, tap } from 'rxjs';
+import { BehaviorSubject, Observable, Subject, from, map, tap } from 'rxjs';
 import { SignalRService } from './signalr.service';
+import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class ChatService {
@@ -31,6 +32,18 @@ export class ChatService {
     return this.api.patch(`/api/sessions/${sessionId}/messages/read`, {});
   }
 
+  /** Upload an image/GIF; the server stores it on local disk and returns its URL + type. */
+  uploadAttachment(sessionId: string, file: File): Observable<{ url: string; messageType: string }> {
+    const form = new FormData();
+    form.append('file', file, file.name);
+    return this.api.post<any>(`/api/sessions/${sessionId}/messages/attachments`, form).pipe(
+      map((d: any) => ({
+        url: d?.url ?? d?.Url,
+        messageType: d?.messageType ?? d?.MessageType ?? 'image'
+      }))
+    );
+  }
+
   /** Used by the navbar badge — derives an unread count from notifications. */
   getUnreadTotal() {
     return this.api.get<any[]>('/api/notifications').pipe(
@@ -54,9 +67,16 @@ export class ChatService {
       message: m.message ?? m.Message ?? m.content ?? '',
       content: m.content ?? m.Content,
       messageType: m.messageType ?? m.MessageType ?? 'text',
+      attachmentUrl: this.absolutize(m.attachmentUrl ?? m.AttachmentUrl),
       sentAt: m.sentAt ?? m.SentAt ?? new Date().toISOString(),
       isRead: m.isRead ?? m.IsRead ?? false
     };
+  }
+
+  /** Attachment URLs are stored relative (/uploads/...); point them at the API host. */
+  private absolutize(url: string | null | undefined): string | null {
+    if (!url) return null;
+    return url.startsWith('/') ? environment.apiUrl + url : url;
   }
 
   // ---- Realtime ----
@@ -92,8 +112,9 @@ export class ChatService {
 
   /** Send a live message. The server echoes it back via ReceiveMessage (incl. to us),
    *  so we do NOT optimistically append here to avoid duplicates. */
-  sendMessage(sessionId: string, text: string): Observable<void> {
-    return from(Promise.resolve(this.signalR.sendMessage(sessionId, text)).then(() => undefined));
+  sendMessage(sessionId: string, text: string, messageType: string = 'text', attachmentUrl: string | null = null): Observable<void> {
+    // Ensure we pass `undefined` rather than `null` for optional hub args.
+    return from(Promise.resolve(this.signalR.sendMessage(sessionId, text, messageType, attachmentUrl ?? undefined)).then(() => undefined));
   }
 
   /** Doctor-only on the server. */

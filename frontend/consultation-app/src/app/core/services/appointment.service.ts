@@ -36,21 +36,24 @@ export class AppointmentService {
   /** Map the API's PascalCase appointment payload to the camelCase shape the UI uses. */
   private normalize(a: any) {
     if (!a) return a;
-    return {
-      id: a.id ?? a.Id,
-      doctorId: a.doctorId ?? a.DoctorId,
-      sessionId: a.sessionId ?? a.SessionId,
-      doctorName: a.doctorName ?? a.DoctorName,
-      specialization: a.specialization ?? a.Specialization,
-      patientName: a.patientName ?? a.PatientName,
-      status: a.status ?? a.Status,
-      notes: a.notes ?? a.Notes,
-      consultationFee: a.consultationFee ?? a.ConsultationFee,
-      date: a.date ?? a.Date,
-      startTime: (a.startTime ?? a.StartTime ?? '').toString().slice(0, 5),
-      endTime: (a.endTime ?? a.EndTime ?? '').toString().slice(0, 5),
-      createdAt: a.createdAt ?? a.CreatedAt
-    };
+      return {
+        id: a.id ?? a.Id,
+        doctorId: a.doctorId ?? a.DoctorId,
+        patientId: a.patientId ?? a.PatientId,
+        sessionId: a.sessionId ?? a.SessionId,
+        doctorName: a.doctorName ?? a.DoctorName,
+        specialization: a.specialization ?? a.Specialization,
+        patientName: a.patientName ?? a.PatientName,
+        status: a.status ?? a.Status,
+        notes: a.notes ?? a.Notes,
+        consultationFee: a.consultationFee ?? a.ConsultationFee,
+        date: a.date ?? a.Date,
+        startTime: (a.startTime ?? a.StartTime ?? '').toString().slice(0, 5),
+        endTime: (a.endTime ?? a.EndTime ?? '').toString().slice(0, 5),
+        createdAt: a.createdAt ?? a.CreatedAt
+        ,
+        hasReview: a.hasReview ?? a.HasReview ?? false
+      };
   }
 
   confirm(id: string): Observable<any> {

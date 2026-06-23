@@ -4,11 +4,13 @@ import { FormsModule } from '@angular/forms';
 import { AppointmentService } from '../../../../core/services/appointment.service';
 import { ChatService } from '../../../../core/services/chat.service';
 import { AuthService } from '../../../../core/services/auth.service';
+import { TimeAgoPipe } from '../../../../shared/pipes/time-ago.pipe';
+import { environment } from '../../../../../environments/environment';
 
 @Component({
   selector: 'app-chat-history',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, TimeAgoPipe],
   templateUrl: './chat-history.component.html',
   styleUrls: ['./chat-history.component.scss']
 })
@@ -99,10 +101,13 @@ export class ChatHistoryComponent implements OnInit {
   }
 
   private normalizeMsg(m: any) {
+    const rawUrl = m.attachmentUrl ?? m.AttachmentUrl;
     return {
       senderId: m.senderId ?? m.SenderId,
       senderName: m.senderName ?? m.SenderName,
       message: m.message ?? m.Message ?? m.content ?? '',
+      messageType: m.messageType ?? m.MessageType ?? 'text',
+      attachmentUrl: rawUrl && rawUrl.startsWith('/') ? environment.apiUrl + rawUrl : (rawUrl || null),
       sentAt: m.sentAt ?? m.SentAt
     };
   }
@@ -110,7 +115,7 @@ export class ChatHistoryComponent implements OnInit {
   /** Build a .txt transcript client-side from the loaded messages (no backend endpoint needed). */
   download(s: any): void {
     const lines = this.transcript().map((m: any) =>
-      `[${m.sentAt ? new Date(m.sentAt).toLocaleString() : ''}] ${m.senderName || m.senderId}: ${m.message}`);
+      `[${m.sentAt ? new Date(m.sentAt).toLocaleString() : ''}] ${m.senderName || m.senderId}: ${m.attachmentUrl ? `[${m.messageType}] ${m.attachmentUrl} ` : ''}${m.message}`);
     const header = `Consultation transcript\n${this.party(s)} · ${s.date || ''} ${s.startTime || ''}-${s.endTime || ''}\n\n`;
     const blob = new Blob([header + lines.join('\n')], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
@@ -127,3 +132,4 @@ export class ChatHistoryComponent implements OnInit {
     } catch { return ''; }
   }
 }
+

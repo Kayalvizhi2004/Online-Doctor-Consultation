@@ -20,7 +20,8 @@ public class DoctorRepository
     public async Task<List<DoctorProfile>>
         GetDoctorsAsync(
             string? specialization,
-            DateOnly? date)
+            DateOnly? date,
+            string? search = null)
     {
         // Project only required columns to avoid referencing DB columns
         // that might be missing (e.g. availability_slots.created_at).
@@ -30,6 +31,22 @@ public class DoctorRepository
         if (!string.IsNullOrWhiteSpace(specialization))
         {
             baseQuery = baseQuery.Where(d => d.Specialization == specialization);
+        }
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            // Free-text search over the doctor's name and specialization,
+            // case-insensitive (Postgres ILIKE). Escape LIKE metacharacters
+            // (\ % _) so a typed "%" or "_" is matched literally rather than
+            // acting as a wildcard. Postgres ILIKE uses '\' as the escape char.
+            var escaped = search.Trim()
+                .Replace("\\", "\\\\")
+                .Replace("%", "\\%")
+                .Replace("_", "\\_");
+            var pattern = $"%{escaped}%";
+            baseQuery = baseQuery.Where(d =>
+                EF.Functions.ILike(d.User.FullName, pattern) ||
+                EF.Functions.ILike(d.Specialization, pattern));
         }
 
         if (date.HasValue)
@@ -74,6 +91,19 @@ public class DoctorRepository
             .ToListAsync();
 
         return projected;
+    }
+
+    public async Task<List<string>>
+        GetSpecializationsAsync()
+    {
+        // Distinct, non-empty specializations actually present in the data,
+        // so the filter dropdown reflects whatever doctors exist.
+        return await _context.DoctorProfiles
+            .Select(d => d.Specialization)
+            .Where(s => s != null && s != "")
+            .Distinct()
+            .OrderBy(s => s)
+            .ToListAsync();
     }
 
     public async Task<DoctorProfile?>

@@ -1,0 +1,9 @@
+<div class="admin-page">
+  <div class="page-header">
+    <h2>Patients</h2>
+    <p class="muted">List of registered patients.</p>
+  </div>
+
+  <app-admin-table [columns]="columns" [rows]="patients" [loading]="loading"
+    (view)="view($event)" (edit)="edit($event)"></app-admin-table>
+</div>

@@ -1,5 +1,6 @@
 using ConsultationApi.Domain.Entities.Appointments;
 using ConsultationApi.Domain.Entities.Users;
+using ConsultationApi.Domain.Enums;
 using ConsultationApi.Domain.Interfaces;
 using ConsultationApi.Domain.Interfaces.Repositories;
 using ConsultationApi.Infrastructure.Data;
@@ -80,13 +81,13 @@ public class AppointmentRepository
                     userId);
         }
 
-        if (!string.IsNullOrWhiteSpace(
-            status))
+        // Status is stored via a string value-converter; compare the enum
+        // directly so EF can translate it (enum.ToString() inside the query is
+        // not translatable and threw at runtime).
+        if (!string.IsNullOrWhiteSpace(status)
+            && Enum.TryParse<AppointmentStatus>(status, true, out var statusFilter))
         {
-            query = query.Where(
-                x =>
-                    x.Status.ToString()
-                    == status);
+            query = query.Where(x => x.Status == statusFilter);
         }
 
         return await query
@@ -118,9 +119,10 @@ public class AppointmentRepository
             query = query.Where(x => x.Doctor!.UserId == userId);
         }
 
-        if (!string.IsNullOrWhiteSpace(status))
+        if (!string.IsNullOrWhiteSpace(status)
+            && Enum.TryParse<AppointmentStatus>(status, true, out var statusFilter))
         {
-            query = query.Where(x => x.Status.ToString() == status);
+            query = query.Where(x => x.Status == statusFilter);
         }
 
         return await query.CountAsync();
@@ -147,8 +149,7 @@ public class AppointmentRepository
     {
         return await _context.ConsultationSessions
             .Include(s => s.Appointment)
-                .ThenInclude(a => a!.Doctor)
-                    .ThenInclude(d => d!.User)
+                .ThenInclude(a => a.Doctor)
             .FirstOrDefaultAsync(s => s.AppointmentId == appointmentId);
     }
 
@@ -157,8 +158,7 @@ public class AppointmentRepository
     {
         return await _context.ConsultationSessions
             .Include(s => s.Appointment)
-                .ThenInclude(a => a!.Doctor)
-                    .ThenInclude(d => d!.User)
+                .ThenInclude(a => a.Doctor)
             .FirstOrDefaultAsync(s => s.Id == sessionId);
     }
 
@@ -175,3 +175,4 @@ public class AppointmentRepository
         await _context.SaveChangesAsync();
     }
 }
+

@@ -12,6 +12,12 @@ public class ChatMessage : BaseEntity
 
     public string Message { get; set; } = string.Empty;
 
+    /// "text" | "image" | "gif"
+    public string MessageType { get; set; } = "text";
+
+    /// Relative URL of an uploaded attachment, e.g. /uploads/chat/{sessionId}/{file}
+    public string? AttachmentUrl { get; set; }
+
     public DateTime SentAt { get; set; }
 
     public bool IsRead { get; set; }

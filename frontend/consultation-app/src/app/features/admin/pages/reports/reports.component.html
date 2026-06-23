@@ -1,24 +1,122 @@
 <div class="container">
 
   <h2>System Reports</h2>
+</div>
 
-  <div class="cards">
+<div class="reports-grid">
 
+  <section class="kpis">
     <div class="card">
       <h3>Total Users</h3>
-      <p>{{report?.totalUsers}}</p>
+      <p>{{report?.totalUsers ?? '-'}}</p>
     </div>
-
     <div class="card">
       <h3>Doctors</h3>
-      <p>{{report?.doctors}}</p>
+      <p>{{report?.doctors ?? '-'}}</p>
     </div>
-
     <div class="card">
       <h3>Appointments</h3>
-      <p>{{report?.appointments}}</p>
+      <p>{{report?.appointments ?? '-'}}</p>
     </div>
+    <div class="card">
+      <h3>Revenue</h3>
+      <p>{{report?.revenue ?? '-'}}</p>
+    </div>
+  </section>
 
-  </div>
+  <section id="appointments-per-month" class="report-section">
+    <h3>Appointments Per Month</h3>
+    <div class="actions">
+      <button (click)="exportCsv('appointments_per_month', appointmentsPerMonthData)">Export CSV</button>
+      <button (click)="printSection('appointments-per-month')">Print / PDF</button>
+    </div>
+    <div class="chart">
+      <div *ngIf="appointmentsPerMonthData.length; else noData">
+        <svg viewBox="0 0 600 200" preserveAspectRatio="none">
+          <g *ngFor="let d of appointmentsPerMonthData; let i = index">
+            <rect [attr.x]="i * (600 / appointmentsPerMonthData.length)" [attr.y]="200 - ((d.count || d.value || 0) / (appointmentsMax || 1) * 180 || 0)" [attr.width]="(600 / appointmentsPerMonthData.length - 4)" [attr.height]="((d.count || d.value || 0) / (appointmentsMax || 1) * 180 || 0)" fill="#4f46e5"></rect>
+          </g>
+        </svg>
+        <table class="summary">
+          <thead><tr><th>Month</th><th>Count</th></tr></thead>
+          <tbody>
+            <tr *ngFor="let r of appointmentsPerMonthData">
+              <td>{{r.month || r.name}}</td>
+              <td>{{r.count ?? r.value ?? 0}}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <ng-template #noData><p>No data available</p></ng-template>
+    </div>
+  </section>
+
+  <section id="doctor-stats" class="report-section">
+    <h3>Doctor Statistics</h3>
+    <div class="actions">
+      <button (click)="exportCsv('doctors_by_specialization', doctorsBySpecializationData)">Export CSV</button>
+      <button (click)="printSection('doctor-stats')">Print / PDF</button>
+    </div>
+    <table>
+      <thead><tr><th>Specialization</th><th>Count</th></tr></thead>
+      <tbody>
+        <tr *ngFor="let d of doctorsBySpecializationData">
+          <td>{{d.specialization || d.name}}</td>
+          <td>{{d.count ?? d.value ?? 0}}</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="patient-stats" class="report-section">
+    <h3>Patient Statistics</h3>
+    <div class="actions">
+      <button (click)="exportCsv('most_active_patients', mostActivePatientsData)">Export CSV</button>
+      <button (click)="printSection('patient-stats')">Print / PDF</button>
+    </div>
+    <table>
+      <thead><tr><th>Patient</th><th>Appointments</th></tr></thead>
+      <tbody>
+        <tr *ngFor="let p of mostActivePatientsData">
+          <td>{{p.name || p.fullName || p.patient}}</td>
+          <td>{{p.count ?? p.appointments ?? 0}}</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="revenue-stats" class="report-section">
+    <h3>Revenue Summary</h3>
+    <div class="actions">
+      <button (click)="exportCsv('revenue_summary', revenueSummaryData)">Export CSV</button>
+      <button (click)="printSection('revenue-stats')">Print / PDF</button>
+    </div>
+    <table>
+      <thead><tr><th>Period</th><th>Revenue</th></tr></thead>
+      <tbody>
+        <tr *ngFor="let r of revenueSummaryData">
+          <td>{{r.period || r.label}}</td>
+          <td>{{r.revenue ?? r.amount ?? 0}}</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="consultation-stats" class="report-section">
+    <h3>Consultation Completion Rate</h3>
+    <div class="actions">
+      <button (click)="exportCsv('consultation_completion', sessionCompletionRateData)">Export CSV</button>
+      <button (click)="printSection('consultation-stats')">Print / PDF</button>
+    </div>
+    <table>
+      <thead><tr><th>Label</th><th>Rate</th></tr></thead>
+      <tbody>
+        <tr *ngFor="let s of sessionCompletionRateData">
+          <td>{{s.label || s.name}}</td>
+          <td>{{s.rate ?? s.percentage ?? 0}}</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
 
 </div>

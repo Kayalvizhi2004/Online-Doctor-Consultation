@@ -1,0 +1,9 @@
+<div class="admin-page">
+  <div class="page-header">
+    <h2>Appointments</h2>
+    <p class="muted">Manage appointments and update statuses.</p>
+  </div>
+
+  <app-admin-table [columns]="columns" [rows]="appointments" [loading]="loading"
+    (view)="view($event)" (delete)="cancel($event)"></app-admin-table>
+</div>

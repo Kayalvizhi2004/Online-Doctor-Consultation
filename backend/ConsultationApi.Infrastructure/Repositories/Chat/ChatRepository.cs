@@ -31,6 +31,7 @@ public class ChatRepository
             int pageSize)
     {
         return await _context.ChatMessages
+            .Include(x => x.Sender)
             .Where(
                 x =>
                     x.SessionId ==
@@ -72,3 +73,4 @@ public class ChatRepository
         await _context.SaveChangesAsync();
     }
 }
+

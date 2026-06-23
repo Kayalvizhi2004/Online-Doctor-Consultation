@@ -7,28 +7,28 @@
 -- Patients
 INSERT INTO users (id, full_name, email, password_hash, role, phone, created_at)
 VALUES
-  (gen_random_uuid(), 'Alice Patient', 'alice.patient@example.com', '$2a$12$eIXqH1Jv1D9Yw9uQm3Z6.ejKq9Yq0uQxX6e7qk1pFjYc8h6QZrG6O', 'Patient', '555-0101', now()),
-  (gen_random_uuid(), 'Bob Patient', 'bob.patient@example.com', '$2a$12$eIXqH1Jv1D9Yw9uQm3Z6.ejKq9Yq0uQxX6e7qk1pFjYc8h6QZrG6O', 'Patient', '555-0102', now());
+  (gen_random_uuid(), 'Patient One', 'patient1@test.com', '$2a$12$eIXqH1Jv1D9Yw9uQm3Z6.ejKq9Yq0uQxX6e7qk1pFjYc8h6QZrG6O', 'Patient', '555-0101', now()),
+  (gen_random_uuid(), 'Patient Two', 'patient2@test.com', '$2a$12$eIXqH1Jv1D9Yw9uQm3Z6.ejKq9Yq0uQxX6e7qk1pFjYc8h6QZrG6O', 'Patient', '555-0102', now());
 
 -- Doctors (users)
 INSERT INTO users (id, full_name, email, password_hash, role, phone, created_at)
 VALUES
-  (gen_random_uuid(), 'Dr. Emma Stone', 'emma.stone@example.com', '$2a$12$eIXqH1Jv1D9Yw9uQm3Z6.ejKq9Yq0uQxX6e7qk1pFjYc8h6QZrG6O', 'Doctor', '555-0201', now()),
-  (gen_random_uuid(), 'Dr. John Doe', 'john.doe@example.com', '$2a$12$eIXqH1Jv1D9Yw9uQm3Z6.ejKq9Yq0uQxX6e7qk1pFjYc8h6QZrG6O', 'Doctor', '555-0202', now()),
-  (gen_random_uuid(), 'Dr. Lisa Ray', 'lisa.ray@example.com', '$2a$12$eIXqH1Jv1D9Yw9uQm3Z6.ejKq9Yq0uQxX6e7qk1pFjYc8h6QZrG6O', 'Doctor', '555-0203', now());
+  (gen_random_uuid(), 'Doctor One', 'doctor1@test.com', '$2a$12$eIXqH1Jv1D9Yw9uQm3Z6.ejKq9Yq0uQxX6e7qk1pFjYc8h6QZrG6O', 'Doctor', '555-0201', now()),
+  (gen_random_uuid(), 'Doctor Two', 'doctor2@test.com', '$2a$12$eIXqH1Jv1D9Yw9uQm3Z6.ejKq9Yq0uQxX6e7qk1pFjYc8h6QZrG6O', 'Doctor', '555-0202', now()),
+  (gen_random_uuid(), 'Doctor Three', 'doctor3@test.com', '$2a$12$eIXqH1Jv1D9Yw9uQm3Z6.ejKq9Yq0uQxX6e7qk1pFjYc8h6QZrG6O', 'Doctor', '555-0203', now());
 
 -- Insert doctor profiles (3 doctors)
 INSERT INTO doctor_profiles (id, user_id, specialization, bio, consultation_fee, is_available, created_at)
 SELECT gen_random_uuid(), u.id, 'Cardiology', 'Experienced cardiologist', 120.00, true, now()
-FROM users u WHERE u.email = 'emma.stone@example.com';
+FROM users u WHERE u.email = 'doctor1@test.com';
 
 INSERT INTO doctor_profiles (id, user_id, specialization, bio, consultation_fee, is_available, created_at)
 SELECT gen_random_uuid(), u.id, 'Dermatology', 'Skin specialist with 10 years experience', 90.00, true, now()
-FROM users u WHERE u.email = 'john.doe@example.com';
+FROM users u WHERE u.email = 'doctor2@test.com';
 
 INSERT INTO doctor_profiles (id, user_id, specialization, bio, consultation_fee, is_available, created_at)
 SELECT gen_random_uuid(), u.id, 'Pediatrics', 'Child health specialist', 80.00, true, now()
-FROM users u WHERE u.email = 'lisa.ray@example.com';
+FROM users u WHERE u.email = 'doctor3@test.com';
 
 -- Create availability slots for doctors (5 slots total)
 -- Use the first three doctors inserted above

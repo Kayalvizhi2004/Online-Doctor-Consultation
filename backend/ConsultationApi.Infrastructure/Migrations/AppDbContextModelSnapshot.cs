@@ -124,6 +124,10 @@ namespace ConsultationApi.Infrastructure.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");
 
+                    b.Property<string>("AttachmentUrl")
+                        .HasColumnType("text")
+                        .HasColumnName("attachment_url");
+
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
@@ -138,6 +142,13 @@ namespace ConsultationApi.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("message");
+
+                    b.Property<string>("MessageType")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text")
+                        .HasDefaultValue("text")
+                        .HasColumnName("message_type");
 
                     b.Property<Guid>("SenderId")
                         .HasColumnType("uuid")
@@ -317,7 +328,7 @@ namespace ConsultationApi.Infrastructure.Migrations
                             Id = new Guid("66666666-6666-6666-6666-666666666666"),
                             Bio = "Heart specialist",
                             ConsultationFee = 500m,
-                            CreatedAt = new DateTime(2026, 6, 9, 1, 58, 51, 609, DateTimeKind.Utc).AddTicks(7085),
+                            CreatedAt = new DateTime(2026, 6, 20, 11, 1, 51, 26, DateTimeKind.Utc).AddTicks(9894),
                             IsAvailable = true,
                             Specialization = "Cardiology",
                             UserId = new Guid("33333333-3333-3333-3333-333333333333")
@@ -327,7 +338,7 @@ namespace ConsultationApi.Infrastructure.Migrations
                             Id = new Guid("77777777-7777-7777-7777-777777777777"),
                             Bio = "Skin specialist",
                             ConsultationFee = 400m,
-                            CreatedAt = new DateTime(2026, 6, 9, 1, 58, 51, 609, DateTimeKind.Utc).AddTicks(7089),
+                            CreatedAt = new DateTime(2026, 6, 20, 11, 1, 51, 26, DateTimeKind.Utc).AddTicks(9994),
                             IsAvailable = true,
                             Specialization = "Dermatology",
                             UserId = new Guid("44444444-4444-4444-4444-444444444444")
@@ -337,7 +348,7 @@ namespace ConsultationApi.Infrastructure.Migrations
                             Id = new Guid("88888888-8888-8888-8888-888888888888"),
                             Bio = "Senior cardiologist",
                             ConsultationFee = 700m,
-                            CreatedAt = new DateTime(2026, 6, 9, 1, 58, 51, 609, DateTimeKind.Utc).AddTicks(7092),
+                            CreatedAt = new DateTime(2026, 6, 20, 11, 1, 51, 26, DateTimeKind.Utc).AddTicks(9996),
                             IsAvailable = true,
                             Specialization = "Cardiology",
                             UserId = new Guid("55555555-5555-5555-5555-555555555555")
@@ -532,50 +543,50 @@ namespace ConsultationApi.Infrastructure.Migrations
                         new
                         {
                             Id = new Guid("11111111-1111-1111-1111-111111111111"),
-                            CreatedAt = new DateTime(2026, 6, 9, 1, 58, 50, 845, DateTimeKind.Utc).AddTicks(1393),
+                            CreatedAt = new DateTime(2026, 6, 20, 11, 1, 50, 308, DateTimeKind.Utc).AddTicks(5854),
                             Email = "patient1@test.com",
                             FullName = "John Patient",
-                            PasswordHash = "$2a$11$cHBGQprjK2dK2IB4M5xVuuUySaDbvW.TefTjKHZ/bJFv8lSK0jS0S",
+                            PasswordHash = "$2a$11$xYIScWCiD0qOYmptsQQmJOwAW0rbTGOnvhR7upa4PFFOPW2BHqb3G",
                             Phone = "9000000001",
                             Role = "Patient"
                         },
                         new
                         {
                             Id = new Guid("22222222-2222-2222-2222-222222222222"),
-                            CreatedAt = new DateTime(2026, 6, 9, 1, 58, 51, 31, DateTimeKind.Utc).AddTicks(8728),
+                            CreatedAt = new DateTime(2026, 6, 20, 11, 1, 50, 487, DateTimeKind.Utc).AddTicks(3936),
                             Email = "patient2@test.com",
                             FullName = "Mary Patient",
-                            PasswordHash = "$2a$11$UWyNSQyj3B8NvHxbLd2RZuRC1CES/7Ddz/Mw3W/YwifLs.3zecPEK",
+                            PasswordHash = "$2a$11$P2UXMbGc8skzpAIWs2Ll..8SvATL0fUjEanrUTAup.plC/osEw/k2",
                             Phone = "9000000002",
                             Role = "Patient"
                         },
                         new
                         {
                             Id = new Guid("33333333-3333-3333-3333-333333333333"),
-                            CreatedAt = new DateTime(2026, 6, 9, 1, 58, 51, 228, DateTimeKind.Utc).AddTicks(8546),
+                            CreatedAt = new DateTime(2026, 6, 20, 11, 1, 50, 674, DateTimeKind.Utc).AddTicks(2474),
                             Email = "doctor1@test.com",
                             FullName = "Dr Arun Kumar",
-                            PasswordHash = "$2a$11$wF4j07vcXWh/MLuDN/ktJuLtNmkmFLcbWgIMtdto7qjle5bNabMI.",
+                            PasswordHash = "$2a$11$Da.Q4R31BDvosMz2mcJBk.iHLXTkFh.vSAfUHS3Ld7P7E4eF4YKYS",
                             Phone = "9000000003",
                             Role = "Doctor"
                         },
                         new
                         {
                             Id = new Guid("44444444-4444-4444-4444-444444444444"),
-                            CreatedAt = new DateTime(2026, 6, 9, 1, 58, 51, 424, DateTimeKind.Utc).AddTicks(9692),
+                            CreatedAt = new DateTime(2026, 6, 20, 11, 1, 50, 852, DateTimeKind.Utc).AddTicks(4870),
                             Email = "doctor2@test.com",
                             FullName = "Dr Priya Sharma",
-                            PasswordHash = "$2a$11$GeZsSB30QIPFh25ZkeUuu.L8KDjAjMY6CEF48NoyHpQGd6B5xJ2U2",
+                            PasswordHash = "$2a$11$tqxoDxHhSELbc87fofAMhO2YqM7lIApBw6iuNJNlZG0s6DIKkneke",
                             Phone = "9000000004",
                             Role = "Doctor"
                         },
                         new
                         {
                             Id = new Guid("55555555-5555-5555-5555-555555555555"),
-                            CreatedAt = new DateTime(2026, 6, 9, 1, 58, 51, 609, DateTimeKind.Utc).AddTicks(5658),
+                            CreatedAt = new DateTime(2026, 6, 20, 11, 1, 51, 26, DateTimeKind.Utc).AddTicks(8894),
                             Email = "doctor3@test.com",
                             FullName = "Dr Rajesh Singh",
-                            PasswordHash = "$2a$11$utORswrYLQfTQcK5FkOPXuiPNj3he86TIywtZuNafAwIGdUNKSWu6",
+                            PasswordHash = "$2a$11$/cG/DXoenKWktMc2iWBtg.R1uckne9D/uqx14yfL6frBV7MjDm3E2",
                             Phone = "9000000005",
                             Role = "Doctor"
                         });

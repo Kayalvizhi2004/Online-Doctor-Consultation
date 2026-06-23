@@ -1,0 +1,23 @@
+<div class="admin-page">
+  <div class="page-header">
+    <h2>Notifications</h2>
+    <p class="muted">System notifications for administrators.</p>
+    <div class="actions"><button class="btn" (click)="markAll()">Mark All Read</button></div>
+  </div>
+
+  <div *ngIf="loading()" class="loading">Loading...</div>
+
+  <div class="notif-list" *ngIf="!loading()">
+    <div *ngFor="let n of notifications()" class="notif-card" [class.unread]="!n.read">
+      <div class="notif-head">
+        <strong>{{ n.title }}</strong>
+        <div class="small muted">{{ n.created | date:'short' }}</div>
+      </div>
+      <div class="notif-body">{{ n.message }}</div>
+      <div class="notif-actions">
+        <button class="btn small" (click)="markRead(n)" *ngIf="!n.read">Mark Read</button>
+        <button class="btn small outline" (click)="del(n)">Delete</button>
+      </div>
+    </div>
+  </div>
+</div>

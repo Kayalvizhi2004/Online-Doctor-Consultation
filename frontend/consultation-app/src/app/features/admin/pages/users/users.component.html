@@ -1,41 +1,32 @@
-<div class="container">
-
-  <h2>Users Management</h2>
-
-  @if (loading) {
-    <div>Loading...</div>
-  }
-
-  <div class="table">
-    <div class="row header">
-      <span>Name</span>
-      <span>Email</span>
-      <span>Role</span>
-      <span>Actions</span>
-    </div>
-
-    @for (u of users; track u.id) {
-      <div class="row">
-      <span>{{u.fullName}}</span>
-      <span>{{u.email}}</span>
-      <span>{{u.role}}</span>
-      <span class="actions">
-        <select #roleSelect (change)="changeRole(u.id, roleSelect.value)">
-          <option>Patient</option>
-          <option>Doctor</option>
-          <option>Admin</option>
-        </select>
-
-        <button (click)="toggleStatus(u.id)">
-          Toggle
-        </button>
-
-      </span>
-
-    </div>
-
-    }
+<div class="container admin-page">
+  <div class="page-header">
+    <h2>Users Management</h2>
+    <p class="muted">Search, filter and manage system users.</p>
   </div>
 
+  <div *ngIf="loading()" class="loading">Loading users...</div>
 
+  <div *ngIf="!loading()">
+    <div class="table">
+      <div class="row header">
+        <span>Name</span>
+        <span>Email</span>
+        <span>Role</span>
+        <span>Status</span>
+        <span>Actions</span>
+      </div>
+
+      <div *ngFor="let u of users(); trackBy: (i,u) => u.id" class="row">
+        <span>{{ u.fullName || u.name }}</span>
+        <span>{{ u.email }}</span>
+        <span>{{ u.role }}</span>
+        <span>{{ u.status }}</span>
+        <span class="actions">
+          <button class="btn small" (click)="activate(u.id)" *ngIf="u.status !== 'Active'">Activate</button>
+          <button class="btn small outline" (click)="deactivate(u.id)" *ngIf="u.status === 'Active'">Deactivate</button>
+          <button class="btn small danger" (click)="deleteUser(u.id)">Delete</button>
+        </span>
+      </div>
+    </div>
+  </div>
 </div>

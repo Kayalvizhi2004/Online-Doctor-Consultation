@@ -3,6 +3,7 @@ import { ApiService } from './api.service';
 import { BehaviorSubject, Observable, tap, switchMap, of, map } from 'rxjs';
 import { LoginRequest, RegisterRequest, AuthResponse } from '../models/auth.model';
 import { User } from '../models/user.model';
+import { catchError } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -83,6 +84,27 @@ export class AuthService {
     localStorage.removeItem('refresh');
     localStorage.removeItem('user');
     this.userSubject.next(null);
+  }
+
+  refreshToken(): Observable<boolean> {
+    const refresh = this.getRefresh();
+    if (!refresh) {
+      this.logout();
+      return of(false);
+    }
+
+    return this.api.post<any>('/api/auth/refresh', { refreshToken: refresh }).pipe(
+      switchMap((payload: any) => {
+        const token = payload?.accessToken || payload?.AccessToken;
+        const refreshToken = payload?.refreshToken || payload?.RefreshToken;
+        if (token) this.saveTokens(token, refreshToken || '');
+        return of(true);
+      }),
+      catchError(err => {
+        this.logout();
+        return of(false);
+      })
+    );
   }
 
   isLoggedIn(): boolean { // Check if userSubject has a value

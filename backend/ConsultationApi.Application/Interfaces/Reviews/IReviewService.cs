@@ -19,4 +19,8 @@ public interface IReviewService
         Guid doctorUserId,
         int page,
         int pageSize);
+
+    Task<ApiResponse<List<Guid>>> GetReviewedAppointmentIdsAsync(
+        Guid patientId);
 }
+

@@ -36,18 +36,18 @@
         <a routerLink="/my-reviews" routerLinkActive="active"><i class="icon">⭐</i><span class="label">My Reviews</span></a>
         <a routerLink="/notifications" routerLinkActive="active"><i class="icon">🔔</i><span class="label">Notifications</span></a>
         <a routerLink="/profile" routerLinkActive="active"><i class="icon">👤</i><span class="label">Profile</span></a>
+        <a routerLink="/chat" routerLinkActive="active"><i class="icon">💬</i><span class="label">Chat History</span></a>
       </ng-container>
 
       <!-- ADMIN SIDEBAR -->
       <ng-container *ngIf="role === 'Admin'">
-        <div class="menu-label">System Admin</div>
-        <a routerLink="/dashboard/admin" routerLinkActive="active"><i class="icon">📊</i><span class="label">Overview</span></a>
+        <div class="menu-label">Administration</div>
+        <a routerLink="/admin" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }"><i class="icon">📊</i><span class="label">Overview</span></a>
         <a routerLink="/admin/users" routerLinkActive="active"><i class="icon">👥</i><span class="label">Users</span></a>
-        <a routerLink="/admin/verification" routerLinkActive="active"><i class="icon">🩺</i><span class="label">Verification</span></a>
-        <a routerLink="/admin/analytics" routerLinkActive="active"><i class="icon">📈</i><span class="label">Analytics</span></a>
-        <a routerLink="/admin/reports" routerLinkActive="active"><i class="icon">💰</i><span class="label">Reports</span></a>
-        <a routerLink="/admin/system-logs" routerLinkActive="active"><i class="icon">🔔</i><span class="label">System Notifications</span></a>
-        <a routerLink="/admin/settings" routerLinkActive="active"><i class="icon">⚙️</i><span class="label">Settings</span></a>
+        <a routerLink="/admin/doctors" routerLinkActive="active"><i class="icon">🩺</i><span class="label">Doctors</span></a>
+        <a routerLink="/admin/patients" routerLinkActive="active"><i class="icon">🧑‍🤝‍🧑</i><span class="label">Patients</span></a>
+        <a routerLink="/admin/appointments" routerLinkActive="active"><i class="icon">📅</i><span class="label">Appointments</span></a>
+        <a routerLink="/admin/reports" routerLinkActive="active"><i class="icon">📈</i><span class="label">Reports</span></a>
       </ng-container>
     </nav>
 

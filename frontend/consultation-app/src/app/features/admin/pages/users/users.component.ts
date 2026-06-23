@@ -1,46 +1,35 @@
-import { Component, OnInit } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { environment } from '../../../../../environments/environment';
+import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { NgIf, NgFor } from '@angular/common';
-
+import { UserService } from '../../../../core/services/user.service';
 
 @Component({
   selector: 'app-users',
+  standalone: true,
+  imports: [CommonModule],
   templateUrl: './users.component.html',
   styleUrls: ['./users.component.scss']
 })
 export class UsersComponent implements OnInit {
+  users = signal<any[]>([]);
+  loading = signal(false);
 
-  users: any[] = [];
-  loading = false;
+  constructor(private userService: UserService) {}
 
-  constructor(private http: HttpClient) {}
-
-  ngOnInit(): void {
-    this.loadUsers();
-  }
+  ngOnInit(): void { this.loadUsers(); }
 
   loadUsers(): void {
-    this.loading = true;
-
-    this.http.get(`${environment.apiUrl}/api/admin/users`)
-      .subscribe({
-        next: (res: any) => {
-          this.users = res;
-          this.loading = false;
-        },
-        error: () => this.loading = false
-      });
+    this.loading.set(true);
+    this.userService.getUsers().subscribe({
+      next: (res: any) => { this.users.set(res || []); this.loading.set(false); },
+      error: () => this.loading.set(false)
+    });
   }
 
-  changeRole(userId: string, role: string): void {
-    this.http.patch(`${environment.apiUrl}/api/admin/users/${userId}/role`, { role })
-      .subscribe(() => this.loadUsers());
-  }
+  activate(userId: string) { this.userService.activate(userId).subscribe(() => this.loadUsers()); }
+  deactivate(userId: string) { this.userService.deactivate(userId).subscribe(() => this.loadUsers()); }
 
-  toggleStatus(userId: string): void {
-    this.http.patch(`${environment.apiUrl}/api/admin/users/${userId}/toggle`, {})
-      .subscribe(() => this.loadUsers());
+  deleteUser(userId: string) {
+    if (!confirm('Delete user? This action cannot be undone.')) return;
+    this.userService.delete(userId).subscribe(() => this.loadUsers());
   }
 }

@@ -86,29 +86,33 @@
         <button class="btn-close" (click)="close()">✕</button>
       </div>
 
-      <div class="transcript-messages">
+      <!-- Same bubble UI as the live consultation chat -->
+      <div class="transcript-messages chat-body">
         <div *ngIf="transcriptLoading()" class="loading-state"><p>Loading messages…</p></div>
-        <div *ngIf="!transcriptLoading() && transcript().length === 0" class="empty-state">
+        <div *ngIf="!transcriptLoading() && transcript().length === 0" class="empty-chat">
           <p>No messages were exchanged in this session.</p>
         </div>
 
-        <div *ngFor="let m of transcript()"
-             class="transcript-message"
-             [ngClass]="{ 'message-sent': isMine(m), 'message-received': !isMine(m) }">
-          <div class="message-header">
-            <strong>{{ m.senderName || (isMine(m) ? 'You' : 'Them') }}</strong>
-            <span class="message-time">{{ m.sentAt | date: 'MMM dd, HH:mm' }}</span>
-          </div>
-          <div class="message-content">
-            <p>{{ m.message }}</p>
+        <div *ngFor="let message of transcript()"
+             class="message-group"
+             [ngClass]="{ 'message-group-mine': isMine(message), 'message-group-theirs': !isMine(message) }">
+          <div class="chat-bubble"
+               [ngClass]="{ 'mine': isMine(message),
+                            'image-bubble': message.messageType === 'image',
+                            'gif-bubble': message.messageType === 'gif' }">
+            <div class="sender" *ngIf="!isMine(message) && message.senderName">{{ message.senderName }}</div>
+            <a *ngIf="message.attachmentUrl" [href]="message.attachmentUrl" target="_blank" rel="noopener">
+              <img [src]="message.attachmentUrl"
+                   [class]="message.messageType === 'gif' ? 'message-gif' : 'message-image'"
+                   alt="attachment" loading="lazy" />
+            </a>
+            <div class="text" *ngIf="message.message">{{ message.message }}</div>
+            <div class="meta">{{ message.sentAt | timeAgo }}</div>
           </div>
         </div>
       </div>
 
       <div class="modal-footer">
-        <button class="btn btn-outline" (click)="download(sel)" [disabled]="transcript().length === 0">
-          📥 Download Transcript
-        </button>
         <button class="btn btn-primary" (click)="close()">Close</button>
       </div>
     </div>

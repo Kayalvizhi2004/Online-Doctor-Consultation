@@ -22,13 +22,18 @@ export interface CanComponentDeactivate {
 export class ConsultationChatComponent implements OnInit, OnDestroy, AfterViewChecked, CanComponentDeactivate {
 
   @ViewChild('scrollContainer') scrollContainer!: ElementRef;
+  @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
 
   sessionId!: string;
   status = signal<'Connecting' | 'Active' | 'Ended'>('Connecting');
   connError = signal<boolean>(false);
   messages = signal<any[]>([]);
   isSubmitting = signal<boolean>(false);
+  isUploading = signal<boolean>(false);
   draft = '';
+
+  private static readonly MAX_ATTACHMENT_BYTES = 5 * 1024 * 1024;
+  private static readonly IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
 
   me = '';
   myRole = '';
@@ -70,6 +75,40 @@ export class ConsultationChatComponent implements OnInit, OnDestroy, AfterViewCh
     this.chatService.sendMessage(this.sessionId, text).subscribe({
       next: () => { this.draft = ''; this.isSubmitting.set(false); },
       error: () => { this.isSubmitting.set(false); alert('Message failed — the connection may have dropped.'); }
+    });
+  }
+
+  attach(): void {
+    if (this.status() === 'Ended' || this.isUploading()) return;
+    this.fileInput?.nativeElement.click();
+  }
+
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = ''; // allow re-selecting the same file
+    if (!file || this.status() === 'Ended') return;
+
+    if (!ConsultationChatComponent.IMAGE_TYPES.includes(file.type)) {
+      alert('Only JPEG, PNG, GIF and WebP images can be sent.');
+      return;
+    }
+    if (file.size > ConsultationChatComponent.MAX_ATTACHMENT_BYTES) {
+      alert('Images must be 5 MB or smaller.');
+      return;
+    }
+
+    this.isUploading.set(true);
+    this.chatService.uploadAttachment(this.sessionId, file).subscribe({
+      next: ({ url, messageType }) => {
+        // Any typed text rides along as the caption.
+        const caption = this.draft.trim();
+        this.chatService.sendMessage(this.sessionId, caption, messageType, url).subscribe({
+          next: () => { this.draft = ''; this.isUploading.set(false); },
+          error: () => { this.isUploading.set(false); alert('The image uploaded but sending failed — please try again.'); }
+        });
+      },
+      error: () => { this.isUploading.set(false); alert('Image upload failed. Please try again.'); }
     });
   }
 

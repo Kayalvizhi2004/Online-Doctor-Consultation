@@ -148,5 +148,18 @@ public class ReviewService : IReviewService
 
         return await GetDoctorReviewsAsync(profile.Id, page, pageSize);
     }
+
+    public async Task<ApiResponse<List<Guid>>>
+        GetReviewedAppointmentIdsAsync(
+            Guid patientId)
+    {
+        var ids = await _reviews.GetReviewedAppointmentIdsAsync(patientId);
+
+        return new ApiResponse<List<Guid>>
+        {
+            Success = true,
+            Data = ids
+        };
+    }
 }
 

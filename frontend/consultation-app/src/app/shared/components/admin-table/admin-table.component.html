@@ -1,0 +1,26 @@
+<div class="admin-table">
+  <div *ngIf="loadingValue" class="table-loading">Loading...</div>
+
+  <table *ngIf="!loadingValue && rowsValue.length > 0">
+    <thead>
+      <tr>
+        <th *ngFor="let c of columns">{{ c.title }}</th>
+        <th class="actions">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let row of rowsValue; trackBy: trackById">
+        <td *ngFor="let c of columns">{{ row[c.key] }}</td>
+        <td class="actions">
+          <button class="btn small" (click)="view.emit(row)">View</button>
+          <button class="btn small outline" (click)="edit.emit(row)">Edit</button>
+          <button class="btn small danger" (click)="delete.emit(row)">Delete</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div *ngIf="!loadingValue && rowsValue.length === 0" class="empty">
+    {{ emptyMessage }}
+  </div>
+</div>

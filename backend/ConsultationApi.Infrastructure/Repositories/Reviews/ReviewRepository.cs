@@ -78,4 +78,12 @@ public class ReviewRepository
     {
         return await _context.Reviews.AnyAsync(r => r.AppointmentId == appointmentId);
     }
+
+    public async Task<List<Guid>> GetReviewedAppointmentIdsAsync(Guid patientId)
+    {
+        return await _context.Reviews
+            .Where(r => r.PatientId == patientId)
+            .Select(r => r.AppointmentId)
+            .ToListAsync();
+    }
 }

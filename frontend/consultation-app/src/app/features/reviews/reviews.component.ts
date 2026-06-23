@@ -45,7 +45,7 @@ export class ReviewsComponent implements OnInit {
     const idParam = this.route.snapshot.paramMap.get('id');
     if (idParam) { this.loadDoctorReviews(idParam); return; }   // public doctor reviews
     if (this.isDoctor()) this.loadMyDoctorReviews();
-    else this.loadCompletedForPatient();
+    else { this.loadReviewedIds(); this.loadCompletedForPatient(); }
   }
 
   isDoctor(): boolean { return this.role() === 'Doctor'; }
@@ -93,7 +93,20 @@ export class ReviewsComponent implements OnInit {
     });
   }
 
-  isReviewed(a: any): boolean { return this.reviewedIds().has(a.id); }
+  /** Seed already-reviewed appointment ids from the backend so the state survives a refresh. */
+  loadReviewedIds(): void {
+    this.api.get<any>('/api/reviews/mine').subscribe({
+      next: (ids: any) => {
+        const list: any[] = Array.isArray(ids) ? ids : (ids?.items ?? ids?.Items ?? []);
+        this.reviewedIds.set(new Set(list.map(id => (id ?? '').toString().toLowerCase())));
+      },
+      error: () => { /* keep whatever is already marked locally */ }
+    });
+  }
+
+  isReviewed(a: any): boolean {
+    return this.reviewedIds().has((a.id ?? '').toString().toLowerCase());
+  }
 
   openReview(a: any): void {
     this.modalAppt.set(a);
@@ -125,7 +138,7 @@ export class ReviewsComponent implements OnInit {
 
   private markReviewed(id: string): void {
     const s = new Set(this.reviewedIds());
-    s.add(id);
+    s.add((id ?? '').toString().toLowerCase());
     this.reviewedIds.set(s);
   }
 

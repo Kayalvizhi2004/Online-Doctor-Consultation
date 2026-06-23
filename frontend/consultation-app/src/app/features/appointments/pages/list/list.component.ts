@@ -1,6 +1,9 @@
 import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
+import { Subscription } from 'rxjs';
 import { AppointmentService } from '../../../../core/services/appointment.service';
 import { AuthService } from '../../../../core/services/auth.service';
+import { ChatService } from '../../../../core/services/chat.service';
+import { environment } from '../../../../../environments/environment';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 
@@ -17,15 +20,22 @@ export class ListComponent implements OnInit, OnDestroy {
   appointments = signal<any[]>([]);
   loading = signal<boolean>(true);
 
+  // "View Summary" popup modal — shows the session's chat transcript.
+  summaryAppt = signal<any | null>(null);
+  transcript = signal<any[]>([]);
+  transcriptLoading = signal<boolean>(false);
+  private chat = inject(ChatService);
+
   role = signal<string>('');
 
   private service = inject(AppointmentService);
   private auth = inject(AuthService);
   private router = inject(Router);
   private pollId: any;
+  private userSub?: Subscription;
 
   ngOnInit(): void {
-    this.auth.user$.subscribe(u => this.role.set(u?.role || ''));
+    this.userSub = this.auth.user$.subscribe(u => this.role.set(u?.role || ''));
     this.load();
     // Refresh every 30 seconds
     this.pollId = setInterval(() => this.load(this.currentStatus), 30000);
@@ -36,6 +46,7 @@ export class ListComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     if (this.pollId) clearInterval(this.pollId);
+    this.userSub?.unsubscribe();
   }
 
   private currentStatus?: string;
@@ -124,6 +135,35 @@ export class ListComponent implements OnInit, OnDestroy {
       return s === 'pending' || s === 'confirmed' || s === 'inprogress';
     }
     return false;
+  }
+
+  /** Open the modal and load the session's chat transcript. */
+  viewSummary(appt: any): void {
+    this.summaryAppt.set(appt);
+    this.transcript.set([]);
+    if (!appt?.sessionId) return;
+    this.transcriptLoading.set(true);
+    this.chat.getMessages(appt.sessionId).subscribe({
+      next: (res: any) => {
+        const list = Array.isArray(res) ? res : (res?.items ?? res?.Items ?? res?.data?.items ?? res?.Data?.Items ?? []);
+        this.transcript.set((list || []).map((m: any) => this.normalizeMsg(m)));
+        this.transcriptLoading.set(false);
+      },
+      error: () => { this.transcript.set([]); this.transcriptLoading.set(false); }
+    });
+  }
+
+  closeSummary(): void { this.summaryAppt.set(null); this.transcript.set([]); }
+
+  private normalizeMsg(m: any) {
+    const rawUrl = m.attachmentUrl ?? m.AttachmentUrl;
+    return {
+      senderName: m.senderName ?? m.SenderName ?? 'Unknown',
+      message: m.message ?? m.Message ?? m.content ?? '',
+      messageType: m.messageType ?? m.MessageType ?? 'text',
+      attachmentUrl: rawUrl && rawUrl.startsWith('/') ? environment.apiUrl + rawUrl : (rawUrl || null),
+      sentAt: m.sentAt ?? m.SentAt
+    };
   }
 
   /** Human-friendly status label (e.g. InProgress -> In Progress). */

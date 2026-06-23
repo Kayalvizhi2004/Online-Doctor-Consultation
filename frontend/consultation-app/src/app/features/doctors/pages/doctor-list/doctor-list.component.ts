@@ -6,58 +6,62 @@ import { debounceTime } from 'rxjs';
 import { CommonModule } from '@angular/common';
 
 @Component({
-  selector: 'app-doctor-list',
-  standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
-  templateUrl: './doctor-list.component.html',
-  styleUrls: ['./doctor-list.component.scss']
+ selector: 'app-doctor-list',
+ standalone: true,
+ imports: [CommonModule, ReactiveFormsModule],
+ templateUrl: './doctor-list.component.html',
+ styleUrls: ['./doctor-list.component.scss']
 })
 export class DoctorListComponent implements OnInit {
 
-  // Signals so the list renders as soon as data arrives (zoneless app).
-  doctors = signal<any[]>([]);
-  loading = signal<boolean>(true);
+ // Signals so the list renders as soon as data arrives (zoneless app).
+ doctors = signal<any[]>([]);
+ loading = signal<boolean>(true);
 
-  private fb = inject(FormBuilder);
-  private router = inject(Router);
-  private doctorService = inject(DoctorService);
+ private fb = inject(FormBuilder);
+ private router = inject(Router);
+ private doctorService = inject(DoctorService);
 
-  specializations = [
-    'Cardiology',
-    'Dermatology',
-    'Neurology',
-    'Orthopedics',
-    'General Medicine'
-  ];
+ // Loaded from the API so the dropdown reflects whatever specializations
+ // actually exist (signal -> renders in this zoneless app).
+ specializations = signal<string[]>([]);
 
-  filterForm = this.fb.group({
-    search: [''],
-    specialization: ['']
-  });
+ filterForm = this.fb.group({
+ search: [''],
+ specialization: ['']
+ });
 
-  ngOnInit(): void {
-    this.loadDoctors();
+ ngOnInit(): void {
+ this.loadDoctors();
+ this.loadSpecializations();
 
-    this.filterForm.valueChanges
-      .pipe(debounceTime(300))
-      .subscribe(() => this.loadDoctors());
-  }
+ this.filterForm.valueChanges
+ .pipe(debounceTime(300))
+ .subscribe(() => this.loadDoctors());
+ }
 
-  loadDoctors(): void {
-    this.loading.set(true);
-    this.doctorService.getDoctors(this.filterForm.value).subscribe({
-      next: (res: any) => {
-        const list = res?.items ?? res?.Items ?? res?.data?.items ?? res?.Data?.Items
-          ?? (Array.isArray(res) ? res : []);
-        this.doctors.set(list || []);
-        this.loading.set(false);
-      },
-      error: () => { this.doctors.set([]); this.loading.set(false); }
-    });
-  }
+ loadSpecializations(): void {
+ this.doctorService.getSpecializations().subscribe({
+ next: (list) => this.specializations.set(list || []),
+ error: () => this.specializations.set([])
+ });
+ }
 
-  viewDoctor(id: string): void {
-    // SPA navigation (no full page reload) so the details view loads smoothly.
-    this.router.navigate(['/doctors', id]);
-  }
+ loadDoctors(): void {
+ this.loading.set(true);
+ this.doctorService.getDoctors(this.filterForm.value).subscribe({
+ next: (res: any) => {
+ const list = res?.items ?? res?.Items ?? res?.data?.items ?? res?.Data?.Items
+ ?? (Array.isArray(res) ? res : []);
+ this.doctors.set(list || []);
+ this.loading.set(false);
+ },
+ error: () => { this.doctors.set([]); this.loading.set(false); }
+ });
+ }
+
+ viewDoctor(id: string): void {
+ // SPA navigation (no full page reload) so the details view loads smoothly.
+ this.router.navigate(['/doctors', id]);
+ }
 }
