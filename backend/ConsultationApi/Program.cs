@@ -10,8 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 var configuration = builder.Configuration;
 
-#region Controllers
-
+// Controllers
 builder.Services
     .AddControllers()
     .AddJsonOptions(options =>
@@ -21,110 +20,68 @@ builder.Services
 
 builder.Services.AddEndpointsApiExplorer();
 
-#endregion
-
-#region Swagger
-
+// Swagger
 builder.Services.AddSwaggerDocs();
 
-#endregion
-
-#region Application + Infrastructure DI
-
+// Application + Infrastructure
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(configuration);
 
-#endregion
-
-#region Database
-
-// Database registration is handled in the Infrastructure DI
-
-#endregion
-
-#region JWT Authentication
-
+// JWT Authentication
 builder.Services.AddJwtAuthentication(configuration);
 
-#endregion
-
-#region Authorization
-
+// Authorization
 builder.Services.AddAuthorization();
 
-#endregion
-
-#region SignalR
-
+// SignalR
 builder.Services.AddSignalRServices();
 
-#endregion
-
-#region CORS
-
+// CORS
 builder.Services.AddCorsPolicy();
 
-#endregion
-
-#region HttpContextAccessor
-
+// HttpContextAccessor
 builder.Services.AddHttpContextAccessor();
-
-#endregion
 
 var app = builder.Build();
 
-#region Middleware Pipeline
-
+// Development Middleware
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI(c =>
     {
-        // Hide the Models/Schemas panel (removes "Example Value" and "Schema")
         c.DefaultModelsExpandDepth(-1);
         c.DefaultModelExpandDepth(-1);
     });
 }
 
-app.UseMiddleware<GlobalExceptionMiddleware>();
 
+app.UseCustomMiddleware();
+
+// HTTPS Redirection
 app.UseHttpsRedirection();
 
-// Chat attachments are written to wwwroot/uploads at runtime; the folder may
-// not exist on a fresh checkout, and an explicit provider is required because
-// WebRootFileProvider is a NullFileProvider when wwwroot is absent at startup.
+// Static Files
 var webRoot = Path.Combine(app.Environment.ContentRootPath, "wwwroot");
 Directory.CreateDirectory(webRoot);
+
 app.UseStaticFiles(new StaticFileOptions
 {
     FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(webRoot)
 });
 
+// CORS
 app.UseCors("AngularPolicy");
 
+// Authentication & Authorization
 app.UseAuthentication();
-
 app.UseAuthorization();
 
-#endregion
-
-#region Controllers
-
+// Controllers
 app.MapControllers();
 
-#endregion
+// SignalR Hub
+app.MapHub<ConsultationHub>("/hubs/consultation");
 
-#region SignalR
-
-app.MapHub<ConsultationHub>(
-    "/hubs/consultation");
-
-#endregion
-
-#region Run
-
+// Run Application
 app.Run();
-
-#endregion
-
