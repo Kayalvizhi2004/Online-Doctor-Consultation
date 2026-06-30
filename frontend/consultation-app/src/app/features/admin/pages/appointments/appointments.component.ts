@@ -1,7 +1,8 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, inject } from '@angular/core';
 import { AppointmentService } from '../../../../core/services/appointment.service';
 import { CommonModule } from '@angular/common';
 import { AdminTableComponent } from '../../../../shared/components/admin-table/admin-table.component';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-admin-appointments',
@@ -13,6 +14,7 @@ import { AdminTableComponent } from '../../../../shared/components/admin-table/a
 export class AdminAppointmentsComponent implements OnInit {
   appointments = signal<any[]>([]);
   loading = signal(false);
+  private toastr = inject(ToastrService);
 
   columns = [
     { title: 'Appointment ID', key: 'id' },
@@ -45,6 +47,22 @@ export class AdminAppointmentsComponent implements OnInit {
     }, error: () => this.loading.set(false) });
   }
 
-  view(row: any) { alert('View ' + row.id); }
-  cancel(row: any) { if (confirm('Cancel appointment ' + row.id + '?')) { this.appointmentService.cancel(row.id).subscribe(() => this.load()); } }
+  view(row: any) { this.toastr.info('View ' + row.id); }
+  showConfirm = false;
+selectedAppointmentId: string | null = null;
+
+cancel(row: any) {
+  this.selectedAppointmentId = row.id;
+  this.showConfirm = true;
+}
+
+confirmCancel() {
+  if (!this.selectedAppointmentId) return;
+
+  this.appointmentService.cancel(this.selectedAppointmentId).subscribe(() => {
+    this.load();
+    this.showConfirm = false;
+    this.selectedAppointmentId = null;
+  });
+}
 }

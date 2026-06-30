@@ -133,7 +133,7 @@
           <th>Appointment Date</th>
           <th>Time</th>
           <th>Reason</th>
-          <th>Actions</th>
+          <!-- <th>Actions</th> -->
         </tr>
       </thead>
       <tbody>
@@ -142,9 +142,9 @@
           <td>{{ appt.date | date: 'MMM dd, yyyy' }}</td>
           <td>{{ appt.startTime }} - {{ appt.endTime }}</td>
           <td class="reason">{{ appt.notes || 'General Consultation' }}</td>
-          <td class="actions">
+          <!-- <td class="actions">
             <button class="btn btn-sm btn-link">View Summary</button>
-          </td>
+          </td> -->
         </tr>
       </tbody>
     </table>

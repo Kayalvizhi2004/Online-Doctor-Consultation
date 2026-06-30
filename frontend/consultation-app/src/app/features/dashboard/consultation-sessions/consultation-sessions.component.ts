@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { AppointmentService } from '../../../core/services/appointment.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-consultation-sessions',
@@ -23,6 +24,7 @@ export class ConsultationSessionsComponent implements OnInit, OnDestroy {
   private auth = inject(AuthService);
   private router = inject(Router);
   private pollId: any;
+  private toastr = inject(ToastrService);
 
   ngOnInit(): void {
     this.auth.user$.subscribe(u => this.role.set(u?.role || ''));
@@ -60,14 +62,14 @@ export class ConsultationSessionsComponent implements OnInit, OnDestroy {
         if (sessionId) this.router.navigate(['/chat', sessionId]);
         else this.load();
       },
-      error: (err: any) => { this.starting.set(null); alert(err?.message || 'Failed to start the session.'); }
+      error: (err: any) => { this.starting.set(null); this.toastr.error(err?.message || 'Failed to start the session.'); }
     });
   }
 
   /** Open the live chat for an already-started session (doctor or patient). */
   open(a: any): void {
     if (a.sessionId) this.router.navigate(['/chat', a.sessionId]);
-    else { alert('Session is not active yet.'); this.load(); }
+    else { this.toastr.info('Session is not active yet.'); this.load(); }
   }
 
   /** The "other party" name to show on the card. */

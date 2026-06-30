@@ -1,40 +1,378 @@
-<section class="home-hero">
-  <div class="hero-left">
-    <h1>Find & Consult Verified Doctors Online</h1>
-    <p class="lead">Instant booking · Verified doctors · Secure teleconsultations</p>
+<div class="landing-page">
 
-    <div class="search-hero">
-      <input placeholder="Search specialization (e.g. Cardiology)" aria-label="Search" />
-      <select aria-label="Filter specialization">
-        <option>All Specializations</option>
-        <option>Cardiology</option>
-        <option>Dermatology</option>
-        <option>Neurology</option>
-      </select>
-      <button class="btn btn-primary">Search</button>
+  <!-- NAVBAR -->
+  <!-- <header class="navbar">
+
+    <div class="logo-section">
+      <div class="logo-icon">
+        <i class="fas fa-heartbeat"></i>
+      </div>
+      <span>MediConnect</span>
     </div>
 
-    <div class="features">
-      <div class="feature-card">
-        <h4>Instant Booking</h4>
-        <p>Book appointments in seconds from verified doctors.</p>
-      </div>
-      <div class="feature-card">
-        <h4>Verified Doctors</h4>
-        <p>Profiles verified by our medical team.</p>
-      </div>
-      <div class="feature-card">
-        <h4>Real-time Consultation</h4>
-        <p>Chat and video sessions with secure messaging.</p>
-      </div>
+    <nav class="nav-links">
+      <a href="#">Home</a>
+      <a href="#">Services</a>
+      <a href="#">Doctors</a>
+      <a href="#">About</a>
+      <a href="#">Contact</a>
+    </nav>
+
+    <div class="nav-actions">
+      <button class="btn-outline" routerLink="/auth/login">Login</button>
+      <button class="btn-primary" routerLink="/auth/register">Register</button>
     </div>
-  </div>
 
-  <div class="hero-right">
-    <div class="illustration"> <!-- placeholder for hero image --> </div>
-  </div>
-</section>
+    <button class="mobile-menu-btn">
+      ☰
+    </button>
 
-<footer class="home-footer">
-  <div class="container">© MediConsult — Secure online consultations</div>
-</footer>
+  </header> -->
+
+  <!-- HERO -->
+  <section class="hero">
+
+    <div class="hero-content">
+
+      <span class="badge">
+        Trusted By 1000+ Patients
+      </span>
+
+      <h1>
+        Consult Verified Doctors
+        Anytime, Anywhere
+      </h1>
+
+      <p>
+        Book appointments, chat with doctors in real-time,
+        and manage consultations from one secure healthcare platform.
+      </p>
+
+      <div class="hero-buttons">
+        <!-- <button class="btn-primary">
+          Book Consultation
+        </button> -->
+
+        <button class="btn-secondary" routerLink="/auth/register">
+          Register Now
+        </button>
+      </div>
+
+      <div class="trust-row">
+
+        <div class="trust-item">
+          <h3>100+</h3>
+          <span>Doctors</span>
+        </div>
+
+        <div class="trust-item">
+          <h3>5000+</h3>
+          <span>Consultations</span>
+        </div>
+
+        <div class="trust-item">
+          <h3>98%</h3>
+          <span>Satisfaction</span>
+        </div>
+
+      </div>
+
+    </div>
+
+    <div class="hero-image">
+
+      <img
+        src="https://media.istockphoto.com/id/2211881131/photo/asian-female-doctor-is-reviewing-medical-records-working-on-a-computer-planning-treatment.webp?a=1&b=1&s=612x612&w=0&k=20&c=iuFvWWllUcyybZa8OtM_mgt4bHsy_Qdewz0t2U05ZM0="
+        alt="Doctor Consultation">
+
+    </div>
+
+  </section>
+
+  <!-- FEATURES -->
+
+  <section class="section">
+
+    <div class="section-header">
+      <h2>Healthcare Made Simple</h2>
+      <p>Everything you need in one healthcare platform.</p>
+    </div>
+
+    <div class="features-grid">
+
+      <div class="feature-card">
+
+        <div class="icon blue">
+          ✓
+        </div>
+
+        <h3>Verified Doctors</h3>
+
+        <p>
+          Browse trusted and verified healthcare professionals.
+        </p>
+
+      </div>
+
+      <div class="feature-card">
+
+        <div class="icon green">
+          📅
+        </div>
+
+        <h3>Instant Appointment Booking</h3>
+
+        <p>
+          Book appointments in seconds.
+        </p>
+
+      </div>
+
+      <div class="feature-card">
+
+        <div class="icon orange">
+          💬
+        </div>
+
+        <h3>Real-Time Consultation</h3>
+
+        <p>
+          Secure SignalR powered live consultation.
+        </p>
+
+      </div>
+
+      <div class="feature-card">
+
+        <div class="icon red">
+          🔒
+        </div>
+
+        <h3>Secure Platform</h3>
+
+        <p>
+          JWT authentication and encrypted communication.
+        </p>
+
+      </div>
+
+    </div>
+
+  </section>
+
+  <!-- HOW IT WORKS -->
+
+  <section class="section gray">
+
+    <div class="section-header">
+      <h2>How It Works</h2>
+    </div>
+
+    <div class="steps">
+
+      <div class="step">
+        <span>1</span>
+        <h3>Register Account</h3>
+      </div>
+
+      <div class="step">
+        <span>2</span>
+        <h3>Search Doctors</h3>
+      </div>
+
+      <div class="step">
+        <span>3</span>
+        <h3>Book Appointment</h3>
+      </div>
+
+      <div class="step">
+        <span>4</span>
+        <h3>Start Consultation</h3>
+      </div>
+
+    </div>
+
+  </section>
+
+  <!-- SPECIALIZATIONS -->
+
+  <section class="section">
+
+    <div class="section-header">
+      <h2>Popular Specializations</h2>
+    </div>
+
+    <div class="specialization-grid">
+
+      <div class="special-card">
+        ❤️
+        <h3>Cardiology</h3>
+      </div>
+
+      <div class="special-card">
+        🩺
+        <h3>Dermatology</h3>
+      </div>
+
+      <div class="special-card">
+        🧠
+        <h3>Neurology</h3>
+      </div>
+
+      <div class="special-card">
+        🦴
+        <h3>Orthopedics</h3>
+      </div>
+
+      <div class="special-card">
+        👶
+        <h3>Pediatrics</h3>
+      </div>
+
+      <div class="special-card">
+        🏥
+        <h3>General Medicine</h3>
+      </div>
+
+    </div>
+
+  </section>
+
+  <!-- STATS -->
+
+  <section class="stats">
+
+    <div class="stat-card">
+      <h2>1000+</h2>
+      <span>Patients</span>
+    </div>
+
+    <div class="stat-card">
+      <h2>100+</h2>
+      <span>Doctors</span>
+    </div>
+
+    <div class="stat-card">
+      <h2>5000+</h2>
+      <span>Consultations</span>
+    </div>
+
+    <div class="stat-card">
+      <h2>98%</h2>
+      <span>Satisfaction</span>
+    </div>
+
+  </section>
+
+  <!-- TESTIMONIALS -->
+
+  <section class="section gray">
+
+    <div class="section-header">
+      <h2>What Patients Say</h2>
+    </div>
+
+    <div class="testimonial-grid">
+
+      <div class="testimonial-card">
+
+        <img src="https://i.pravatar.cc/150?img=12">
+
+        <h4>Sarah Johnson</h4>
+
+        <p>
+          Amazing doctors and smooth consultation process.
+        </p>
+
+      </div>
+
+      <div class="testimonial-card">
+
+        <img src="https://i.pravatar.cc/150?img=32">
+
+        <h4>Michael Lee</h4>
+
+        <p>
+          Easy appointment booking and professional doctors.
+        </p>
+
+      </div>
+
+      <div class="testimonial-card">
+
+        <img src="https://i.pravatar.cc/150?img=45">
+
+        <h4>Emily Davis</h4>
+
+        <p>
+          Saved me hours of waiting time.
+        </p>
+
+      </div>
+
+    </div>
+
+  </section>
+
+  <!-- CTA -->
+
+  <section class="cta">
+
+    <h2>Ready to Consult a Doctor?</h2>
+
+    <p>
+      Join thousands of patients using MediConnect.
+    </p>
+
+    <div class="cta-buttons">
+      <button class="btn-secondary" routerLink="/auth/login">
+        Login
+      </button>
+
+      <button class="btn-primary" routerLink="/auth/register">
+        Register
+      </button>
+    </div>
+
+  </section>
+
+  <!-- FOOTER -->
+
+  <footer class="footer">
+
+    <!-- <div class="footer-grid">
+
+      <div>
+        <h4>Company</h4>
+        <a>About Us</a>
+        <a>Services</a>
+        <a>Careers</a>
+      </div>
+
+      <div>
+        <h4>Doctors</h4>
+        <a>Join as Doctor</a>
+        <a>Specializations</a>
+      </div>
+
+      <div>
+        <h4>Support</h4>
+        <a>Help Center</a>
+        <a>Contact</a>
+      </div>
+
+      <div>
+        <h4>Legal</h4>
+        <a>Privacy Policy</a>
+        <a>Terms & Conditions</a>
+      </div>
+
+    </div> -->
+
+    <div class="copyright">
+      © 2026 MediConnect. All Rights Reserved.
+    </div>
+
+  </footer>
+
+</div>

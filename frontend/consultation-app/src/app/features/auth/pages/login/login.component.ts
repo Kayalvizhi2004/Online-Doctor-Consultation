@@ -17,45 +17,76 @@ export class LoginComponent {
   loginForm: FormGroup;
   isLoading: boolean = false; // Explicitly type and initialize
   errorMessage = '';
+  showPassword = false;
 
   constructor(private fb: FormBuilder, private authService: AuthService, private router: Router) {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required]]
+      password: [
+        '',
+        [
+          Validators.required,
+          Validators.minLength(6)
+        ]
+      ]
     }); // Removed the 'role' field as it's not part of login request
   }
 
-  onSubmit() {
-    if (this.loginForm.valid) {
-      this.isLoading = true;
-      this.authService.login(this.loginForm.value as any).subscribe({
-        next: (response: AuthResponse) => { // Expect AuthResponse object
-          this.isLoading = false;
-          
-          if (!response.user) {
-            this.errorMessage = 'User profile not found. Please try again.';
-            return;
-          }
+  onSubmit(): void {
 
-          const role = response.user.role;
-          const normalizedRole = role?.toLowerCase();
+  if (this.loginForm.invalid) {
 
-          if (normalizedRole === 'doctor') {
-            console.log('Navigating to Doctor Dashboard');
-            this.router.navigate(['/dashboard/doctor']);
-          } else if (normalizedRole === 'patient') {
-            console.log('Navigating to Patient Dashboard');
-            this.router.navigate(['/dashboard/patient']);
-          } else if (normalizedRole === 'admin') {
-            console.log('Navigating to Admin Dashboard');
-            this.router.navigate(['/dashboard/admin']);
-          }
-        },
-        error: (err:any) => {
-          this.errorMessage = err.error?.message || 'Login failed';
-          this.isLoading = false;
-        }
-      });
-    }
+    this.loginForm.markAllAsTouched();
+
+    return;
   }
+
+  this.errorMessage = '';
+  this.isLoading = true;
+
+  this.authService.login(this.loginForm.value).subscribe({
+
+    next: (response: AuthResponse) => {
+
+      this.isLoading = false;
+
+      if (!response?.user) {
+        this.errorMessage =
+          'Unable to load user information.';
+        return;
+      }
+
+      const role =
+        response.user.role?.toLowerCase();
+
+      switch (role) {
+
+        case 'doctor':
+          this.router.navigate(['/dashboard/doctor']);
+          break;
+
+        case 'patient':
+          this.router.navigate(['/dashboard/patient']);
+          break;
+
+        case 'admin':
+          this.router.navigate(['/dashboard/admin']);
+          break;
+
+        default:
+          this.errorMessage =
+            'Unauthorized role detected.';
+      }
+    },
+
+    error: (err) => {
+
+      this.isLoading = false;
+
+      this.errorMessage =
+        err?.error?.message ||
+        'Invalid email or password';
+    }
+  });
+}
 }

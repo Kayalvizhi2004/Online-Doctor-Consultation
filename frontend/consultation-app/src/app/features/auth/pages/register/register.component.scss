@@ -1,6 +1,271 @@
-.auth-page{display:flex;align-items:center;justify-content:center;height:100vh;background:#f8fafc}
-.auth-card{width:480px;background:#fff;padding:28px;border-radius:12px;box-shadow:0 10px 30px rgba(16,24,40,0.06)}
-label{display:block;margin-top:12px;font-weight:600}
-input,select{width:100%;padding:10px;border:1px solid #e2e8f0;border-radius:8px;margin-top:6px}
-.muted{color:#64748b}
-.auth-footer{margin-top:12px;color:#64748b}
+.register-card {
+  max-width: 800px !important;
+}
+
+
+.register-page {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 45% 55%;
+  background: #f8fafc;
+}
+.branding-panel {
+  background:
+    linear-gradient(
+      135deg,
+      #0f172a 0%,
+      #1e293b 100%
+    );
+
+  color: white;
+  padding: 60px;
+  position: relative;
+  overflow: hidden;
+}
+
+.branding-panel::before {
+  content: '';
+  position: absolute;
+  width: 450px;
+  height: 450px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.04);
+  top: -120px;
+  right: -120px;
+}
+
+.branding-content {
+  position: relative;
+  z-index: 2;
+}
+
+.branding-content h1 {
+  font-size: 42px;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.branding-content p {
+  font-size: 16px;
+  line-height: 1.8;
+  color: rgba(255,255,255,.8);
+}
+
+.stats-grid {
+  margin-top: 50px;
+  display: grid;
+  grid-template-columns: repeat(2,1fr);
+  gap: 16px;
+}
+
+.stat-card {
+  padding: 20px;
+  border-radius: 16px;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.08);
+  backdrop-filter: blur(8px);
+}
+
+.stat-card h3 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.stat-card span {
+  color: rgba(255,255,255,.7);
+}
+
+.feature-list {
+  margin-top: 40px;
+}
+
+.feature {
+  margin-bottom: 16px;
+  font-size: 16px;
+}
+
+.form-panel {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 520px;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 20px;
+  padding: 40px;
+}
+
+.auth-header {
+  margin-bottom: 32px;
+}
+
+.auth-header h2 {
+  margin: 0;
+  font-size: 32px;
+  color: #111827;
+}
+
+.auth-header p {
+  margin-top: 8px;
+  color: #6b7280;
+}
+
+.success-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  padding: 14px 16px;
+  margin-bottom: 20px;
+
+  background: #ecfdf5;
+  border: 1px solid #86efac;
+
+  color: #166534;
+
+  border-radius: 12px;
+
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.success-icon {
+  width: 24px;
+  height: 24px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: #22c55e;
+  color: white;
+
+  border-radius: 50%;
+  font-size: 12px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+}
+
+input {
+  width: 95%;
+  height: 50px;
+  padding: 0 16px;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  font-size: 14px;
+  transition: all .2s ease;
+}
+select {
+  width: 101%;
+  height: 50px;
+  padding: 0 16px;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  font-size: 14px;
+  transition: all .2s ease;
+}
+
+input:focus,
+select:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37,99,235,.12);
+}
+
+.field-error {
+  color: #dc2626;
+  margin-top: 6px;
+  font-size: 13px;
+}
+
+.error-banner {
+  padding: 12px;
+  margin-bottom: 16px;
+  border-radius: 10px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #991b1b;
+}
+
+.register-btn {
+  width: 100%;
+  height: 52px;
+  border: none;
+  border-radius: 10px;
+  background: #2563eb;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.register-btn:hover {
+  background: #1d4ed8;
+}
+
+.footer {
+  margin-top: 24px;
+  text-align: center;
+  color: #6b7280;
+}
+
+.footer a {
+  color: #2563eb;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.password-strength {
+  height: 6px;
+  background: #e5e7eb;
+  border-radius: 999px;
+  margin-top: 8px;
+  overflow: hidden;
+}
+
+.strength-bar {
+  height: 100%;
+  transition: .3s;
+}
+
+.weak {
+  background: #ef4444;
+}
+
+.medium {
+  background: #f59e0b;
+}
+
+.strong {
+  background: #22c55e;
+}
+@media (max-width: 992px) {
+
+  .branding-panel {
+    display: none;
+  }
+
+  .form-panel {
+    width: 100%;
+  }
+
+  .auth-card {
+    max-width: 100%;
+  }
+}

@@ -1,7 +1,8 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, inject } from '@angular/core';
 import { DoctorService } from '../../../../core/services/doctor.service';
 import { CommonModule } from '@angular/common';
 import { AdminTableComponent } from '../../../../shared/components/admin-table/admin-table.component';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-admin-doctors',
@@ -13,12 +14,16 @@ import { AdminTableComponent } from '../../../../shared/components/admin-table/a
 export class AdminDoctorsComponent implements OnInit {
   doctors = signal<any[]>([]);
   loading = signal(false);
+  private toastr = inject(ToastrService);
+  showConfirm = false;
+  confirmMessage = '';
+  confirmAction: (() => void) | null = null;
 
   columns = [
     { title: 'Name', key: 'name' },
     { title: 'Specialization', key: 'specialization' },
     { title: 'Fee', key: 'fee' },
-    { title: 'Rating', key: 'rating' },
+    // { title: 'Rating', key: 'rating' },
     { title: 'Availability', key: 'availability' },
     { title: 'Status', key: 'status' }
   ];
@@ -43,7 +48,36 @@ export class AdminDoctorsComponent implements OnInit {
     }, error: () => this.loading.set(false) });
   }
 
-  view(row: any) { /* implement view modal or route */ alert('View ' + row.name); }
-  edit(row: any) { /* implement edit flow */ alert('Edit ' + row.name); }
-  delete(row: any) { if (confirm('Delete doctor?')) { /* call backend if endpoint exists */ alert('Deleted'); } }
+  view(row: any) { /* implement view modal or route */ this.toastr.info('View ' + row.name); }
+  edit(row: any) { /* implement edit flow */ this.toastr.info('Edit ' + row.name); }
+  delete(row: any): void {
+
+  this.confirmMessage = 'Are you sure you want to delete this doctor?';
+
+  this.confirmAction = () => {
+
+    // Call your backend delete API here
+    // this.doctorService.delete(row.id).subscribe(() => {
+
+    this.toastr.success('Doctor deleted successfully.');
+    this.load();
+
+    // });
+
+    this.showConfirm = false;
+  };
+
+  this.showConfirm = true;
+}
+
+confirmYes(): void {
+  if (this.confirmAction) {
+    this.confirmAction();
+  }
+}
+
+confirmNo(): void {
+  this.showConfirm = false;
+  this.confirmAction = null;
+}
 }

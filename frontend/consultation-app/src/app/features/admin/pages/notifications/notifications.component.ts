@@ -1,6 +1,7 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, inject } from '@angular/core';
 import { NotificationService } from '../../../../core/services/notification.service';
 import { CommonModule } from '@angular/common';
+import  { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-admin-notifications',
@@ -12,6 +13,10 @@ import { CommonModule } from '@angular/common';
 export class AdminNotificationsComponent implements OnInit {
   notifications = signal<any[]>([]);
   loading = signal(false);
+  showConfirm = false;
+  confirmMessage = '';
+  confirmAction: (() => void) | null = null;
+  private toastr = inject(ToastrService);
 
   constructor(private notificationService: NotificationService) {}
 
@@ -21,5 +26,36 @@ export class AdminNotificationsComponent implements OnInit {
 
   markRead(n: any) { this.notificationService.markRead(n.id).subscribe(() => this.load()); }
   markAll() { this.notificationService.markAll().subscribe(() => this.load()); }
-  del(n: any) { if (confirm('Delete notification?')) { this.notificationService.delete(n.id).subscribe(() => this.load()); } }
+  del(n: any): void {
+
+  this.confirmMessage = 'Are you sure you want to delete this notification?';
+
+  this.confirmAction = () => {
+
+    this.notificationService.delete(n.id).subscribe({
+      next: () => {
+        this.load();
+        this.toastr.success('Notification deleted successfully.');
+        this.showConfirm = false;
+      },
+      error: () => {
+        this.toastr.error('Failed to delete notification.');
+        this.showConfirm = false;
+      }
+    });
+
+  };
+
+  this.showConfirm = true;
+}
+confirmYes(): void {
+  if (this.confirmAction) {
+    this.confirmAction();
+  }
+}
+
+confirmNo(): void {
+  this.showConfirm = false;
+  this.confirmAction = null;
+}
 }

@@ -6,6 +6,7 @@ import { ChatService } from '../../../../core/services/chat.service';
 import { environment } from '../../../../../environments/environment';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-list',
@@ -33,6 +34,7 @@ export class ListComponent implements OnInit, OnDestroy {
   private router = inject(Router);
   private pollId: any;
   private userSub?: Subscription;
+  private toastr = inject(ToastrService);
 
   ngOnInit(): void {
     this.userSub = this.auth.user$.subscribe(u => this.role.set(u?.role || ''));
@@ -97,7 +99,7 @@ export class ListComponent implements OnInit, OnDestroy {
         next: () => this.load(this.currentStatus),
         error: (err) => {
           console.error('Failed to cancel appointment', err);
-          alert(err?.message || 'Failed to cancel appointment');
+          this.toastr.error(err?.message || 'Failed to cancel appointment');
         }
       });
     }
@@ -107,7 +109,7 @@ export class ListComponent implements OnInit, OnDestroy {
   confirmAppointment(id: string) {
     this.service.confirm(id).subscribe({
       next: () => this.load(this.currentStatus),
-      error: (err) => alert(err?.message || 'Failed to confirm appointment')
+      error: (err) => this.toastr.error(err?.message || 'Failed to confirm appointment')
     });
   }
 
@@ -115,7 +117,7 @@ export class ListComponent implements OnInit, OnDestroy {
   startSession(id: string) {
     this.service.startSession(id).subscribe({
       next: () => this.load(this.currentStatus),
-      error: (err) => alert(err?.message || 'Failed to start session')
+      error: (err) => this.toastr.error(err?.message || 'Failed to start session')
     });
   }
 
@@ -123,7 +125,7 @@ export class ListComponent implements OnInit, OnDestroy {
   endSession(id: string) {
     this.service.endSession(id).subscribe({
       next: () => this.load(this.currentStatus),
-      error: (err) => alert(err?.message || 'Failed to end session')
+      error: (err) => this.toastr.error(err?.message || 'Failed to end session')
     });
   }
 
@@ -183,7 +185,7 @@ export class ListComponent implements OnInit, OnDestroy {
 
   join(sessionId: string) {
     if (!sessionId) {
-      alert('Invalid appointment');
+      this.toastr.warning('Invalid appointment');
       return;
     }
     this.router.navigate(['/chat', sessionId]);

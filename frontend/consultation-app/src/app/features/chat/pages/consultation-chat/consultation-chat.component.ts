@@ -6,6 +6,7 @@ import { Subscription } from 'rxjs';
 import { ChatService } from '../../../../core/services/chat.service';
 import { AuthService } from '../../../../core/services/auth.service';
 import { TimeAgoPipe } from '../../../../shared/pipes/time-ago.pipe';
+import { ToastrService } from 'ngx-toastr';
 
 /** Implemented so the activeSessionGuard can block a patient from leaving. */
 export interface CanComponentDeactivate {
@@ -46,7 +47,10 @@ export class ConsultationChatComponent implements OnInit, OnDestroy, AfterViewCh
   private router = inject(Router);
   private subs: Subscription[] = [];
   private scrollNext = false;
-
+  private toastr = inject(ToastrService);
+  showConfirm = false;
+  confirmMessage = '';
+  confirmAction: (() => void) | null = null;
   ngOnInit(): void {
     this.sessionId = this.route.snapshot.paramMap.get('sessionId')!;
 
@@ -74,7 +78,7 @@ export class ConsultationChatComponent implements OnInit, OnDestroy, AfterViewCh
     this.isSubmitting.set(true);
     this.chatService.sendMessage(this.sessionId, text).subscribe({
       next: () => { this.draft = ''; this.isSubmitting.set(false); },
-      error: () => { this.isSubmitting.set(false); alert('Message failed — the connection may have dropped.'); }
+      error: () => { this.isSubmitting.set(false); this.toastr.error('Message failed — the connection may have dropped.'); }
     });
   }
 
@@ -90,11 +94,11 @@ export class ConsultationChatComponent implements OnInit, OnDestroy, AfterViewCh
     if (!file || this.status() === 'Ended') return;
 
     if (!ConsultationChatComponent.IMAGE_TYPES.includes(file.type)) {
-      alert('Only JPEG, PNG, GIF and WebP images can be sent.');
+      this.toastr.info('Only JPEG, PNG, GIF and WebP images can be sent.');
       return;
     }
     if (file.size > ConsultationChatComponent.MAX_ATTACHMENT_BYTES) {
-      alert('Images must be 5 MB or smaller.');
+      this.toastr.info('Images must be 5 MB or smaller.');
       return;
     }
 
@@ -105,21 +109,50 @@ export class ConsultationChatComponent implements OnInit, OnDestroy, AfterViewCh
         const caption = this.draft.trim();
         this.chatService.sendMessage(this.sessionId, caption, messageType, url).subscribe({
           next: () => { this.draft = ''; this.isUploading.set(false); },
-          error: () => { this.isUploading.set(false); alert('The image uploaded but sending failed — please try again.'); }
+          error: () => { this.isUploading.set(false); this.toastr.error('The image uploaded but sending failed — please try again.'); }
         });
       },
-      error: () => { this.isUploading.set(false); alert('Image upload failed. Please try again.'); }
+      error: () => { this.isUploading.set(false); this.toastr.error('Image upload failed. Please try again.'); }
     });
   }
 
-  endSession(): void {
-    if (!this.isDoctor() || this.status() === 'Ended') return;
-    if (!confirm('End this consultation for both you and the patient?')) return;
-    this.chatService.endSession(this.sessionId).subscribe({
-      next: () => { /* the SessionEnded broadcast drives the redirect for everyone */ },
-      error: () => alert('Failed to end the session. Please try again.')
-    });
+endSession(): void {
+
+  if (!this.isDoctor() || this.status() === 'Ended') {
+    return;
   }
+
+  this.confirmMessage = 'End this consultation for both you and the patient?';
+
+  this.confirmAction = () => {
+
+    this.chatService.endSession(this.sessionId).subscribe({
+      next: () => {
+        // The SessionEnded broadcast will redirect both users.
+        this.showConfirm = false;
+        this.confirmAction = null;
+      },
+      error: () => {
+        this.toastr.error('Failed to end the session. Please try again.');
+        this.showConfirm = false;
+        this.confirmAction = null;
+      }
+    });
+
+  };
+
+  this.showConfirm = true;
+}
+confirmYes(): void {
+  if (this.confirmAction) {
+    this.confirmAction();
+  }
+}
+
+confirmNo(): void {
+  this.showConfirm = false;
+  this.confirmAction = null;
+}
 
   private onSessionEnded(): void {
     this.status.set('Ended');

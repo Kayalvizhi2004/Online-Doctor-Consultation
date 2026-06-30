@@ -12,7 +12,7 @@
         <span>Name</span>
         <span>Email</span>
         <span>Role</span>
-        <span>Status</span>
+        <!-- <span>Status</span> -->
         <span>Actions</span>
       </div>
 
@@ -20,7 +20,7 @@
         <span>{{ u.fullName || u.name }}</span>
         <span>{{ u.email }}</span>
         <span>{{ u.role }}</span>
-        <span>{{ u.status }}</span>
+        <!-- <span>{{ u.status }}</span> -->
         <span class="actions">
           <button class="btn small" (click)="activate(u.id)" *ngIf="u.status !== 'Active'">Activate</button>
           <button class="btn small outline" (click)="deactivate(u.id)" *ngIf="u.status === 'Active'">Deactivate</button>
@@ -28,5 +28,17 @@
         </span>
       </div>
     </div>
+    <div class="modal-backdrop" *ngIf="showConfirm">
+  <div class="modal">
+    <h3>Confirmation</h3>
+
+    <p>{{ confirmMessage }}</p>
+
+    <div class="actions">
+      <button class="btn btn-danger" (click)="confirmYes()">Yes</button>
+      <button class="btn btn-outline" (click)="confirmNo()">No</button>
+    </div>
+  </div>
+</div>
   </div>
 </div>

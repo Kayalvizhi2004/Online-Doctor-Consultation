@@ -55,7 +55,7 @@ public static class DbSeeder
             new User
             {
                 Id = patient1Id,
-                FullName = "John Patient",
+                FullName = "John",
                 Email = "patient1@test.com",
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword("Password123"),
                 Role = UserRole.Patient,
@@ -66,7 +66,7 @@ public static class DbSeeder
             new User
             {
                 Id = patient2Id,
-                FullName = "Mary Patient",
+                FullName = "Mary",
                 Email = "patient2@test.com",
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword("Password123"),
                 Role = UserRole.Patient,
@@ -77,7 +77,7 @@ public static class DbSeeder
             new User
             {
                 Id = doctorUser1Id,
-                FullName = "Dr Arun Kumar",
+                FullName = "Arun Kumar",
                 Email = "doctor1@test.com",
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword("Password123"),
                 Role = UserRole.Doctor,
@@ -88,7 +88,7 @@ public static class DbSeeder
             new User
             {
                 Id = doctorUser2Id,
-                FullName = "Dr Priya Sharma",
+                FullName = "Priya Sharma",
                 Email = "doctor2@test.com",
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword("Password123"),
                 Role = UserRole.Doctor,
@@ -99,7 +99,7 @@ public static class DbSeeder
             new User
             {
                 Id = doctorUser3Id,
-                FullName = "Dr Rajesh Singh",
+                FullName = "Rajesh Singh",
                 Email = "doctor3@test.com",
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword("Password123"),
                 Role = UserRole.Doctor,

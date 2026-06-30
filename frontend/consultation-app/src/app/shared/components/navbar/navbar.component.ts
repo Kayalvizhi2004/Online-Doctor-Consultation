@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnInit, OnDestroy, signal } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, signal, HostListener } from '@angular/core';
 import { RouterModule, Router } from '@angular/router';
 import { Subscription, interval } from 'rxjs';
 import { AuthService } from '../../../core/services/auth.service';
@@ -30,6 +30,13 @@ export class NavbarComponent implements OnInit {
   unreadNotifications = signal(0);
   private subscriptions = new Subscription();
 
+  private loadUnreadNotifications(): void {
+    this.notifications.getAll().subscribe(list => {
+      const unread = (list || []).filter((n: any) => !n.isRead).length;
+      this.unreadNotifications.set(unread);
+    });
+  }
+
   ngOnInit(): void {
     // Monitor Authentication State
     this.subscriptions.add(
@@ -50,19 +57,20 @@ export class NavbarComponent implements OnInit {
     );
 
     // Notification unread count
-    this.subscriptions.add(
-      this.notifications.getAll().subscribe(list => {
-        const unread = (list || []).filter((n: any) => !n.isRead).length;
-        this.unreadNotifications.set(unread);
-      })
-    );
+    this.loadUnreadNotifications();
 
+    this.subscriptions.add(
+    this.notifications.notificationRefresh$.subscribe(() => {
+      this.loadUnreadNotifications();
+    })
+  );
     // Poll so the badge updates when new notifications arrive (e.g. a doctor
     // confirms an appointment) without needing a page reload.
     this.subscriptions.add(
       interval(20000).subscribe(() => {
         if (this.isAuthenticated) {
           this.chat.getUnreadTotal().subscribe();
+          this.loadUnreadNotifications();
         }
       })
     );
@@ -75,6 +83,58 @@ export class NavbarComponent implements OnInit {
   logout() {
     this.auth.logout();
     this.router.navigate(['/auth/login']);
+  }
+
+  isProfileMenuOpen = false;
+
+  toggleProfileMenu() {
+    this.isProfileMenuOpen = !this.isProfileMenuOpen;
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent) {
+
+    const target = event.target as HTMLElement;
+
+    if (!target.closest('.user-menu')) {
+        this.isProfileMenuOpen = false;
+   }
+  }
+
+  get dashboardRoute(): string {
+
+  switch (this.user?.role) {
+
+    case 'Doctor':
+      return '/dashboard/doctor';
+
+    case 'Patient':
+      return '/dashboard/patient';
+
+    case 'Admin':
+      return '/admin';
+
+    default:
+      return '/';
+    }
+  }
+
+  get profileRoute(): string {
+
+  switch (this.user?.role) {
+
+    case 'Doctor':
+      return '/profile';
+
+    case 'Patient':
+      return '/profile';
+
+    case 'Admin':
+      return '/profile';
+
+    default:
+      return '/';
+    }
   }
 
   ngOnDestroy(): void {

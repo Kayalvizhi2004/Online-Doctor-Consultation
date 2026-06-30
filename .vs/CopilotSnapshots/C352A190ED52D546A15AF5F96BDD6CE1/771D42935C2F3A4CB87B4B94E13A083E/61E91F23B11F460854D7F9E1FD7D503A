@@ -1,0 +1,87 @@
+﻿using ConsultationApi.Extensions;
+using ConsultationApi.Hubs;
+using ConsultationApi.Middleware;
+using ConsultationApi.Application;
+using ConsultationApi.Infrastructure;
+using ConsultationApi.Infrastructure.Data;
+using Microsoft.EntityFrameworkCore;
+
+var builder = WebApplication.CreateBuilder(args);
+
+var configuration = builder.Configuration;
+
+// Controllers
+builder.Services
+    .AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.PropertyNamingPolicy = null;
+    });
+
+builder.Services.AddEndpointsApiExplorer();
+
+// Swagger
+builder.Services.AddSwaggerDocs();
+
+// Application + Infrastructure
+builder.Services.AddApplication();
+builder.Services.AddInfrastructure(configuration);
+
+// JWT Authentication
+builder.Services.AddJwtAuthentication(configuration);
+
+// Authorization
+builder.Services.AddAuthorization();
+
+// SignalR
+builder.Services.AddSignalRServices();
+
+// CORS
+builder.Services.AddCorsPolicy();
+
+// HttpContextAccessor
+builder.Services.AddHttpContextAccessor();
+
+var app = builder.Build();
+
+// Development Middleware
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI(c =>
+    {
+        c.DefaultModelsExpandDepth(-1);
+        c.DefaultModelExpandDepth(-1);
+    });
+}
+
+
+app.UseCustomMiddleware();
+
+// HTTPS Redirection
+app.UseHttpsRedirection();
+
+// Static Files
+var webRoot = Path.Combine(app.Environment.ContentRootPath, "wwwroot");
+Directory.CreateDirectory(webRoot);
+
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(webRoot)
+});
+
+// CORS
+app.UseCors("AngularPolicy");
+
+// Authentication & Authorization
+app.UseAuthentication();
+app.UseAuthorization();
+
+// Controllers
+app.MapControllers();
+
+// SignalR Hub
+app.MapHub<ConsultationHub>("/hubs/consultation");
+
+// Run Application
+app.Run();

@@ -1,7 +1,8 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, inject } from '@angular/core';
 import { PatientService } from '../../../../core/services/patient.service';
 import { CommonModule } from '@angular/common';
 import { AdminTableComponent } from '../../../../shared/components/admin-table/admin-table.component';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-admin-patients',
@@ -13,6 +14,7 @@ import { AdminTableComponent } from '../../../../shared/components/admin-table/a
 export class AdminPatientsComponent implements OnInit {
   patients = signal<any[]>([]);
   loading = signal(false);
+  private toastr = inject(ToastrService);
 
   columns = [
     { title: 'Patient Name', key: 'name' },
@@ -45,6 +47,6 @@ export class AdminPatientsComponent implements OnInit {
     }, error: () => this.loading.set(false) });
   }
 
-  view(row: any) { alert('View ' + row.name); }
-  edit(row: any) { alert('Edit ' + row.name); }
+  view(row: any) { this.toastr.info('View ' + row.name); }
+  edit(row: any) { this.toastr.info('Edit ' + row.name); }
 }

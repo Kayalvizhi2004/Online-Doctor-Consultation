@@ -4,6 +4,7 @@ import { AppointmentService } from '../../../../core/services/appointment.servic
 import { DoctorService } from '../../../../core/services/doctor.service';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-details',
@@ -20,6 +21,7 @@ export class DetailsComponent implements OnInit {
     comment: ['']
   });
   private doctorService = inject(DoctorService);
+  private toastr = inject(ToastrService);
 
   constructor(
     private route: ActivatedRoute,
@@ -39,7 +41,7 @@ export class DetailsComponent implements OnInit {
     const data = this.reviewForm.value;
     this.service.review(id, data).subscribe({
       next: (res: any) => {
-        alert('Review submitted');
+        this.toastr.info('Review submitted');
         // reload appointment
         this.service.getById(id).subscribe((res: any) => this.appointment = res);
         // If appointment contains doctorId, refresh doctor profile so ratings update
@@ -50,7 +52,7 @@ export class DetailsComponent implements OnInit {
       },
       error: (err) => {
         console.error('Failed to submit review', err);
-        alert('Failed to submit review');
+        this.toastr.error('Failed to submit review');
       }
     });
   }

@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { ApiService } from './api.service';
 import { AuthService } from './auth.service';
-import { of } from 'rxjs';
+import { of, Subject } from 'rxjs';
 import { map } from 'rxjs/operators';
 
 @Injectable({ providedIn: 'root' })
@@ -29,6 +29,14 @@ export class NotificationService {
         }));
       })
     );
+  }
+
+  private notificationRefresh = new Subject<void>();
+
+  notificationRefresh$ = this.notificationRefresh.asObservable();
+
+  refreshNotificationCount() {
+    this.notificationRefresh.next();
   }
 
   markRead(id: string) {

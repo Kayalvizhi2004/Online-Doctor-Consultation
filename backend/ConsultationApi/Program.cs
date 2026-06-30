@@ -5,6 +5,8 @@ using ConsultationApi.Application;
 using ConsultationApi.Infrastructure;
 using ConsultationApi.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using FluentValidation;
+using FluentValidation.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,6 +28,10 @@ builder.Services.AddSwaggerDocs();
 // Application + Infrastructure
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(configuration);
+
+// builder.Services.AddValidatorsFromAssemblyContaining<RegisterRequestDtoValidator>();
+builder.Services.AddFluentValidationAutoValidation(); 
+builder.Services.AddFluentValidationClientsideAdapters(); 
 
 // JWT Authentication
 builder.Services.AddJwtAuthentication(configuration);

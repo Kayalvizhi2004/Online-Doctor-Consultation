@@ -81,5 +81,16 @@
             [disabled]="!draft.trim() || isSubmitting() || status() === 'Ended'">
       {{ isSubmitting() ? '…' : '📤 Send' }}
     </button>
+    <div class="modal-backdrop" *ngIf="showConfirm">
+  <div class="modal">
+    <h3>Confirm</h3>
+    <p>{{ confirmMessage }}</p>
+
+    <div class="actions">
+      <button (click)="confirmYes()">Yes</button>
+      <button (click)="confirmNo()">No</button>
+    </div>
+  </div>
+</div>
   </div>
 </div>

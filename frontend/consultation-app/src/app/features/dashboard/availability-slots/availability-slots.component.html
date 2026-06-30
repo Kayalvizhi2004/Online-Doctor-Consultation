@@ -40,7 +40,7 @@
  </div>
  </div>
 
- <div class="form-group">
+ <!-- <div class="form-group">
  <label for="capacity">Patient Capacity</label>
  <input 
  type="number" 
@@ -49,7 +49,7 @@
  class="form-control"
  min="1"
  />
- </div>
+ </div> -->
 
  <div class="form-actions">
  <button type="submit" class="btn btn-primary" [disabled]="isSubmitting()">
@@ -86,7 +86,7 @@
  <h3 class="day-title">{{ date | date: 'MMM dd, yyyy' }}</h3>
 
  <div class="slots-list">
- <div *ngFor="let slot of getSlotsByDate(date)" class="slot-item" [class.unavailable]="!slot.isAvailable" [class.past]="isSlotPast(slot)">
+ <div *ngFor="let slot of getSlotsByDate(date)" class="slot-item" [class.unavailable]="!slot.isAvailable" >
  
  <!-- Color Indicator Bar -->
  <div class="slot-status-bar" [style.background-color]="getSlotStatusColor(slot)"></div>
@@ -101,10 +101,10 @@
  </div>
 
  <div class="slot-status">
- <span class="status-badge" [class.active]="slot.isAvailable" [class.inactive]="!slot.isAvailable" [class.past]="isSlotPast(slot)">
- <span *ngIf="isSlotPast(slot)">⏰ Past</span>
- <span *ngIf="!isSlotPast(slot) && slot.isAvailable">✓ Available</span>
- <span *ngIf="!isSlotPast(slot) && !slot.isAvailable">✗ Disabled</span>
+ <span class="status-badge" [class.active]="slot.isAvailable" [class.inactive]="!slot.isAvailable">
+
+ <span *ngIf="slot.isAvailable">✓ Available</span>
+ <span *ngIf="!slot.isAvailable">✗ Disabled</span>
  </span>
  </div>
 
@@ -112,17 +112,17 @@
  <button 
  class="btn btn-sm btn-outline" 
  (click)="editSlot(slot)"
- [disabled]="isSlotPast(slot)"
+ 
  >
  Edit
  </button>
- <button 
+ <!-- <button 
  class="btn btn-sm btn-outline" 
  (click)="toggleSlotStatus(slot.id, slot.isAvailable)"
  [disabled]="isSlotPast(slot)"
  >
  {{ slot.isAvailable ? 'Disable' : 'Enable' }}
- </button>
+ </button> -->
  <button 
  class="btn btn-sm btn-danger" 
  (click)="deleteSlot(slot.id)"
@@ -135,6 +135,18 @@
  </div>
  </div>
  </ng-container>
+
+  <div class="modal-backdrop" *ngIf="showConfirm">
+  <div class="modal">
+    <h3>Confirm</h3>
+    <p>{{ confirmMessage }}</p>
+
+    <div class="actions">
+      <button (click)="confirmYes()">Yes</button>
+      <button (click)="confirmNo()">No</button>
+    </div>
+  </div>
+  
  </div>
  </div>
  </div>
@@ -145,8 +157,7 @@
  <ul>
  <li>Create slots for the days and times you're available for consultations</li>
  <li>Set appropriate consultation duration (typically 15-60 minutes)</li>
- <li>Disable slots when you're unavailable to prevent bookings</li>
- <li>Increase capacity to allow multiple consultations at the same time</li>
+ <li>Delete slots when you're unavailable to prevent bookings</li>
  <li>Edit existing slots to adjust your availability</li>
  </ul>
  </div>

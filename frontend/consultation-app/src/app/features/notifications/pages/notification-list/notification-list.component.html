@@ -90,6 +90,18 @@
         >
           Delete
         </button>
+        <div class="modal-backdrop" *ngIf="showConfirm">
+  <div class="modal">
+    <h3>Confirmation</h3>
+
+    <p>{{ confirmMessage }}</p>
+
+    <div class="actions">
+      <button class="btn btn-danger" (click)="confirmYes()">Yes</button>
+      <button class="btn btn-outline" (click)="confirmNo()">No</button>
+    </div>
+  </div>
+</div>
       </div>
     </div>
   </div>

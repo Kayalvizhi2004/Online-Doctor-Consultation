@@ -6,4 +6,18 @@
 
   <app-admin-table [columns]="columns" [rows]="appointments" [loading]="loading"
     (view)="view($event)" (delete)="cancel($event)"></app-admin-table>
+  
+  
+  <div class="modal-backdrop" *ngIf="showConfirm">
+  <div class="modal">
+    <h3>Confirm</h3>
+    <p>Are you sure you want to cancel this appointment?</p>
+
+    <div class="actions">
+      <button (click)="confirmCancel()">Yes</button>
+      <button (click)="showConfirm = false">No</button>
+    </div>
+  </div>
 </div>
+
+  </div>

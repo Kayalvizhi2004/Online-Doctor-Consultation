@@ -62,6 +62,17 @@ export class DoctorDetailsComponent implements OnInit {
     return this.role() === 'Patient';
   }
 
+  getAvailableSlots(): any[] {
+    const doc = this.doctor();
+
+    if (!doc?.slots) {
+      return [];
+    }
+
+    return doc.slots.filter((slot: any) => {
+      return !slot.isBooked && !this.isPast(slot);
+    });
+  }
   /** A slot whose start time is already in the past can no longer be booked. */
   isPast(slot: any): boolean {
     if (!slot?.date || !slot?.startTime) return false;
@@ -78,9 +89,15 @@ export class DoctorDetailsComponent implements OnInit {
 
   /** Only a logged-in patient can book an open, future slot. */
   canBook(slot: any): boolean {
-    return this.isPatient() && this.slotState(slot) === 'open';
-  }
+    const doc = this.doctor();
 
+    return (
+      this.isPatient() &&
+      !!doc?.isAvailable &&
+      !slot.isBooked &&
+      !this.isPast(slot)
+    );
+  }
   // --- Booking modal ---------------------------------------------------------
 
   openBooking(slot: any): void {

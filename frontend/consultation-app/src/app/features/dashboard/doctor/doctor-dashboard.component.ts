@@ -4,6 +4,7 @@ import { ChatService } from '../../../core/services/chat.service';
 import { environment } from '../../../../environments/environment';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-doctor-dashboard',
@@ -30,6 +31,7 @@ export class DoctorDashboardComponent implements OnInit, OnDestroy {
   private chat = inject(ChatService);
   private router = inject(Router);
   private refreshIntervalId: any;
+  private toastr = inject(ToastrService);
 
   ngOnInit(): void {
     this.loadAppointments();
@@ -74,7 +76,7 @@ export class DoctorDashboardComponent implements OnInit, OnDestroy {
   confirm(id: string): void {
     this.appointmentService.confirm(id).subscribe({
       next: () => this.loadAppointments(),
-      error: (err: any) => alert(err?.message || 'Confirmation failed')
+      error: (err: any) => this.toastr.error(err?.message || 'Confirmation failed')
     });
   }
 
@@ -84,7 +86,7 @@ export class DoctorDashboardComponent implements OnInit, OnDestroy {
         if (sessionId) this.router.navigate(['/chat', sessionId]);
         else this.loadAppointments();
       },
-      error: (err: any) => alert(err?.message || 'Failed to start session')
+      error: (err: any) => this.toastr.error(err?.message || 'Failed to start session')
     });
   }
 

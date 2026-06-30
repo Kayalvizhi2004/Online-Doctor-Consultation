@@ -1,8 +1,9 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ApiService } from '../../../core/services/api.service';
 import { DoctorService } from '../../../core/services/doctor.service';
+import { ToastrService } from 'ngx-toastr';
 
 interface Slot {
  id: string;
@@ -31,6 +32,10 @@ export class AvailabilitySlotsComponent implements OnInit {
  isLoading = signal(false);
  isSubmitting = signal(false);
  editingSlotId = signal<string | null>(null);
+ private toastr = inject(ToastrService);
+ showConfirm = false;
+ confirmMessage = '';
+ confirmAction: (() => void) | null = null;
 
 	// We group slots by exact date (YYYY-MM-DD). The template shows the date header.
 
@@ -74,7 +79,7 @@ export class AvailabilitySlotsComponent implements OnInit {
 
  createSlot(): void {
  if (!this.form.valid) {
- alert('Please fill all fields correctly');
+ this.toastr.warning('Please fill all fields correctly');
  return;
  }
 
@@ -92,14 +97,14 @@ export class AvailabilitySlotsComponent implements OnInit {
  // request fails).
  this.doctorService.updateSlot(this.editingSlotId()!, payload).subscribe({
  next: () => {
- alert('Slot updated successfully');
+ this.toastr.info('Slot updated successfully');
  this.loadSlots();
  this.resetForm();
  this.isSubmitting.set(false);
  },
  error: (err: any) => {
  console.error('Failed to update slot', err);
- alert(err?.error?.Message || err?.error?.message || 'Failed to update slot');
+ this.toastr.error(err?.error?.Message || err?.error?.message || 'Failed to update slot');
  this.isSubmitting.set(false);
  }
  });
@@ -107,14 +112,14 @@ export class AvailabilitySlotsComponent implements OnInit {
  // Create new slot
  this.doctorService.addSlots(payload).subscribe({
  next: () => {
- alert('Slot created successfully');
+ this.toastr.success('Slot created successfully');
  this.loadSlots();
  this.resetForm();
  this.isSubmitting.set(false);
  },
  error: (err: any) => {
  console.error('Failed to create slot', err);
- alert('Failed to create slot');
+ this.toastr.error('Failed to create slot');
  this.isSubmitting.set(false);
  }
  });
@@ -131,21 +136,42 @@ export class AvailabilitySlotsComponent implements OnInit {
  });
  }
 
- deleteSlot(slotId: string): void {
- if (!confirm('Are you sure you want to delete this slot?')) return;
+deleteSlot(slotId: string): void {
 
- this.doctorService.deleteSlot(slotId).subscribe({
- next: () => {
- alert('Slot deleted successfully');
- this.loadSlots();
- },
- error: (err: any) => {
- console.error('Failed to delete slot', err);
- alert('Failed to delete slot');
- }
- });
- }
+  this.confirmMessage = 'Are you sure you want to delete this slot?';
 
+  this.confirmAction = () => {
+
+    this.doctorService.deleteSlot(slotId).subscribe({
+      next: () => {
+        this.toastr.success('Slot deleted successfully');
+        this.loadSlots();
+        this.showConfirm = false;
+        this.confirmAction = null;
+      },
+      error: (err: any) => {
+        console.error('Failed to delete slot', err);
+        this.toastr.error('Failed to delete slot');
+        this.showConfirm = false;
+        this.confirmAction = null;
+      }
+    });
+
+  };
+
+  this.showConfirm = true;
+}
+
+confirmYes(): void {
+  if (this.confirmAction) {
+    this.confirmAction();
+  }
+}
+
+confirmNo(): void {
+  this.showConfirm = false;
+  this.confirmAction = null;
+}
  resetForm(): void {
  this.form.reset({
  date: new Date().toISOString().split('T')[0],
@@ -210,16 +236,34 @@ export class AvailabilitySlotsComponent implements OnInit {
 
   /** Return the unique dates present in the slots list, sorted ascending (YYYY-MM-DD). */
   getDates(): string[] {
-    const list = (this.slots() || []).map(s => s.date).filter(Boolean as any) as string[];
+    const today = new Date();
+
+    const list = (this.slots() || [])
+      .filter(slot => {
+        if (!slot.date) return false;
+
+        const slotStart = new Date(`${slot.date}T${slot.startTime || '00:00'}:00`);
+        return slotStart >= today;
+      })
+      .map(slot => slot.date as string);
+
     const unique = Array.from(new Set(list));
     unique.sort((a, b) => a.localeCompare(b));
+
     return unique;
   }
 
-  /** Return slots for a specific ISO date string (YYYY-MM-DD), sorted by start time. */
+  /** Return only future slots for a given date. */
   getSlotsByDate(date: string): Slot[] {
+    const now = new Date();
+
     return (this.slots() || [])
-      .filter(s => s.date === date)
+      .filter(slot => {
+        if (slot.date !== date) return false;
+
+        const slotStart = new Date(`${slot.date}T${slot.startTime || '00:00'}:00`);
+        return slotStart >= now;
+      })
       .sort((a, b) => (a.startTime || '').localeCompare(b.startTime || ''));
   }
 

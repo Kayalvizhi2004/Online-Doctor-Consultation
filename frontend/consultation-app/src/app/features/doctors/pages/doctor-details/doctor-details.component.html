@@ -51,33 +51,22 @@
     <div class="section">
       <h3>Available Slots</h3>
 
-      @if (doc.slots?.length) {
+      @if (getAvailableSlots().length) {
         <div class="slots">
-          @for (s of doc.slots; track s.id) {
-            <div class="slot" [class.booked]="s.isBooked" [class.past]="slotState(s) === 'past'">
+          @for (s of getAvailableSlots(); track s.id) {
+              <div class="slot">
+                <span class="slot-date">{{ s.date }}</span>
+                <span class="slot-time">{{ s.startTime }} – {{ s.endTime }}</span>
 
-              <span class="slot-date">{{ s.date }}</span>
-              <span class="slot-time">{{ s.startTime }} – {{ s.endTime }}</span>
+                <button
+                  class="btn-book"
+                  (click)="openBooking(s)"
+                  [disabled]="!canBook(s)">
+                  Book Appointment
+                </button>
+              </div>
 
-              @switch (slotState(s)) {
-                @case ('booked') {
-                  <span class="slot-tag booked-tag">Booked</span>
-                }
-                @case ('past') {
-                  <span class="slot-tag past-tag">Expired</span>
-                }
-                @default {
-                  @if (canBook(s)) {
-                    <button class="btn-book" (click)="openBooking(s)">
-                      + Book Appointment
-                    </button>
-                  } @else {
-                    <span class="slot-tag open-tag">Open</span>
-                  }
-                }
-              }
-
-            </div>
+            
           }
         </div>
 

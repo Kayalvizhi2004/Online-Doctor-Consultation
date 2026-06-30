@@ -8,6 +8,7 @@ import { RatingStarsComponent } from '../../../../shared/components/rating-stars
 import { AuthService } from '../../../../core/services/auth.service';
 import { AppointmentService } from '../../../../core/services/appointment.service';
 import { Router } from '@angular/router';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-doctor-profile',
@@ -23,6 +24,7 @@ export class DoctorProfileComponent implements OnInit {
   private auth = inject(AuthService);
   private appointmentService = inject(AppointmentService);
   private router = inject(Router);
+  private toastr = inject(ToastrService);
 
   doctor: any = null;
 
@@ -102,12 +104,12 @@ export class DoctorProfileComponent implements OnInit {
     };
     this.appointmentService.book(payload).subscribe({
       next: (res: any) => {
-        alert('Appointment booked successfully');
+        this.toastr.success('Appointment booked successfully');
         this.router.navigate(['/appointments']);
       },
       error: (err) => {
         console.error('Failed to book appointment', err);
-        alert('Failed to book appointment');
+        this.toastr.error('Failed to book appointment');
       }
     });
   }

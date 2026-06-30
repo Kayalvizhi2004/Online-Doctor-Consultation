@@ -1,61 +1,213 @@
-<div class="auth-page">
-  <div class="auth-card">
-    <h2>Create an account</h2>
-    <p class="muted">Register as Patient or Doctor</p>
+<div class="register-page">
 
-    <!-- Display Error Message -->
-    <div class="error-banner" *ngIf="errorMessage" style="color: red; margin-bottom: 1rem;">
-      {{ errorMessage }}
+  <!-- Left Branding Panel -->
+  <div class="branding-panel">
+    <div class="branding-content">
+      <h1>Online Doctor Consultation</h1>
+      <p>
+        Connect with trusted healthcare professionals,
+        schedule appointments, and manage consultations securely.
+      </p>
+
+      <div class="feature-list">
+        <div class="feature">✓ Secure Authentication</div>
+        <div class="feature">✓ Online Video Consultation</div>
+        <div class="feature">✓ Appointment Scheduling</div>
+        <div class="feature">✓ Healthcare Dashboard</div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <h3>10K+</h3>
+          <span>Patients</span>
+        </div>
+        <div class="stat-card">
+          <h3>500+</h3>
+          <span>Doctors</span>
+        </div>
+        <div class="stat-card">
+          <h3>25K+</h3>
+          <span>Consultations</span>
+        </div>
+        <div class="stat-card">
+          <h3>98%</h3>
+          <span>Satisfaction</span>
+        </div>
+      </div>
     </div>
+  </div>
 
-    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
-      <label>Full name
-        <input formControlName="fullName" type="text" placeholder="Enter your full name" />
-        <small class="error" *ngIf="registerForm.get('fullName')?.invalid && registerForm.get('fullName')?.touched">Full name is required (min 3 chars)</small>
-      </label>
+  <!-- Right Form Panel -->
+  <div class="form-panel">
+    <div class="auth-card">
+      <div class="auth-header">
+        <h2>Create Account</h2>
+        <p>Create your healthcare account to get started.</p>
+      </div>
 
-      <label>Email
-        <input formControlName="email" type="email" placeholder="name@example.com" />
-        <small class="error" *ngIf="registerForm.get('email')?.invalid && registerForm.get('email')?.touched">A valid email is required</small>
-      </label>
+      <div class="success-banner" *ngIf="successMessage">
+        <span class="success-icon">✓</span>
+        {{ successMessage }}
+      </div>
 
-      <label>Phone
-        <input formControlName="phone" type="text" placeholder="10-digit number" />
-        <small class="error" *ngIf="registerForm.get('phone')?.invalid && registerForm.get('phone')?.touched">10-digit phone number is required</small>
-      </label>
+      <!-- Main Banner: Shows backend errors clearly line-by-line -->
+      <div class="error-banner" *ngIf="errorMessage" style="white-space: pre-line;">
+        {{ errorMessage.split(' | ').join('\n') }}
+      </div>
 
-      <label>Password
-        <input formControlName="password" type="password" placeholder="Create a password" />
-        <small class="muted">Min 8 characters, include number & letter</small>
-        <small class="error" *ngIf="registerForm.get('password')?.invalid && registerForm.get('password')?.touched">Password must meet requirements</small>
-      </label>
+      <form [formGroup]="registerForm" (ngSubmit)="submit()">
 
-      <!-- Confirm Password Field -->
-      <label>Confirm Password
-        <input formControlName="confirmPassword" type="password" placeholder="Confirm password" />
-        <small class="error" *ngIf="registerForm.hasError('passwordMismatch') && registerForm.get('confirmPassword')?.touched">Passwords do not match</small>
-      </label>
+        <!-- Full Name -->
+        <div class="form-group">
+          <label>Full Name</label>
+          <input
+            type="text"
+            formControlName="fullName"
+            placeholder="Enter Your Full Name">
 
-      <label>Role
-        <select formControlName="role" (change)="onRoleChange()">
-          <option value="Patient">Patient</option>
-          <option value="Doctor">Doctor</option>
-        </select>
-      </label>
+          <div
+            class="field-error"
+            *ngIf="registerForm.get('fullName')?.touched || registerForm.get('fullName')?.errors?.['backendError']">
+            <span *ngIf="registerForm.get('fullName')?.errors?.['required']">Full name is required</span>
+            <span *ngIf="registerForm.get('fullName')?.errors?.['minlength']">Minimum 3 characters required</span>
+            <!-- Backend Error -->
+            <span *ngIf="registerForm.get('fullName')?.errors?.['backendError']">
+              {{ registerForm.get('fullName')?.errors?.['backendError'] }}
+            </span>
+          </div>
+        </div>
 
-      <!-- Specialization (Doctor only) -->
-      <label *ngIf="registerForm.get('role')?.value === 'Doctor'">Specialization
-        <input formControlName="specialization" type="text" placeholder="e.g. Cardiology" />
-        <small class="error" *ngIf="registerForm.get('specialization')?.invalid && registerForm.get('specialization')?.touched">Specialization is required for doctors</small>
-      </label>
+        <!-- Email -->
+        <div class="form-group">
+          <label>Email Address</label>
+          <input
+            type="email"
+            formControlName="email"
+            placeholder="Enter Your Email Address">
 
-      <button class="btn btn-primary" [disabled]="loading">
-        <span *ngIf="loading" class="spinner"></span>
-        Register
-      </button>
-    </form>
+          <div
+            class="field-error"
+            *ngIf="registerForm.get('email')?.touched || registerForm.get('email')?.errors?.['backendError']">
+            <span *ngIf="registerForm.get('email')?.errors?.['required']">Email is required</span>
+            <span *ngIf="registerForm.get('email')?.errors?.['email']">Invalid email address</span>
+            <!-- Backend Error -->
+            <span *ngIf="registerForm.get('email')?.errors?.['backendError']">
+              {{ registerForm.get('email')?.errors?.['backendError'] }}
+            </span>
+          </div>
+        </div>
 
-    <div class="auth-footer">Already have an account? <a routerLink="/auth/login">Login</a>
+        <!-- Phone -->
+        <div class="form-group">
+          <label>Phone Number</label>
+          <input
+            type="tel"
+            formControlName="phone"
+            placeholder="Enter Your Phone Number">
+
+          <div
+            class="field-error"
+            *ngIf="registerForm.get('phone')?.touched || registerForm.get('phone')?.errors?.['backendError']">
+            <span *ngIf="registerForm.get('phone')?.errors?.['required']">Phone number is required</span>
+            <span *ngIf="registerForm.get('phone')?.errors?.['pattern']">Enter valid 10 digit phone number</span>
+            <!-- Backend Error -->
+            <span *ngIf="registerForm.get('phone')?.errors?.['backendError']">
+              {{ registerForm.get('phone')?.errors?.['backendError'] }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Role -->
+        <div class="form-group">
+          <label>Account Type</label>
+          <select formControlName="role" (change)="onRoleChange()">
+            <option value="Patient">Patient</option>
+            <option value="Doctor">Doctor</option>
+          </select>
+        </div>
+
+        <!-- Doctor Specialization -->
+        <div
+          class="form-group"
+          *ngIf="registerForm.get('role')?.value === 'Doctor'">
+          <label>Specialization</label>
+          <input
+            type="text"
+            formControlName="specialization"
+            placeholder="Enter Your Specialization">
+
+          <div
+            class="field-error"
+            *ngIf="registerForm.get('specialization')?.touched || registerForm.get('specialization')?.errors?.['backendError']">
+            <span *ngIf="registerForm.get('specialization')?.errors?.['required']">Specialization is required for doctors</span>
+            <!-- Backend Error -->
+            <span *ngIf="registerForm.get('specialization')?.errors?.['backendError']">
+              {{ registerForm.get('specialization')?.errors?.['backendError'] }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Password -->
+        <div class="form-group">
+          <label>Password</label>
+          <input
+            type="password"
+            formControlName="password">
+
+          <div class="password-strength">
+            <div
+              class="strength-bar"
+              [style.width.%]="passwordStrength * 20"
+              [ngClass]="{
+                'weak': passwordStrength <= 2,
+                'medium': passwordStrength === 3,
+                'strong': passwordStrength >= 4
+              }">
+            </div>
+          </div>
+
+          <small>
+           Min 8 chars, 1 uppercase, 1 lowercase, 1 number, and 1 special character
+          </small>
+
+          <div
+            class="field-error"
+            *ngIf="registerForm.get('password')?.touched || registerForm.get('password')?.errors?.['backendError']">
+            <!-- Backend Error -->
+            <span *ngIf="registerForm.get('password')?.errors?.['backendError']">
+              {{ registerForm.get('password')?.errors?.['backendError'] }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Confirm Password -->
+        <div class="form-group">
+          <label>Confirm Password</label>
+          <input
+            type="password"
+            formControlName="confirmPassword">
+
+          <div
+            class="field-error"
+            *ngIf="registerForm.hasError('passwordMismatch') && registerForm.get('confirmPassword')?.touched">
+            Passwords do not match
+          </div>
+        </div>
+
+        <button
+          type="submit"
+          class="register-btn"
+          [disabled]="loading">
+          <span *ngIf="loading" class="spinner"></span>
+          {{ loading ? 'Creating Account...' : 'Create Account' }}
+        </button>
+
+      </form>
+
+      <div class="footer">
+        Already have an account?
+        <a routerLink="/auth/login">Sign In</a>
+      </div>
     </div>
   </div>
 </div>

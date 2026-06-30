@@ -1,15 +1,18 @@
 <nav class="app-nav">
   <div class="nav-left">
+    <ng-container *ngIf="isAuthenticated">
     <!-- Sidebar Toggle Button -->
     <button class="menu-toggle" (click)="toggleSidebar()" aria-label="Toggle Sidebar">
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line>
       </svg>
     </button>
+    </ng-container>
     <a class="logo" routerLink="/home">MediConsult</a>
   </div>
-
+   
   <div class="nav-right">
+    <ng-container *ngIf="isAuthenticated">
     <!-- Realtime Google-Style Notification Icon -->
     <button class="notification-btn notification-container" aria-label="Notifications" routerLink="/notifications">
       <svg class="nav-icon" viewBox="0 0 24 24" width="24" height="24">
@@ -19,25 +22,71 @@
         {{ unreadNotifications() > 9 ? '9+' : unreadNotifications() }}
       </span>
     </button>
+    </ng-container>
 
     <ng-container *ngIf="!isAuthenticated">
-      <a class="btn btn-outline" routerLink="/auth/login">Login</a>
-      <a class="btn btn-primary" routerLink="/auth/register">Register</a>
+       <button class="btn-outline" routerLink="/auth/login">Login</button>
+      <button class="btn-primary" routerLink="/auth/register">Register</button>
     </ng-container>
 
     <ng-container *ngIf="isAuthenticated">
-      <div class="user-menu">
-        <div class="profile-preview">
-          <div class="avatar-wrapper" routerLink="/profile">
-            <img [src]="user?.photoUrl || 'assets/default-avatar.svg'" class="nav-avatar" alt="Avatar">
-          </div>
-          <a class="profile-name desktop-only" routerLink="/profile">{{ user?.fullName?.split(' ')?.[0] || 'User' }}</a>
-        </div>
-        <ul class="dropdown">
-          <li><a routerLink="/dashboard">My Dashboard</a></li>
-          <li><a (click)="logout()" class="logout-link">Logout</a></li>
-        </ul>
-      </div>
+     <div class="user-menu">
+
+  <button
+    class="profile-trigger"
+    (click)="toggleProfileMenu()">
+
+    <img
+      [src]="user?.photoUrl || 'assets/default-avatar.svg'"
+      class="nav-avatar"
+      alt="Avatar">
+
+    <span class="profile-name desktop-only">
+      {{ user?.fullName?.split(' ')?.[0] || 'User' }}
+    </span>
+
+    <span class="dropdown-arrow">
+      ▼
+    </span>
+
+  </button>
+
+  <div
+    class="profile-dropdown"
+    *ngIf="isProfileMenuOpen">
+
+    <a
+  [routerLink]="dashboardRoute"
+  class="dropdown-item">
+
+  <!-- <span class="icon">📊</span> -->
+  <span>Dashboard</span>
+
+  </a>
+
+   <a
+  [routerLink]="profileRoute"
+  class="dropdown-item">
+
+  <!-- <span class="icon">�</span> -->
+  <span>Profile</span>
+
+  </a>
+  
+  
+
+    <button
+      class="dropdown-item logout-btn"
+      (click)="logout()">
+
+      <!-- <span class="icon">🚪</span> -->
+      <span>Logout</span>
+
+    </button>
+
+  </div>
+
+</div>
     </ng-container>
   </div>
 </nav>

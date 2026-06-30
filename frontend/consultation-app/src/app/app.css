@@ -674,9 +674,6 @@ html, body {
     font-size: 0.9rem;
   }
 
-  .sidebar {
-    /* keep sidebar visible on small screens — dashboard layout styles control overlay */
-  }
 
   .layout {
     flex-direction: column;

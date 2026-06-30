@@ -11,6 +11,11 @@ services:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   rabbitmq:
     image: rabbitmq:3.11-management
@@ -20,20 +25,32 @@ services:
     ports:
       - "5672:5672"
       - "15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   redis:
     image: redis:7-alpine
     ports:
       - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   consultationapi:
-    image: mcr.microsoft.com/dotnet/sdk:8.0
-    working_dir: /src
+    image: mcr.microsoft.com/dotnet/aspnet:8.0
+    working_dir: /app/api
     volumes:
-      - ./:/src:cached
-    command: dotnet run --project backend/ConsultationApi --urls http://0.0.0.0:5000
+      - ./ConsultationApi/bin/Release/net8.0:/app/api
+    command: dotnet ConsultationApi.dll
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:5000
+      - DOTNET_RUNNING_IN_CONTAINER=true
       - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=consultationdb;Username=postgres;Password=postgres
       - Redis__Configuration=redis:6379
       - RabbitMq__HostName=rabbitmq
@@ -44,18 +61,22 @@ services:
     ports:
       - "5000:5000"
     depends_on:
-      - postgres
-      - rabbitmq
-      - redis
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
 
   consultationworker:
-    image: mcr.microsoft.com/dotnet/sdk:8.0
-    working_dir: /src
+    image: mcr.microsoft.com/dotnet/aspnet:8.0
+    working_dir: /app/worker
     volumes:
-      - ./:/src:cached
-    command: dotnet run --project backend/ConsultationWorker
+      - ./ConsultationWorker/bin/Release/net8.0:/app/worker
+    command: dotnet ConsultationWorker.dll
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+      - DOTNET_RUNNING_IN_CONTAINER=true
       - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=consultationdb;Username=postgres;Password=postgres
       - Redis__Configuration=redis:6379
       - RabbitMq__HostName=rabbitmq
@@ -64,9 +85,12 @@ services:
       - RabbitMq__Password=guest
       - Jwt__SecretKey=ThisIsMySuperSecretJwtKey123456789
     depends_on:
-      - postgres
-      - rabbitmq
-      - redis
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
 
 volumes:
   pgdata:

@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy, inject, signal, computed } from '@angular/core';
 import { NotificationService } from '../../../../core/services/notification.service';
 import { CommonModule } from '@angular/common';
-
+import { ToastrService } from 'ngx-toastr';
 @Component({
   selector: 'app-notification-list',
   standalone: true,
@@ -15,6 +15,10 @@ export class NotificationListComponent implements OnInit, OnDestroy {
   notifications = signal<any[]>([]);
   loading = signal<boolean>(true);
   filterType = signal<'all' | 'unread'>('all');
+  showConfirm = false;
+  confirmMessage = '';
+  confirmAction: (() => void) | null = null;
+  private toastr = inject(ToastrService);
 
   unreadCount = computed(() => this.notifications().filter((n: any) => !n.isRead).length);
   filtered = computed(() =>
@@ -49,18 +53,63 @@ export class NotificationListComponent implements OnInit, OnDestroy {
   }
 
   markRead(id: string): void {
-    this.service.markRead(id).subscribe({ next: () => this.loadNotifications() });
+    this.service.markRead(id).subscribe({
+      next: () => {
+        this.loadNotifications();
+        this.service.refreshNotificationCount();
+      }
+    });
   }
 
   markAllRead(): void {
     if (this.unreadCount() === 0) return;
-    this.service.markAll().subscribe({ next: () => this.loadNotifications() });
+
+    this.service.markAll().subscribe({
+      next: () => {
+        this.loadNotifications();
+        this.service.refreshNotificationCount();
+      }
+    });
   }
 
-  deleteNotification(id: string): void {
-    if (!confirm('Delete this notification?')) return;
-    this.service.delete(id).subscribe({ next: () => this.loadNotifications() });
+deleteNotification(id: string): void {
+
+  this.confirmMessage = 'Delete this notification?';
+
+  this.confirmAction = () => {
+
+    this.service.delete(id).subscribe({
+      next: () => {
+        this.loadNotifications();
+        this.service.refreshNotificationCount();
+        this.toastr.success('Notification deleted successfully.');
+
+        this.showConfirm = false;
+        this.confirmAction = null;
+      },
+      error: () => {
+        this.toastr.error('Failed to delete notification.');
+
+        this.showConfirm = false;
+        this.confirmAction = null;
+      }
+    });
+
+  };
+
+  this.showConfirm = true;
+}
+
+confirmYes(): void {
+  if (this.confirmAction) {
+    this.confirmAction();
   }
+}
+
+confirmNo(): void {
+  this.showConfirm = false;
+  this.confirmAction = null;
+}
 
   setFilter(filter: 'all' | 'unread'): void {
     this.filterType.set(filter);
